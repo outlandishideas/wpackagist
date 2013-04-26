@@ -1,0 +1,10 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__.'/../src/bootstrap.php';
+
+use Composer\Satis\Console\Application;
+
+$application = new Application();
+$application->add(new \Outlandish\Wpackagist\Command\FetchCommand());
+$application->run();
