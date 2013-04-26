@@ -8,4 +8,3 @@ use Composer\Satis\Console\Application;
 $application = new Application();
 $application->add(new \Outlandish\Wpackagist\Command\FetchCommand());
 $application->run();
-
