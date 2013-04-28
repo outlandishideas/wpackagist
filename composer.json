@@ -4,8 +4,11 @@
     "require": {
         "php": ">=5.3.2",
 	    "composer/composer": "1.0.*@dev",
-        "composer/satis": "dev-master",
-        "symfony/console": "~2.1@dev"
+        "symfony/console": "*",
+	    "symfony/config":"*",
+	    "symfony/dependency-injection": "*",
+	    "doctrine/orm": "*",
+	    "symfony/yaml": "2.*"
     },
     "autoload": {
         "psr-0": {
