@@ -1,3 +1,7 @@
 body {
 	border-top: 5px solid #E14C41;
 }
+
+.dimmed {
+	color: #888;
+}

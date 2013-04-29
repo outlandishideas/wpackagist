@@ -14,17 +14,27 @@
 			<h2>Manage your plugins with Composer</h2>
 
 			<p>This site mirrors the WordPress plugin Subversion repository as a Composer repository.</p>
+			<p>Here's an example <code>composer.json</code> file which adds the Wpackagist repository and
+			includes the latest version of Advanced Custom Fields and version 1.4 of Posts to Posts:</p>
 			<pre class="panel">
-"require": {
-    "wpackagist/advanced-custom-fields":"*",
-    "wpackagist/posts-to-posts":"~1.4"
-},
+<span class="dimmed">"name": "acme/brilliant-wordpress-site",
+"description": "My brilliant WordPress site",</span>
 "repositories":[
     {
         "type":"composer",
         "url":"http://wpackagist.org"
     }
-]</pre>
+],
+<span class="dimmed">"require": {
+    "acme/example-lib":"*",</span>
+    "wpackagist/advanced-custom-fields":"*",
+    "wpackagist/posts-to-posts":"1.4.x"
+<span class="dimmed">},
+"autoload": {
+    "psr-0": {
+        "Acme": "src/"
+    }
+}</span></pre>
 
 			<p>An experiment by <a href="http://outlandishideas.co.uk">Outlandish Ideas</a>.</p>
 
