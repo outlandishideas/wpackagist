@@ -22,6 +22,8 @@ class BuildCommand extends Command
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$output->writeln("Building packages");
 
+		$basePath = 'web/p/';
+		@mkdir($basePath.'wpackagist', 0777, true);
 		$versionParser = new VersionParser();
 
 		/**
@@ -30,14 +32,14 @@ class BuildCommand extends Command
 		$db = $this->getApplication()->getDb();
 
 		$groups = $db->query('
-			SELECT strftime("%Y-%m", last_committed) AS month, * FROM plugins
+			SELECT strftime("%Y", last_committed) AS year, * FROM plugins
 			WHERE versions IS NOT NULL
-			ORDER BY month, name
+			ORDER BY name
 		')->fetchAll(\PDO::FETCH_GROUP | \PDO::FETCH_OBJ);
 
-		$includes = array();
-		foreach ($groups as $month => $plugins) {
-			$packages = array();
+		$providerIncludes = array();
+		foreach ($groups as $year => $plugins) {
+			$providers = array();
 
 			foreach ($plugins as $plugin) {
 				$versions = json_decode($plugin->versions);
@@ -67,20 +69,31 @@ class BuildCommand extends Command
 						),
 						'type' => 'wordpress-plugin',
 						'homepage' => "http://wordpress.org/extend/plugins/$plugin->name",
+						'uid' => uniqid()
 					);
 				}
 
-				$packages[$packageName] = $package;
+				$content = json_encode(array('packages' => array($packageName => $package)));
+				$sha256 = hash('sha256', $content);
+				file_put_contents("$basePath$packageName\$$sha256.json", $content);
+				$providers["$packageName"] = array(
+					'sha256' => $sha256
+				);
 			}
 
-			$content = json_encode(array('packages' => $packages));
-			file_put_contents("web/packages-$month.json", $content);
-			$includes["packages-$month.json"] = array(
-				'sha1' => sha1($content)
+			$content = json_encode(array('providers' => $providers));
+			$sha256 = hash('sha256', $content);
+			file_put_contents("{$basePath}providers-$year\$$sha256.json", $content);
+			$providerIncludes["p/providers-$year\$%hash%.json"] = array(
+				'sha256' => $sha256
 			);
 		}
 
-		$content = json_encode(array('includes' => $includes));
+		$content = json_encode(array(
+			'packages' => array(),
+			'providers-url' => '/wpackagist/web/p/%package%$%hash%.json',
+			'provider-includes' => $providerIncludes,
+		));
 		file_put_contents('web/packages.json', $content);
 
 		$output->writeln("Wrote packages.json file");
