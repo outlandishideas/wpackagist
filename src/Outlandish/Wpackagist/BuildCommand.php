@@ -91,7 +91,7 @@ class BuildCommand extends Command
 
 		$content = json_encode(array(
 			'packages' => array(),
-			'providers-url' => '/wpackagist/web/p/%package%$%hash%.json',
+			'providers-url' => '/p/%package%$%hash%.json',
 			'provider-includes' => $providerIncludes,
 		));
 		file_put_contents('web/packages.json', $content);
