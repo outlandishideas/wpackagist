@@ -13,30 +13,77 @@
 			<h1>WordPress Packagist</h1>
 			<h2>Manage your plugins with Composer</h2>
 
-			<p>This site mirrors the WordPress plugin Subversion repository as a Composer repository.</p>
-			<p>Here's an example <code>composer.json</code> file which adds the Wpackagist repository and
-			includes the latest version of Advanced Custom Fields and version 1.4 of Posts to Posts:</p>
+			<p class="panel">This site mirrors the <a href="http://wordpress.org/extend/plugins/">WordPress plugin directory</a>
+				as a <a href="http://getcomposer.org/">Composer</a> repository.</p>
+
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="six columns">
+			<h3>How do I use it?</h3>
+			<ol>
+				<li>Add the repository to your <code>composer.json</code></li>
+				<li>Add the desired plugins to your requirements using <code>wpackagist</code> as the vendor name.</li>
+			</ol>
+
+			<h3>Example</h3>
 			<pre class="panel">
-<span class="dimmed">"name": "acme/brilliant-wordpress-site",
-"description": "My brilliant WordPress site",</span>
-"repositories":[
+"name": "acme/brilliant-wordpress-site",
+"description": "My brilliant WordPress site",
+<div class="highlighter">"repositories":[
     {
         "type":"composer",
         "url":"http://wpackagist.org"
     }
 ],
-<span class="dimmed">"require": {
-    "acme/example-lib":"*",</span>
-    "wpackagist/advanced-custom-fields":"*",
+</div>"require": {
+    "aws/aws-sdk-php":"*",
+<div class="highlighter">    "wpackagist/advanced-custom-fields":"*",
     "wpackagist/posts-to-posts":"1.4.x"
-<span class="dimmed">},
+</div>},
 "autoload": {
     "psr-0": {
         "Acme": "src/"
     }
-}</span></pre>
+</pre>
+			<p>This example <code>composer.json</code> file adds the Wpackagist repository and
+				includes the latest version of Advanced Custom Fields and version 1.4 of Posts to Posts,
+				along with the Amazon Web Services SDK from the main <a href="https://packagist.org/">Packagist</a>
+				repository.</p>
+		</div>
+		<div class="six columns">
+			<h3>Why use Composer?</h3>
+			<ul>
+				<li>Avoid checking plugins into source control.</li>
+				<li>Avoid having to use git submodules.</li>
+				<li>Manage dependencies between plugins (requires plugins to declare their own composer.json).</li>
+				<li>Manage WordPress and non-WordPress project libraries with the same tools.</li>
+			</ul>
 
-			<p>An experiment by <a href="http://outlandishideas.co.uk">Outlandish Ideas</a>.</p>
+			<h3>How does it work?</h3>
+			<ul>
+				<li>Periodically scans the <a href="http://plugins.svn.wordpress.org/">WordPress Subversion repository</a> for changes.</li>
+				<li>Fetches the <code>tags</code> for each updated plugin and maps those to versions.</li>
+				<li>Adds <code>trunk</code> as a dev version.</li>
+				<li>Rebuilds the composer package JSON files.</li>
+			</ul>
+
+			<h3>Known issues</h3>
+			<ul>
+				<li>Version strings which Composer cannot parse are ignored. All plugins have at least the trunk build available.</li>
+				<li>Plugins with unicode names might not work properly.</li>
+			</ul>
+
+			<h3>Contribute or get support</h3>
+			<p>Please visit our <a href="">GitHub page</a>.</p>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="twelve columns">
+
+			<p class="panel">An experiment by <a href="http://outlandishideas.co.uk">Outlandish Ideas</a>.</p>
 
 		</div>
 	</div>

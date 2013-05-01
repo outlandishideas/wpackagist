@@ -16,7 +16,7 @@ class BuildCommand extends Command
 	protected function configure() {
 		$this
 				->setName('build')
-				->setDescription('Build satis.json from DB');
+				->setDescription('Build package.json from DB');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {

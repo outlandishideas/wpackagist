@@ -2,6 +2,15 @@ body {
 	border-top: 5px solid #E14C41;
 }
 
+ul {
+	margin-left: 20px;
+	list-style-type: square;
+}
+
+ol {
+	margin-left: 25px;
+}
+
 .highlighter {
 	font-weight: bold;
 	background-color: #ffff99;
