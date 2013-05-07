@@ -49,12 +49,13 @@ class UpdateCommand extends Command
 			$percent = floor($index / count($plugins) * 1000) / 10;
 			$output->writeln(sprintf("<info>%04.1f%%</info> Fetching %s", $percent, $plugin->name));
 
-			$tagsString = shell_exec("$svn ls $base{$plugin->name}/tags");
-			if ($tagsString === null) {
+			unset($tags);
+			exec("$svn ls $base{$plugin->name}/tags 2>&1", $tags, $returnCode);
+			if ($returnCode) {
+				$output->writeln('<error>Error from svn command</error>');
 				sleep(1); //there was an error so wait a bit and skip this iteration
 				continue;
 			}
-			$tags = $tagsString ? explode("\n", trim($tagsString)) : array();
 			$tags[] = 'trunk/';
 			$tags = array_map(function ($tag) {
 				return substr($tag, 0, -1);

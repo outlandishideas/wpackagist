@@ -40,11 +40,12 @@ class RefreshCommand extends Command {
 
 		$output->writeln("Fetching full plugin list from $base");
 
-		$xmlString = shell_exec("$svn ls --xml $base");
-		if ($xmlString === null) {
+		exec("$svn ls --xml $base 2>&1", $xmlLines, $returnCode);
+		if ($returnCode) {
+			$output->writeln('<error>Error from svn command</error>');
 			return 1; //error code
 		}
-		$xml = simplexml_load_string($xmlString);
+		$xml = simplexml_load_string(implode("\n", $xmlLines));
 
 		$output->writeln("Updating database");
 
@@ -52,7 +53,6 @@ class RefreshCommand extends Command {
 		$insertStmt = $db->prepare('INSERT INTO plugins (name, last_committed) VALUES (:name, :date)');
 		$db->beginTransaction();
 		$newCount = 0;
-		$updateCount = 0;
 		foreach ($xml->list->entry as $entry) {
 			$date = date('Y-m-d H:i:s', strtotime((string)$entry->commit->date));
 			$params = array(':name' => (string)$entry->name, ':date' => $date);
@@ -61,11 +61,11 @@ class RefreshCommand extends Command {
 			if ($updateStmt->rowCount() == 0) {
 				$insertStmt->execute($params);
 				$newCount++;
-			} else {
-				$updateCount++;
 			}
 		}
 		$db->commit();
+
+		$updateCount = $db->query('SELECT COUNT(*) FROM plugins WHERE last_fetched < last_committed')->fetchColumn();
 
 		$output->writeln("Found $newCount new and $updateCount updated plugins");
 	}
