@@ -37,6 +37,7 @@ class BuildCommand extends Command
 			ORDER BY name
 		')->fetchAll(\PDO::FETCH_GROUP | \PDO::FETCH_OBJ);
 
+		$uid = 1; //don't know what this does but composer requires it
 		$providerIncludes = array();
 		foreach ($groups as $year => $plugins) {
 			$providers = array();
@@ -69,7 +70,7 @@ class BuildCommand extends Command
 						),
 						'type' => 'wordpress-plugin',
 						'homepage' => "http://wordpress.org/extend/plugins/$plugin->name",
-						'uid' => uniqid()
+						'uid' => $uid++
 					);
 				}
 
@@ -87,6 +88,7 @@ class BuildCommand extends Command
 			$providerIncludes["p/providers-$year\$%hash%.json"] = array(
 				'sha256' => $sha256
 			);
+			$output->writeln('Generated packages for '.$year);
 		}
 
 		$content = json_encode(array(
