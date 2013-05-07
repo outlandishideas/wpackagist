@@ -41,6 +41,9 @@ class RefreshCommand extends Command {
 		$output->writeln("Fetching full plugin list from $base");
 
 		$xmlString = shell_exec("$svn ls --xml $base");
+		if ($xmlString === null) {
+			return 1; //error code
+		}
 		$xml = simplexml_load_string($xmlString);
 
 		$output->writeln("Updating database");

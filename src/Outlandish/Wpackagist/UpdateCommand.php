@@ -50,6 +50,10 @@ class UpdateCommand extends Command
 			$output->writeln(sprintf("<info>%04.1f%%</info> Fetching %s", $percent, $plugin->name));
 
 			$tagsString = shell_exec("$svn ls $base{$plugin->name}/tags");
+			if ($tagsString === null) {
+				sleep(1); //there was an error so wait a bit and skip this iteration
+				continue;
+			}
 			$tags = $tagsString ? explode("\n", trim($tagsString)) : array();
 			$tags[] = 'trunk/';
 			$tags = array_map(function ($tag) {
