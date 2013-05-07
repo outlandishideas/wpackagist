@@ -3,17 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <title>WordPress Packagist: Manage your plugins with Composer</title>
+	<link href='http://fonts.googleapis.com/css?family=Noto+Sans' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="foundation.css"/>
 	<link rel="stylesheet" href="style.css"/>
+	<link rel="shortcut icon" href="favicon.png"/>
 </head>
 <body>
 
 	<div class="row">
 		<div class="twelve columns">
-			<h1>WordPress Packagist</h1>
-			<h2>Manage your plugins with Composer</h2>
+			<h1 id="title">WordPress Packagist</h1>
 
-			<p class="panel">This site mirrors the <a href="http://wordpress.org/extend/plugins/">WordPress plugin directory</a>
+			<p class="panel">This site provides a mirror of the <a href="http://wordpress.org/extend/plugins/">WordPress plugin directory</a>
 				as a <a href="http://getcomposer.org/">Composer</a> repository.</p>
 
 		</div>
@@ -25,35 +26,44 @@
 			<ol>
 				<li>Add the repository to your <code>composer.json</code></li>
 				<li>Add the desired plugins to your requirements using <code>wpackagist</code> as the vendor name.</li>
+				<li>Run <code>$ composer.phar update</code></li>
+				<li>Plugins are <a href="https://github.com/composer/installers">installed</a> to <code>wp-content/plugins/</code></li>
 			</ol>
 
 			<h3>Example</h3>
-			<pre class="panel">
-"name": "acme/brilliant-wordpress-site",
-"description": "My brilliant WordPress site",
-<div class="highlighter">"repositories":[
-    {
-        "type":"composer",
-        "url":"http://wpackagist.org"
+			<pre>{
+    "name": "acme/brilliant-wordpress-site",
+    "description": "My brilliant WordPress site",
+<div class="highlighter">    "repositories":[
+        {
+            "type":"composer",
+            "url":"http://wpackagist.org"
+        }
+    ],
+</div>    "require": {
+        "aws/aws-sdk-php":"*",
+<div class="highlighter">        "wpackagist/advanced-custom-fields":"*",
+        "wpackagist/posts-to-posts":"1.4.x"
+</div>    },
+    "autoload": {
+        "psr-0": {
+            "Acme": "src/"
+        }
     }
-],
-</div>"require": {
-    "aws/aws-sdk-php":"*",
-<div class="highlighter">    "wpackagist/advanced-custom-fields":"*",
-    "wpackagist/posts-to-posts":"1.4.x"
-</div>},
-"autoload": {
-    "psr-0": {
-        "Acme": "src/"
-    }
-</pre>
+}</pre>
 			<p>This example <code>composer.json</code> file adds the Wpackagist repository and
 				includes the latest version of Advanced Custom Fields and version 1.4 of Posts to Posts,
 				along with the Amazon Web Services SDK from the main <a href="https://packagist.org/">Packagist</a>
 				repository.</p>
+			<p>Find out <a href="http://getcomposer.org/doc/01-basic-usage.md">more about using Composer</a>.</p>
 		</div>
 		<div class="six columns">
 			<h3>Why use Composer?</h3>
+			<blockquote class="clearfix">
+				&ldquo;Composer is a tool for dependency management in PHP. It allows you to declare the dependent
+				libraries your project needs and it will install them in your project for you.&rdquo;
+				<div class="right">&mdash; <a href="http://getcomposer.org/doc/00-intro.md">getcomposer.org</a></div>
+			</blockquote>
 			<ul>
 				<li>Avoid checking plugins into source control.</li>
 				<li>Avoid having to use git submodules.</li>
@@ -61,9 +71,9 @@
 				<li>Manage WordPress and non-WordPress project libraries with the same tools.</li>
 			</ul>
 
-			<h3>How does it work?</h3>
+			<h3>How does the repository work?</h3>
 			<ul>
-				<li>Periodically scans the <a href="http://plugins.svn.wordpress.org/">WordPress Subversion repository</a> for changes.</li>
+				<li>Scans the <a href="http://plugins.svn.wordpress.org/">WordPress Subversion repository</a> for changes.</li>
 				<li>Fetches the <code>tags</code> for each updated plugin and maps those to versions.</li>
 				<li>Adds <code>trunk</code> as a dev version.</li>
 				<li>Rebuilds the composer package JSON files.</li>
@@ -76,7 +86,7 @@
 			</ul>
 
 			<h3>Contribute or get support</h3>
-			<p>Please visit our <a href="">GitHub page</a>.</p>
+			<p>Please visit our <a href="https://github.com/outlandishideas/wpackagist">GitHub page</a>.</p>
 		</div>
 	</div>
 

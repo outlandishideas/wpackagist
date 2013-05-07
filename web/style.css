@@ -2,8 +2,12 @@ body {
 	border-top: 5px solid #E14C41;
 }
 
+h1, h2, h3, h4 {
+	font-family: 'Noto Sans', serif;
+}
+
 ul {
-	margin-left: 20px;
+	margin-left: 25px;
 	list-style-type: square;
 }
 
@@ -11,7 +15,46 @@ ol {
 	margin-left: 25px;
 }
 
+blockquote, pre {
+	border-left: 3px solid #E14C41;
+	padding: 10px 20px 10px 17px;
+	margin-bottom: 7px;
+	background-color: #f2f2f2;
+}
+
+#title {
+	margin: 60px 0;
+}
+
 .highlighter {
 	font-weight: bold;
 	background-color: #ffff99;
+}
+
+@media only screen and (max-width: 767px) {
+	#title {
+		margin: 30px 0;
+	}
+}
+
+
+.clearfix:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+
+.clearfix {
+	display: inline-block;
+}
+
+html[xmlns] .clearfix {
+	display: block;
+}
+
+* html .clearfix {
+	height: 1%;
 }
