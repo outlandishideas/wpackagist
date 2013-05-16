@@ -5,10 +5,7 @@
         "php": ">=5.3.2",
 	    "composer/composer": "1.0.*@dev",
         "symfony/console": "*",
-	    "symfony/config":"*",
-	    "symfony/dependency-injection": "*",
-	    "doctrine/orm": "*",
-	    "symfony/yaml": "2.*"
+	    "symfony/filesystem":"*"
     },
     "autoload": {
         "psr-0": {

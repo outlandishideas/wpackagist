@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use UnexpectedValueException;
 
 class BuildCommand extends Command
@@ -22,9 +23,11 @@ class BuildCommand extends Command
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$output->writeln("Building packages");
 
-		$basePath = 'web/p/';
-		@mkdir($basePath.'wpackagist', 0777, true);
+		$fs = new Filesystem();
 		$versionParser = new VersionParser();
+
+		$basePath = 'web/p.new/';
+		$fs->mkdir($basePath.'wpackagist');
 
 		/**
 		 * @var \PDO $db
@@ -34,7 +37,7 @@ class BuildCommand extends Command
 		$groups = $db->query('
 			SELECT strftime("%Y", last_committed) AS year, * FROM plugins
 			WHERE versions IS NOT NULL
-			ORDER BY name
+			ORDER BY year, name
 		')->fetchAll(\PDO::FETCH_GROUP | \PDO::FETCH_OBJ);
 
 		$uid = 1; //don't know what this does but composer requires it
@@ -96,7 +99,15 @@ class BuildCommand extends Command
 			'providers-url' => '/p/%package%$%hash%.json',
 			'provider-includes' => $providerIncludes,
 		));
+
+		//switch old and new files
+		if ($fs->exists('web/p')) {
+			$fs->rename('web/p', 'web/p.old');
+		}
+		$fs->rename($basePath, 'web/p/');
 		file_put_contents('web/packages.json', $content);
+
+		$fs->remove('web/p.old');
 
 		$output->writeln("Wrote packages.json file");
 	}
