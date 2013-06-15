@@ -107,7 +107,10 @@ class BuildCommand extends Command
 		$fs->rename($basePath, 'web/p/');
 		file_put_contents('web/packages.json', $content);
 
-		$fs->remove('web/p.old');
+		//this doesn't work
+//		$fs->remove('web/p.old');
+
+		exec('rm -rf web/p.old', $return, $code);
 
 		$output->writeln("Wrote packages.json file");
 	}

@@ -3,7 +3,7 @@
 
 chdir(__DIR__.'/..');
 
-require 'src/bootstrap.php';
+require __DIR__.'/../src/bootstrap.php';
 
 $application = new Outlandish\Wpackagist\Application();
 $application->run();
