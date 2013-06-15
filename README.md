@@ -27,6 +27,7 @@ Example composer.json:
 	    }
 	}
 
-More info and usage instructions at [wpackagist.org](http://wpackagist.org).
+More info and usage instructions at [wpackagist.org](http://wpackagist.org) or follow us on
+Twitter [@wpackagist](https://twitter.com/wpackagist).
 
-For support, please use the issue tracker above.
+For support and discussion, please use the issue tracker above.
