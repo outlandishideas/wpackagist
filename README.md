@@ -18,7 +18,7 @@ Example composer.json:
 	    "require": {
 	        "aws/aws-sdk-php":"*",
 	        "wpackagist/advanced-custom-fields":"*",
-	        "wpackagist/posts-to-posts":"1.4.x"
+	        "wpackagist/posts-to-posts":"~1.6"
 	    },
 	    "autoload": {
 	        "psr-0": {
