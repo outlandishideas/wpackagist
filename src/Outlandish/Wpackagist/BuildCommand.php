@@ -75,6 +75,10 @@ class BuildCommand extends Command
 						'homepage' => "http://wordpress.org/extend/plugins/$plugin->name",
 						'uid' => $uid++
 					);
+
+					if ($version == 'trunk') {
+						$package[$version]['time'] = $plugin->last_committed;
+					}
 				}
 
 				$content = json_encode(array('packages' => array($packageName => $package)));
