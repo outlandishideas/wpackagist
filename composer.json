@@ -3,13 +3,14 @@
     "description": "Install and manage WordPress plugins with Composer",
     "require": {
         "php": ">=5.3.2",
-	    "composer/composer": "1.0.*@dev",
+        "composer/composer": "1.0.*@dev",
         "symfony/console": "*",
-	    "symfony/filesystem":"*"
+        "symfony/filesystem":"*",
+        "chuyskywalker/rolling-curl": "*"
     },
     "autoload": {
         "psr-0": {
-	        "Outlandish": "src/"
+            "Outlandish": "src/"
         }
     }
 }

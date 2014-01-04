@@ -8,6 +8,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use RollingCurl\Request as RollingRequest;
+use RollingCurl\RollingCurl;
 
 class UpdateCommand extends Command
 {
@@ -16,11 +18,11 @@ class UpdateCommand extends Command
 				->setName('update')
 				->setDescription('Update version info for individual plugins')
 				->addOption(
-					'svn',
+					'concurrent',
 					null,
 					InputOption::VALUE_REQUIRED,
-					'Path to svn executable',
-					'svn'
+					'Max concurrent connections',
+					'10'
 				)->addOption(
 					'base',
 					null,
@@ -31,8 +33,9 @@ class UpdateCommand extends Command
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		$rollingCurl = new RollingCurl;
+		$rollingCurl->setSimultaneousLimit((int) $input->getOption('concurrent'));
 		$base = rtrim($input->getOption('base'), '/') . '/';
-		$svn = $input->getOption('svn');
 
 		/**
 		 * @var \PDO $db
@@ -45,27 +48,43 @@ class UpdateCommand extends Command
 			ORDER BY last_committed DESC
 		')->fetchAll(\PDO::FETCH_OBJ);
 
-		foreach ($plugins as $index => $plugin) {
-			$percent = floor($index / count($plugins) * 1000) / 10;
-			$output->writeln(sprintf("<info>%04.1f%%</info> Fetching %s", $percent, $plugin->name));
+		$count = count($plugins);
+		$stmt = $db->prepare('UPDATE plugins SET last_fetched = datetime("now"), versions = :json WHERE name = :name');
 
-			unset($tags);
-			exec("$svn ls $base{$plugin->name}/tags 2>&1", $tags, $returnCode);
-			if ($returnCode) {
-				$output->writeln('<error>Error from svn command</error>');
+		$rollingCurl->setCallback(function(RollingRequest $request, RollingCurl $rollingCurl) use ($base, $count, $stmt, $output) {
+			// reparse plugin name
+			preg_match("!^$base(.+)/tags/$!", $request->getUrl(), $matches);
+			$plugin_name = $matches[1];
+
+			$percent = round(count($rollingCurl->getCompletedRequests()) / $count * 100, 1);
+			$output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $plugin_name));
+
+			if ($request->getResponseError()) {
+				$output->writeln("<error>Error while fetching ".$request->getUrl()."</error>");
 				sleep(1); //there was an error so wait a bit and skip this iteration
-				continue;
 			}
-			$tags[] = 'trunk/';
-			$tags = array_map(function ($tag) {
-				return substr($tag, 0, -1);
-			}, $tags);
 
-			$stmt = $db->prepare('UPDATE plugins SET last_fetched = datetime("now"), versions = :json WHERE name = :name');
-			$plugin->versions = json_encode($tags);
-			$stmt->execute(array(':name' => $plugin->name, ':json' => $plugin->versions));
+			// Parses HTML and gets all li items
+			$tags_dom = new \DOMDocument('1.0', 'UTF-8');
+			$tags_dom->loadHTML($request->getResponseText());
+			$tags = array();
+
+			foreach ($tags_dom->getElementsByTagName('li') as $tag) {
+				if ((float) $tag->textContent) {
+					$tags[] = trim($tag->textContent, ' /');
+				}
+			}
+
+			// trunk is not listed as a tag, but is always present
+			array_unshift($tags, 'trunk');
+
+			$stmt->execute(array(':name' => $plugin_name, ':json' => json_encode($tags)));
+		});
+
+		foreach ($plugins as $plugin) {
+			$rollingCurl->get("$base{$plugin->name}/tags/");
 		}
 
+		$rollingCurl->execute();
 	}
-
 }
