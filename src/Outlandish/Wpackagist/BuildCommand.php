@@ -4,7 +4,6 @@
 namespace Outlandish\Wpackagist;
 
 
-use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -24,81 +23,52 @@ class BuildCommand extends Command
 		$output->writeln("Building packages");
 
 		$fs = new Filesystem();
-		$versionParser = new VersionParser();
 
 		$basePath = 'web/p.new/';
 		$fs->mkdir($basePath.'wpackagist');
+		$fs->mkdir($basePath.'wpackagist-plugin');
+		$fs->mkdir($basePath.'wpackagist-theme');
 
 		/**
 		 * @var \PDO $db
 		 */
 		$db = $this->getApplication()->getDb();
 
-		$groups = $db->query('
-			SELECT strftime("%Y", last_committed) AS year, * FROM plugins
+		$packages = $db->query('
+			SELECT * FROM packages
 			WHERE versions IS NOT NULL
-			ORDER BY year, name
-		')->fetchAll(\PDO::FETCH_GROUP | \PDO::FETCH_OBJ);
+			ORDER BY name
+		')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 
 		$uid = 1; //don't know what this does but composer requires it
-		$providerIncludes = array();
-		foreach ($groups as $year => $plugins) {
-			$providers = array();
 
-			foreach ($plugins as $plugin) {
-				$versions = json_decode($plugin->versions);
-				$packageName = 'wpackagist/' . $plugin->name;
+		$providers = array();
 
-				$package = array();
-				foreach ($versions as $version) {
-					try {
-						$normalizedVersion = $versionParser->normalize($version);
-					} catch (UnexpectedValueException $e) {
-						continue; //skip plugins with weird version numbers
-					}
+		foreach ($packages as $package) {
+			$packageName = $package->getPackageName();
+			$packagesData = $package->getPackages($uid);
 
-					$filename = $version == 'trunk' ? $plugin->name : $plugin->name . '.' . $version;
-					$package[$version] = array(
-						'name' => $packageName,
-						'version' => $version == 'trunk' ? 'dev-trunk' : $version,
-						'version_normalized' => $normalizedVersion,
-						'dist' => array(
-							'type' => 'zip',
-							'url' => "http://downloads.wordpress.org/plugin/$filename.zip",
-						),
-						'source' => array(
-							'type' => 'svn',
-							'url' => "http://plugins.svn.wordpress.org/{$plugin->name}/",
-							'reference' => $version == 'trunk' ? 'trunk' : "tags/$version",
-						),
-						'require' => array(
-							'composer/installers' => '~1.0'
-						),
-						'type' => 'wordpress-plugin',
-						'homepage' => "http://wordpress.org/extend/plugins/$plugin->name",
-						'uid' => $uid++
-					);
-
-					if ($version == 'trunk') {
-						$package[$version]['time'] = $plugin->last_committed;
-					}
-				}
-
-				$content = json_encode(array('packages' => array($packageName => $package)));
+			foreach ($packagesData as $packageName => $packageData) {
+				$content = json_encode(array('packages' => array($packageName => $packageData)));
 				$sha256 = hash('sha256', $content);
 				file_put_contents("$basePath$packageName\$$sha256.json", $content);
-				$providers["$packageName"] = array(
+				$providers[$package->getComposerProviderGroup()][$packageName] = array(
 					'sha256' => $sha256
 				);
 			}
+		}
 
+		$providerIncludes = array();
+		foreach ($providers as $providerGroup => $providers) {
 			$content = json_encode(array('providers' => $providers));
 			$sha256 = hash('sha256', $content);
-			file_put_contents("{$basePath}providers-$year\$$sha256.json", $content);
-			$providerIncludes["p/providers-$year\$%hash%.json"] = array(
+			file_put_contents("{$basePath}providers-$providerGroup\$$sha256.json", $content);
+
+			$providerIncludes["p/providers-$providerGroup\$%hash%.json"] = array(
 				'sha256' => $sha256
 			);
-			$output->writeln('Generated packages for '.$year);
+
+			$output->writeln('Generated packages for '.$providerGroup);
 		}
 
 		$content = json_encode(array(
