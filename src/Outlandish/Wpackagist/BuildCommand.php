@@ -65,8 +65,6 @@ class BuildCommand extends Command
 						'dist' => array(
 							'type' => 'zip',
 							'url' => "http://downloads.wordpress.org/plugin/$filename.zip",
-							'reference' => null,
-							'shasum' => null
 						),
 						'require' => array(
 							'composer/installers' => '~1.0'
