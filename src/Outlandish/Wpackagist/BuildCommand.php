@@ -60,7 +60,7 @@ class BuildCommand extends Command
 					$filename = $version == 'trunk' ? $plugin->name : $plugin->name . '.' . $version;
 					$package[$version] = array(
 						'name' => $packageName,
-						'version' => $version,
+						'version' => $version == 'trunk' ? 'dev-trunk' : $version,
 						'version_normalized' => $normalizedVersion,
 						'dist' => array(
 							'type' => 'zip',
