@@ -17,7 +17,7 @@ Example composer.json:
 	    ],
 	    "require": {
 	        "aws/aws-sdk-php":"*",
-	        "wpackagist/advanced-custom-fields":"*",
+	        "wpackagist/advanced-custom-fields":"dev-trunk",
 	        "wpackagist/posts-to-posts":">=1.6"
 	    },
 	    "autoload": {
