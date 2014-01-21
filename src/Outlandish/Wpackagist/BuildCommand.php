@@ -60,7 +60,7 @@ class BuildCommand extends Command
 					$filename = $version == 'trunk' ? $plugin->name : $plugin->name . '.' . $version;
 					$package[$version] = array(
 						'name' => $packageName,
-						'version' => $version,
+						'version' => $version == 'trunk' ? 'dev-trunk' : $version,
 						'version_normalized' => $normalizedVersion,
 						'dist' => array(
 							'type' => 'zip',
@@ -80,6 +80,10 @@ class BuildCommand extends Command
 						'homepage' => "http://wordpress.org/extend/plugins/$plugin->name",
 						'uid' => $uid++
 					);
+
+					if ($version == 'trunk') {
+						$package[$version]['time'] = $plugin->last_committed;
+					}
 				}
 
 				$content = json_encode(array('packages' => array($packageName => $package)));
