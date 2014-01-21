@@ -68,6 +68,11 @@ class BuildCommand extends Command
 							'reference' => null,
 							'shasum' => null
 						),
+						'source' => array(
+							'type' => 'svn',
+							'url' => "http://plugins.svn.wordpress.org/{$plugin->name}/",
+							'reference' => $version == 'trunk' ? 'trunk' : "tags/$version",
+						),
 						'require' => array(
 							'composer/installers' => '~1.0'
 						),
