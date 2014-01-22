@@ -2,53 +2,55 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>WordPress Packagist: Manage your plugins with Composer</title>
-	<link href='http://fonts.googleapis.com/css?family=Noto+Sans' rel='stylesheet' type='text/css'>
-	<link rel="stylesheet" href="foundation.css"/>
-	<link rel="stylesheet" href="style.css"/>
-	<link rel="shortcut icon" href="favicon.png"/>
-	<script>
-		(function (i, s, o, g, r, a, m) {
-			i['GoogleAnalyticsObject'] = r;
-			i[r] = i[r] || function () {
-				(i[r].q = i[r].q || []).push(arguments)
-			}, i[r].l = 1 * new Date();
-			a = s.createElement(o),
-					m = s.getElementsByTagName(o)[0];
-			a.async = 1;
-			a.src = g;
-			m.parentNode.insertBefore(a, m)
-		})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+    <title>WordPress Packagist: Manage your plugins and themes with Composer</title>
+    <link href='http://fonts.googleapis.com/css?family=Noto+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="foundation.css"/>
+    <link rel="stylesheet" href="style.css"/>
+    <link rel="shortcut icon" href="favicon.png"/>
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                    m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-		ga('create', 'UA-19510813-5', 'wpackagist.org');
-		ga('send', 'pageview');
+        ga('create', 'UA-19510813-5', 'wpackagist.org');
+        ga('send', 'pageview');
 
-	</script>
+    </script>
 </head>
 <body>
 
-	<div class="row">
-		<div class="twelve columns">
-			<h1 id="title">WordPress Packagist</h1>
+    <div class="row">
+        <div class="twelve columns">
+            <h1 id="title">WordPress Packagist</h1>
 
-			<p class="panel">This site provides a mirror of the <a href="http://wordpress.org/extend/plugins/">WordPress plugin directory</a>
-				as a <a href="http://getcomposer.org/">Composer</a> repository.</p>
+            <p class="panel">This site provides a mirror of the WordPress <a href="http://plugins.svn.wordpress.org/">plugins</a> and
+                <a href="http://themes.svn.wordpress.org/">themes</a> directories
+                as a <a href="http://getcomposer.org/">Composer</a> repository.</p>
 
-		</div>
-	</div>
+        </div>
+    </div>
 
-	<div class="row">
-		<div class="six columns">
-			<h3>How do I use it?</h3>
-			<ol>
-				<li>Add the repository to your <code>composer.json</code></li>
-				<li>Add the desired plugins to your requirements using <code>wpackagist</code> as the vendor name.</li>
-				<li>Run <code>$ composer.phar update</code></li>
-				<li>Plugins are <a href="https://github.com/composer/installers">installed</a> to <code>wp-content/plugins/</code></li>
-			</ol>
+    <div class="row">
+        <div class="six columns">
+            <h3>How do I use it?</h3>
+            <ol>
+                <li>Add the repository to your <code>composer.json</code></li>
+                <li>Add the desired plugins and themes to your requirements using <code>wpackagist-plugin</code> or <code>wpackagist-theme</code> as the vendor name.</li>
+                <li>Run <code>$ composer.phar update</code></li>
+                <li>Plugins are <a href="https://github.com/composer/installers">installed</a> to <code>wp-content/plugins/</code> or <code>wp-content/themes/</code></li>
+                <li>See the documentation of Composer Installers if you need a <a href="https://github.com/composer/installers#custom-install-paths">custom paths</a>.</li>
+            </ol>
 
-			<h3>Example</h3>
-			<pre>{
+            <h3>Example</h3>
+            <pre>{
     "name": "acme/brilliant-wordpress-site",
     "description": "My brilliant WordPress site",
 <div class="highlighter">    "repositories":[
@@ -59,8 +61,9 @@
     ],
 </div>    "require": {
         "aws/aws-sdk-php":"*",
-<div class="highlighter">        "wpackagist/database-sync":"dev-trunk",
-        "wpackagist/posts-to-posts":">=1.6"
+<div class="highlighter">        "wpackagist-plugin/akismet":"dev-trunk",
+        "wpackagist-plugin/captcha":">=3.9",
+        "wpackagist-theme/hueman":"*"
 </div>    },
     "autoload": {
         "psr-0": {
@@ -68,69 +71,71 @@
         }
     }
 }</pre>
-			<p>This example <code>composer.json</code> file adds the Wpackagist repository and
-				includes the latest version of Database Sync and at least version 1.6 of Posts to Posts,
-				along with the Amazon Web Services SDK from the main <a href="https://packagist.org/">Packagist</a>
-				repository.</p>
-			<p>Find out more about <a href="http://getcomposer.org/doc/01-basic-usage.md">using Composer</a>.</p>
-		</div>
-		<div class="six columns">
-			<h3>Why use Composer?</h3>
-			<blockquote class="clearfix">
-				&ldquo;Composer is a tool for dependency management in PHP. It allows you to declare the dependent
-				libraries your project needs and it will install them in your project for you.&rdquo;
-				<div class="right">&mdash; <a href="http://getcomposer.org/doc/00-intro.md">getcomposer.org</a></div>
-			</blockquote>
-			<ul>
-				<li>Avoid checking plugins into source control.</li>
-				<li>Avoid having to use git submodules.</li>
-				<li>Manage WordPress and non-WordPress project libraries with the same tools.</li>
-				<li>Could eventually be used to manage dependencies between plugins.</li>
-			</ul>
+            <p>This example <code>composer.json</code> file adds the Wpackagist repository and
+                includes the latest version of Akismet, at least version 3.9 of Captcha, and the latest Hueman theme
+                along with the Amazon Web Services SDK from the main <a href="https://packagist.org/">Packagist</a>
+                repository.</p>
+            <p>Find out more about <a href="http://getcomposer.org/doc/01-basic-usage.md">using Composer</a>.</p>
+            <p><strong>N.B.</strong> The old vendor <code>wpackagist</code> is now deprecated in favor of <code>wpackagist-plugin</code>.</p>
+        </div>
+        <div class="six columns">
+            <h3>Why use Composer?</h3>
+            <blockquote class="clearfix">
+                &ldquo;Composer is a tool for dependency management in PHP. It allows you to declare the dependent
+                libraries your project needs and it will install them in your project for you.&rdquo;
+                <div class="right">&mdash; <a href="http://getcomposer.org/doc/00-intro.md">getcomposer.org</a></div>
+            </blockquote>
+            <ul>
+                <li>Avoid committing plugins and themes into source control.</li>
+                <li>Avoid having to use git submodules.</li>
+                <li>Manage WordPress and non-WordPress project libraries with the same tools.</li>
+                <li>Could eventually be used to manage dependencies between plugins.</li>
+            </ul>
 
-			<h3>How does the repository work?</h3>
-			<ul>
-				<li>Scans the <a href="http://plugins.svn.wordpress.org/">WordPress Subversion repository</a> for changes.</li>
-				<li>Fetches the <code>tags</code> for each updated plugin and maps those to versions.</li>
-				<li>Adds <code>trunk</code> as a dev version.</li>
-				<li>Rebuilds the composer package JSON files.</li>
-			</ul>
+            <h3>How does the repository work?</h3>
+            <ul>
+                <li>Scans the WordPress Subversion repository for <a href="http://plugins.svn.wordpress.org/">plugins</a> and<a href="http://themes.svn.wordpress.org/">themes</a>.</li>
+                <li>Fetches the <code>tags</code> for each updated package and maps those to versions.</li>
+                <li>Adds <code>trunk</code> as a dev version (for plugins only, themes do not have a trunk).</li>
+                <li>Rebuilds the composer package JSON files.</li>
+            </ul>
 
-			<h3>Known issues</h3>
-			<ul>
-				<li>Requires Composer 1.0.0-alpha7 or more recent</li>
-				<li>Version strings which Composer cannot parse are ignored. All plugins have at least the trunk build available.</li>
-				<li>Plugins with unicode names might not work properly.</li>
-			</ul>
+            <h3>Known issues</h3>
+            <ul>
+                <li>Requires Composer 1.0.0-alpha7 or more recent</li>
+                <li>Version strings which Composer cannot parse are ignored. All plugins have at least the trunk build available.</li>
+                <li>Themes do not have a trunk version. It is recommended to use <code>"*"</code> as the required version.</li>
+                <li>Packages with unicode names might not work properly.</li>
+            </ul>
 
-			<h3>Contribute or get support</h3>
-			<p>Please visit our <a href="https://github.com/outlandishideas/wpackagist">GitHub page</a>.</p>
-		</div>
-	</div>
+            <h3>Contribute or get support</h3>
+            <p>Please visit our <a href="https://github.com/outlandishideas/wpackagist">GitHub page</a>.</p>
+        </div>
+    </div>
 
-	<div class="row">
-		<div class="twelve columns">
+    <div class="row">
+        <div class="twelve columns">
 
-			<div class="panel">
+            <div class="panel">
 
-				<p class="right">
-					<a href="https://twitter.com/wpackagist" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @wpackagist</a>
-					<script>!function (d, s, id) {
-						var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
-						if (!d.getElementById(id)) {
-							js = d.createElement(s);
-							js.id = id;
-							js.src = p + '://platform.twitter.com/widgets.js';
-							fjs.parentNode.insertBefore(js, fjs);
-						}
-					}(document, 'script', 'twitter-wjs');</script>
-				</p>
+                <p class="right">
+                    <a href="https://twitter.com/wpackagist" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @wpackagist</a>
+                    <script>!function (d, s, id) {
+                        var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
+                        if (!d.getElementById(id)) {
+                            js = d.createElement(s);
+                            js.id = id;
+                            js.src = p + '://platform.twitter.com/widgets.js';
+                            fjs.parentNode.insertBefore(js, fjs);
+                        }
+                    }(document, 'script', 'twitter-wjs');</script>
+                </p>
 
-				<p>An <a href="http://outlandishideas.co.uk">Outlandish</a> experiment.</p>
-			</div>
+                <p>An <a href="http://outlandishideas.co.uk">Outlandish</a> experiment.</p>
+            </div>
 
-		</div>
-	</div>
+        </div>
+    </div>
 
 </body>
 </html>
