@@ -36,7 +36,7 @@ class BuildCommand extends Command
 
 		$packages = $db->query('
 			SELECT * FROM packages
-			WHERE versions IS NOT NULL
+			WHERE versions IS NOT NULL AND is_active
 			ORDER BY name
 		')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 

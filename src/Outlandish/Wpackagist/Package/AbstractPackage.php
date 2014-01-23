@@ -86,16 +86,6 @@ abstract class AbstractPackage
         return static::getSvnBaseUrl() . $this->getName() . '/';
     }
 
-    public function getSvnRef($version)
-    {
-        return $version == 'trunk' ? 'trunk' : "tags/$version";
-    }
-
-    public function getSvnTagsUrl()
-    {
-        return $this->getSvnUrl() . 'tags/';
-    }
-
     /**
      * Ex: wordpress-plugin
      * @return string|null
@@ -159,7 +149,7 @@ abstract class AbstractPackage
     {
         $packages = array();
 
-        foreach ($this->versions as $version) {
+        foreach ($this->versions as $version => $tag) {
             $packages[$this->getPackageName()][$version] = $this->getPackageVersion($version, $uid);
         }
 
@@ -175,14 +165,16 @@ abstract class AbstractPackage
             return false; //skip packages with weird version numbers
         }
 
+        $tag = $this->versions[$version];
+
         $package = array(
             'name'               => $this->getPackageName(),
-            'version'            => $version == 'trunk' ? 'dev-trunk' : $version,
+            'version'            => $version,
             'version_normalized' => $normalizedVersion,
             'uid'                => $uid++,
         );
 
-        if ($version == 'trunk') {
+        if ($version == 'dev-trunk') {
             $package['time'] = $this->getLastCommited()->format('Y-m-d H:i:s');
         }
 
@@ -193,11 +185,11 @@ abstract class AbstractPackage
             );
         }
 
-        if (($url = $this->getSvnUrl($version)) && ($ref = $this->getSvnRef($version))) {
+        if (($url = $this->getSvnUrl()) && $tag) {
             $package['source'] = array(
                 'type'      => 'svn',
-                'url'       => $url,
-                'reference' => $ref,
+                'url'       => $this->getSvnUrl(),
+                'reference' => $tag,
             );
         }
 

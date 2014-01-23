@@ -72,4 +72,12 @@ class DatabaseProvider
             );
         ');
     }
+
+    protected function migrateTo2()
+    {
+        $this->db->exec('ALTER TABLE packages ADD COLUMN is_active INT DEFAULT 1');
+
+        // Versions format has changed, redownload everything
+        $this->db->exec('UPDATE packages SET last_fetched = NULL');
+    }
 }

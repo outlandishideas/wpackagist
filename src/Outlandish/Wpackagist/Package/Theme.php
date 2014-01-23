@@ -21,32 +21,12 @@ class Theme extends AbstractPackage
 
     public function getHomepageUrl()
     {
-        return "http://wordpress.org/extend/themes/" . $this->getName() . '/';
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * Wordpress themes do not have trunk/branches/tags folders
-     */
-    public function getSvnRef($version)
-    {
-        return $version;
+        return "http://wordpress.org/themes/" . $this->getName() . '/';
     }
 
     public function getDownloadUrl($version)
     {
         return "http://wordpress.org/themes/download/" . $this->getName() . ".$version.zip";
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * Wordpress themes do not have trunk/branches/tags folders
-     */
-    public function getSvnTagsUrl()
-    {
-        return $this->getSvnUrl();
     }
 
     public function getComposerProviderGroup()

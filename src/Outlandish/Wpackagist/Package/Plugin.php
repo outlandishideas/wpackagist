@@ -21,12 +21,12 @@ class Plugin extends AbstractPackage
 
     public function getHomepageUrl()
     {
-        return "http://wordpress.org/extend/plugins/" . $this->getName() . '/';
+        return "http://wordpress.org/plugins/" . $this->getName() . '/';
     }
 
     public function getDownloadUrl($version)
     {
-        $filename = $version == 'trunk' ? $this->getName() : $this->getName() . '.' . $version;
+        $filename = $this->versions[$version] == 'trunk' ? $this->getName() : $this->getName() . '.' . $version;
 
         return "http://downloads.wordpress.org/plugin/$filename.zip";
     }
@@ -45,7 +45,7 @@ class Plugin extends AbstractPackage
         $packages = parent::getPackages($uid);
         $name = 'wpackagist/' . $this->getName();
 
-        foreach ($this->versions as $version) {
+        foreach ($this->versions as $version => $tag) {
             $json                      = $this->getPackageVersion($version, $uid); // we call again so we get different uids
             $json['name']              = $name;
             $packages[$name][$version] = $json;
