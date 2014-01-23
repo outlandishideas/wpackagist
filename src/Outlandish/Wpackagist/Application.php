@@ -8,23 +8,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Application extends BaseApplication {
 
-	protected $db;
+	protected $db = null;
 
 	public function __construct() {
 		parent::__construct('Wpackagist');
-		$this->db = new \PDO('sqlite:data/plugins.sqlite');
-		$this->db->exec('
-			CREATE TABLE IF NOT EXISTS plugins (
-				id INTEGER PRIMARY KEY,
-				name TEXT,
-				last_committed DATETIME,
-				last_fetched DATETIME,
-				versions TEXT
-			);
-			CREATE UNIQUE INDEX IF NOT EXISTS name_idx ON plugins(name);
-			CREATE INDEX IF NOT EXISTS last_committed_idx ON plugins(last_committed);
-			CREATE INDEX IF NOT EXISTS last_fetched_idx ON plugins(last_fetched);');
-
 	}
 
 	public function doRun(InputInterface $input, OutputInterface $output) {
@@ -39,6 +26,11 @@ class Application extends BaseApplication {
 	}
 
 	public function getDb() {
+		if (null === $this->db) {
+			$provider = new DatabaseProvider;
+			$this->db = $provider->getDb();
+		}
+
 		return $this->db;
 	}
 }
