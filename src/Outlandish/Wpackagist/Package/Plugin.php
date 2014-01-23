@@ -31,11 +31,6 @@ class Plugin extends AbstractPackage
         return "http://downloads.wordpress.org/plugin/$filename.zip";
     }
 
-    public function getComposerProviderGroup()
-    {
-        return 'plugins-' . $this->getLastCommited()->format('Y');
-    }
-
     /**
      * {@inheritdoc}
      * Adds legacy prefix

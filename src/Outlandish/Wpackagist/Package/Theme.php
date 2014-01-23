@@ -28,9 +28,4 @@ class Theme extends AbstractPackage
     {
         return "http://wordpress.org/themes/download/" . $this->getName() . ".$version.zip";
     }
-
-    public function getComposerProviderGroup()
-    {
-        return 'themes-' . $this->getLastCommited()->format('Y');
-    }
 }

@@ -99,7 +99,22 @@ abstract class AbstractPackage
      * Ex: themes-2014
      * @return string
      */
-    abstract public function getComposerProviderGroup();
+    public function getComposerProviderGroup()
+    {
+        $date = $this->getLastCommited();
+
+        if ($date > new \DateTime('last monday')) {
+            return 'last-week';
+        } elseif ($date > new \DateTime('first day of 2 months ago')) {
+            return 'last-2-months';
+        } elseif ($date > new \DateTime('first day of this year')) {
+            return 'this-year';
+        } elseif ($date > new \DateTime('first day of last year')) {
+            return 'last-year';
+        } else {
+            return 'old';
+        }
+    }
 
     /**
      * @return string "wpackagist-TYPE/PACKAGE"
