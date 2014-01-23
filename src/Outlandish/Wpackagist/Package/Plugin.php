@@ -49,6 +49,7 @@ class Plugin extends AbstractPackage
             $json                      = $this->getPackageVersion($version, $uid); // we call again so we get different uids
             $json['name']              = $name;
             $packages[$name][$version] = $json;
+            $packages[$this->getPackageName()][$version]['replace'][$name] = 'self.version';
         }
 
         return $packages;
