@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "7eb88207d6fe5b5c58c2e193a72ad3f3",
+    "hash": "27cdcf4ae020b4c06af79739c86fd112",
     "packages": [
         {
             "name": "chuyskywalker/rolling-curl",
-            "version": "2.0.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/chuyskywalker/rolling-curl.git",
-                "reference": "55b8e8611aaf78b0f1146cd5b4fac35ca75c4b53"
+                "reference": "38f5e36d9564cd7ee06b5d04acb04213bd005d7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/chuyskywalker/rolling-curl/zipball/55b8e8611aaf78b0f1146cd5b4fac35ca75c4b53",
-                "reference": "55b8e8611aaf78b0f1146cd5b4fac35ca75c4b53",
+                "url": "https://api.github.com/repos/chuyskywalker/rolling-curl/zipball/38f5e36d9564cd7ee06b5d04acb04213bd005d7a",
+                "reference": "38f5e36d9564cd7ee06b5d04acb04213bd005d7a",
                 "shasum": ""
             },
             "require": {
@@ -39,7 +39,7 @@
                     "name": "Alexander Makarov",
                     "email": "sam@rmcreative.ru",
                     "homepage": "http://rmcreative.ru/",
-                    "role": "Developer"
+                    "role": "Core framework development"
                 },
                 {
                     "name": "Jeff Minard",
@@ -63,7 +63,7 @@
                 "parallel",
                 "requests"
             ],
-            "time": "2013-05-30 05:40:50"
+            "time": "2013-06-02 00:51:44"
         },
         {
             "name": "composer/composer",
@@ -71,16 +71,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "7adc41d02c3536b3e19a6b906cf0c4cf6d3beb70"
+                "reference": "41afc8324eb73232662e03aa7cf3b62a3b81d0b1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/7adc41d02c3536b3e19a6b906cf0c4cf6d3beb70",
-                "reference": "7adc41d02c3536b3e19a6b906cf0c4cf6d3beb70",
+                "url": "https://api.github.com/repos/composer/composer/zipball/41afc8324eb73232662e03aa7cf3b62a3b81d0b1",
+                "reference": "41afc8324eb73232662e03aa7cf3b62a3b81d0b1",
                 "shasum": ""
             },
             "require": {
-                "justinrainbow/json-schema": "1.1.*",
+                "justinrainbow/json-schema": "~1.1",
                 "php": ">=5.3.2",
                 "seld/jsonlint": "1.*",
                 "symfony/console": "~2.3",
@@ -125,39 +125,82 @@
                     "homepage": "http://www.naderman.de"
                 }
             ],
-            "description": "Dependency Manager",
+            "description": "Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.",
             "homepage": "http://getcomposer.org/",
             "keywords": [
                 "autoload",
                 "dependency",
                 "package"
             ],
-            "time": "2014-01-20 18:10:11"
+            "time": "2014-02-19 16:21:54"
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "1.1.0",
+            "version": "1.3.5",
             "source": {
                 "type": "git",
-                "url": "git://github.com/justinrainbow/json-schema.git",
-                "reference": "v1.1.0"
+                "url": "https://github.com/justinrainbow/json-schema.git",
+                "reference": "01949f6d2130e9737ffae5d3952909a8de70d114"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/justinrainbow/json-schema/zipball/v1.1.0",
-                "reference": "v1.1.0",
+                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/01949f6d2130e9737ffae5d3952909a8de70d114",
+                "reference": "01949f6d2130e9737ffae5d3952909a8de70d114",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0"
             },
+            "require-dev": {
+                "json-schema/json-schema-test-suite": "1.1.0",
+                "phpdocumentor/phpdocumentor": "~2",
+                "phpunit/phpunit": "~3.7"
+            },
+            "bin": [
+                "bin/validate-json"
+            ],
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.4.x-dev"
+                }
+            },
             "autoload": {
                 "psr-0": {
                     "JsonSchema": "src/"
                 }
             },
-            "time": "2012-01-02 12:33:17"
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Igor Wiedler",
+                    "email": "igor@wiedler.ch",
+                    "homepage": "http://wiedler.ch/igor/"
+                },
+                {
+                    "name": "Bruno Prieto Reis",
+                    "email": "bruno.p.reis@gmail.com"
+                },
+                {
+                    "name": "Justin Rainbow",
+                    "email": "justin.rainbow@gmail.com"
+                },
+                {
+                    "name": "Robert Schönthal",
+                    "email": "seroscho@googlemail.com",
+                    "homepage": "http://digitalkaoz.net"
+                }
+            ],
+            "description": "A library to validate a json schema.",
+            "homepage": "https://github.com/justinrainbow/json-schema",
+            "keywords": [
+                "json",
+                "schema"
+            ],
+            "time": "2013-12-13 15:21:04"
         },
         {
             "name": "seld/jsonlint",
@@ -208,17 +251,17 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.4.1",
+            "version": "v2.4.2",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "4c1ed2ff514bd85ee186eebb010ccbdeeab05af7"
+                "reference": "940f217cbc3c8a33e5403e7c595495c4884400fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/4c1ed2ff514bd85ee186eebb010ccbdeeab05af7",
-                "reference": "4c1ed2ff514bd85ee186eebb010ccbdeeab05af7",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/940f217cbc3c8a33e5403e7c595495c4884400fe",
+                "reference": "940f217cbc3c8a33e5403e7c595495c4884400fe",
                 "shasum": ""
             },
             "require": {
@@ -248,7 +291,9 @@
             "authors": [
                 {
                     "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
                 },
                 {
                     "name": "Symfony Community",
@@ -257,21 +302,21 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2014-01-01 08:14:50"
+            "time": "2014-02-11 13:52:09"
         },
         {
             "name": "symfony/filesystem",
-            "version": "v2.4.1",
+            "version": "v2.4.2",
             "target-dir": "Symfony/Component/Filesystem",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Filesystem.git",
-                "reference": "b3c3b5a8108b3e5d604dc23241b4ea84a067fc78"
+                "reference": "7e65abb06d3b38f4be89266fe3fb4a759544e713"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Filesystem/zipball/b3c3b5a8108b3e5d604dc23241b4ea84a067fc78",
-                "reference": "b3c3b5a8108b3e5d604dc23241b4ea84a067fc78",
+                "url": "https://api.github.com/repos/symfony/Filesystem/zipball/7e65abb06d3b38f4be89266fe3fb4a759544e713",
+                "reference": "7e65abb06d3b38f4be89266fe3fb4a759544e713",
                 "shasum": ""
             },
             "require": {
@@ -295,7 +340,9 @@
             "authors": [
                 {
                     "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
                 },
                 {
                     "name": "Symfony Community",
@@ -304,21 +351,21 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "http://symfony.com",
-            "time": "2013-12-31 13:43:26"
+            "time": "2014-01-07 13:28:54"
         },
         {
             "name": "symfony/finder",
-            "version": "v2.4.1",
+            "version": "v2.4.2",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "6904345cf2b3bbab1f6d6e4ce1724cb99df9f00a"
+                "reference": "b6735d1fc16da13c4c7dddfe78366a4a098cf011"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/6904345cf2b3bbab1f6d6e4ce1724cb99df9f00a",
-                "reference": "6904345cf2b3bbab1f6d6e4ce1724cb99df9f00a",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/b6735d1fc16da13c4c7dddfe78366a4a098cf011",
+                "reference": "b6735d1fc16da13c4c7dddfe78366a4a098cf011",
                 "shasum": ""
             },
             "require": {
@@ -342,7 +389,9 @@
             "authors": [
                 {
                     "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
                 },
                 {
                     "name": "Symfony Community",
@@ -351,21 +400,21 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2014-01-01 08:14:50"
+            "time": "2014-01-07 13:28:54"
         },
         {
             "name": "symfony/process",
-            "version": "v2.4.1",
+            "version": "v2.4.2",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "58fdccb311e44f28866f976c2d7b3227e9f713db"
+                "reference": "c175448bac997556f8ab972908a4e14c7291fb03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/58fdccb311e44f28866f976c2d7b3227e9f713db",
-                "reference": "58fdccb311e44f28866f976c2d7b3227e9f713db",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/c175448bac997556f8ab972908a4e14c7291fb03",
+                "reference": "c175448bac997556f8ab972908a4e14c7291fb03",
                 "shasum": ""
             },
             "require": {
@@ -389,7 +438,9 @@
             "authors": [
                 {
                     "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
                 },
                 {
                     "name": "Symfony Community",
@@ -398,7 +449,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "http://symfony.com",
-            "time": "2014-01-05 02:10:50"
+            "time": "2014-02-11 13:52:09"
         }
     ],
     "packages-dev": [
@@ -409,7 +460,8 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "composer/composer": 20
+        "composer/composer": 20,
+        "chuyskywalker/rolling-curl": 20
     },
     "platform": {
         "php": ">=5.3.2"
