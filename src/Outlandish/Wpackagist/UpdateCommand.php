@@ -45,7 +45,6 @@ class UpdateCommand extends Command
     {
         $rollingCurl = new RollingCurl;
         $rollingCurl->setSimultaneousLimit((int) $input->getOption('concurrent'));
-        $rollingCurl->setKeepCompletedRequests(false);
 
         /**
          * @var \PDO $db
@@ -62,9 +61,13 @@ class UpdateCommand extends Command
         $count = count($plugins);
 
         $rollingCurl->setCallback(function (RollingRequest $request, RollingCurl $rollingCurl) use ($count, $stmt, $deactivate, $output) {
+            if ($rollingCurl->countCompleted(true) > 50) {
+                $rollingCurl->clearCompleted();
+            }
+
             $plugin = $request->getExtraInfo();
 
-            $percent = round(count($rollingCurl->getCompletedRequests()) / $count * 100, 1);
+            $percent = round($rollingCurl->countCompleted() / $count * 100, 1);
             $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $plugin->getName()));
 
             if ($request->getResponseErrno()) {

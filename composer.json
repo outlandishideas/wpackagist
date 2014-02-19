@@ -6,7 +6,7 @@
         "composer/composer": "1.0.*@dev",
         "symfony/console": "*",
         "symfony/filesystem":"*",
-        "chuyskywalker/rolling-curl": "*"
+        "chuyskywalker/rolling-curl": "dev-master"
     },
     "autoload": {
         "psr-0": {
