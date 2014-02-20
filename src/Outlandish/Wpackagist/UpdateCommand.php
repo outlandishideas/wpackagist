@@ -61,18 +61,15 @@ class UpdateCommand extends Command
         $count = count($plugins);
 
         $rollingCurl->setCallback(function (RollingRequest $request, RollingCurl $rollingCurl) use ($count, $stmt, $deactivate, $output) {
-            if ($rollingCurl->countCompleted(true) > 50) {
-                $rollingCurl->clearCompleted();
-            }
-
             $plugin = $request->getExtraInfo();
 
-            $percent = round($rollingCurl->countCompleted() / $count * 100, 1);
+            $percent = $rollingCurl->countCompleted() / $count * 100;
             $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $plugin->getName()));
 
             if ($request->getResponseErrno()) {
                 $output->writeln("<error>Error while fetching ".$request->getUrl(). " (".$request->getResponseError().")"."</error>");
-                sleep(1); //there was an error so wait a bit and skip this iteration
+
+	            return;
             }
 
             $info = $request->getResponseInfo();
@@ -128,6 +125,10 @@ class UpdateCommand extends Command
             } else {
                 $deactivate->execute(array(':class_name' => get_class($plugin), ':name' => $plugin->getName()));
             }
+
+	        //recoup some memory
+	        $request->setResponseText(null);
+	        $request->setResponseInfo(null);
         });
 
         foreach ($plugins as $plugin) {
