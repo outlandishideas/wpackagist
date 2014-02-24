@@ -12,12 +12,12 @@ abstract class AbstractPackage
     protected $name;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      */
     protected $last_committed;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      */
     protected $last_fetched;
 
@@ -137,7 +137,7 @@ abstract class AbstractPackage
     abstract public function getDownloadUrl($version);
 
     /**
-     * @return DateTime|null
+     * @return \DateTime|null
      */
     public function getLastCommited()
     {
@@ -145,7 +145,7 @@ abstract class AbstractPackage
     }
 
     /**
-     * @return DateTime|null
+     * @return \DateTime|null
      */
     public function getLastFetched()
     {
@@ -165,20 +165,26 @@ abstract class AbstractPackage
         $packages = array();
 
         foreach ($this->versions as $version => $tag) {
-            $packages[$this->getPackageName()][$version] = $this->getPackageVersion($version, $uid);
+            try {
+                $packages[$this->getPackageName()][$version] = $this->getPackageVersion($version, $uid);
+	        } catch (\UnexpectedValueException $e) {
+	            //skip packages with weird version numbers
+	        }
         }
 
         return $packages;
     }
 
-    public function getPackageVersion($version, &$uid = 1)
+	/**
+	 * @param $version
+	 * @param int $uid
+	 * @return array
+	 * @throws \UnexpectedValueException
+	 */
+	public function getPackageVersion($version, &$uid = 1)
     {
         $versionParser = new VersionParser;
-        try {
-            $normalizedVersion = $versionParser->normalize($version);
-        } catch (\UnexpectedValueException $e) {
-            return false; //skip packages with weird version numbers
-        }
+        $normalizedVersion = $versionParser->normalize($version);
 
         $tag = $this->versions[$version];
 
