@@ -53,9 +53,13 @@ class UpdateCommand extends Command
         $stmt = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), versions = :json, is_active = 1 WHERE class_name = :class_name AND name = :name');
         $deactivate = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
 
+	    //get packages that have never been fetched or have been updated since last being fetched
+	    //or that are inactive but have been updated in the past 90 days and haven't been fetched in the past 7 days
         $plugins = $db->query('
             SELECT * FROM packages
-            WHERE last_fetched IS NULL OR last_fetched < last_committed
+            WHERE last_fetched IS NULL
+            OR last_fetched < last_committed
+            OR (is_active = 0 AND last_committed > date("now", "-90 days") AND last_fetched < datetime("now", "-7 days"))
         ')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 
         $count = count($plugins);
