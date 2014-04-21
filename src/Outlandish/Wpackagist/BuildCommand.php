@@ -12,8 +12,8 @@ class BuildCommand extends Command
     protected function configure()
     {
         $this
-                ->setName('build')
-                ->setDescription('Build package.json from DB');
+            ->setName('build')
+            ->setDescription('Build package.json from DB');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -38,7 +38,7 @@ class BuildCommand extends Command
             ORDER BY name
         ')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 
-        $uid = 1; //don't know what this does but composer requires it
+        $uid = 1; // don't know what this does but composer requires it
 
         $providers = array();
 
@@ -75,15 +75,15 @@ class BuildCommand extends Command
             'provider-includes' => $providerIncludes,
         ));
 
-        //switch old and new files
+        // switch old and new files
         if ($fs->exists('web/p')) {
             $fs->rename('web/p', 'web/p.old');
         }
         $fs->rename($basePath, 'web/p/');
         file_put_contents('web/packages.json', $content);
 
-        //this doesn't work
-//		$fs->remove('web/p.old');
+        // this doesn't work
+        // $fs->remove('web/p.old');
 
         exec('rm -rf web/p.old', $return, $code);
 

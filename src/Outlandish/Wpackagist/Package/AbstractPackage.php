@@ -167,21 +167,21 @@ abstract class AbstractPackage
         foreach ($this->versions as $version => $tag) {
             try {
                 $packages[$this->getPackageName()][$version] = $this->getPackageVersion($version, $uid);
-	        } catch (\UnexpectedValueException $e) {
-	            //skip packages with weird version numbers
-	        }
+            } catch (\UnexpectedValueException $e) {
+                //skip packages with weird version numbers
+            }
         }
 
         return $packages;
     }
 
-	/**
-	 * @param $version
-	 * @param int $uid
-	 * @return array
-	 * @throws \UnexpectedValueException
-	 */
-	public function getPackageVersion($version, &$uid = 1)
+    /**
+     * @param $version
+     * @param  int                       $uid
+     * @return array
+     * @throws \UnexpectedValueException
+     */
+    public function getPackageVersion($version, &$uid = 1)
     {
         $versionParser = new VersionParser;
         $normalizedVersion = $versionParser->normalize($version);
