@@ -36,7 +36,7 @@ class Core extends AbstractPackage
         if ($this->versions[$version] == 'trunk') {
             return 'https://github.com/WordPress/WordPress/archive/master.tar.gz';
         } else {
-            return 'http://wordpress.org/wordpress-' . $version . '.tar.gz';
+            return 'https://github.com/WordPress/WordPress/archive/' . $version . '.tar.gz';
         }
     }
 
