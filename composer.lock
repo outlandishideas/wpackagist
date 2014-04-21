@@ -11,12 +11,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/chuyskywalker/rolling-curl.git",
-                "reference": "38f5e36d9564cd7ee06b5d04acb04213bd005d7a"
+                "reference": "47b7becb6c97db6884766a08e0418ee87ca2fdec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/chuyskywalker/rolling-curl/zipball/38f5e36d9564cd7ee06b5d04acb04213bd005d7a",
-                "reference": "38f5e36d9564cd7ee06b5d04acb04213bd005d7a",
+                "url": "https://api.github.com/repos/chuyskywalker/rolling-curl/zipball/47b7becb6c97db6884766a08e0418ee87ca2fdec",
+                "reference": "47b7becb6c97db6884766a08e0418ee87ca2fdec",
                 "shasum": ""
             },
             "require": {
@@ -39,7 +39,7 @@
                     "name": "Alexander Makarov",
                     "email": "sam@rmcreative.ru",
                     "homepage": "http://rmcreative.ru/",
-                    "role": "Core framework development"
+                    "role": "Developer"
                 },
                 {
                     "name": "Jeff Minard",
@@ -63,7 +63,7 @@
                 "parallel",
                 "requests"
             ],
-            "time": "2013-06-02 00:51:44"
+            "time": "2014-04-18 05:59:28"
         },
         {
             "name": "composer/composer",
@@ -71,12 +71,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "41afc8324eb73232662e03aa7cf3b62a3b81d0b1"
+                "reference": "009fcb4262154c8ff926dcd42e4621c250927884"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/41afc8324eb73232662e03aa7cf3b62a3b81d0b1",
-                "reference": "41afc8324eb73232662e03aa7cf3b62a3b81d0b1",
+                "url": "https://api.github.com/repos/composer/composer/zipball/009fcb4262154c8ff926dcd42e4621c250927884",
+                "reference": "009fcb4262154c8ff926dcd42e4621c250927884",
                 "shasum": ""
             },
             "require": {
@@ -122,7 +122,8 @@
                 {
                     "name": "Nils Adermann",
                     "email": "naderman@naderman.de",
-                    "homepage": "http://www.naderman.de"
+                    "homepage": "http://www.naderman.de",
+                    "role": "Developer"
                 }
             ],
             "description": "Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.",
@@ -132,20 +133,20 @@
                 "dependency",
                 "package"
             ],
-            "time": "2014-02-19 16:21:54"
+            "time": "2014-04-20 17:34:54"
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "1.3.5",
+            "version": "1.3.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "01949f6d2130e9737ffae5d3952909a8de70d114"
+                "reference": "d97cf3ce890fe80f247fc08594a1c8a1029fc7ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/01949f6d2130e9737ffae5d3952909a8de70d114",
-                "reference": "01949f6d2130e9737ffae5d3952909a8de70d114",
+                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/d97cf3ce890fe80f247fc08594a1c8a1029fc7ed",
+                "reference": "d97cf3ce890fe80f247fc08594a1c8a1029fc7ed",
                 "shasum": ""
             },
             "require": {
@@ -200,7 +201,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2013-12-13 15:21:04"
+            "time": "2014-03-05 15:03:52"
         },
         {
             "name": "seld/jsonlint",
@@ -251,17 +252,17 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.4.2",
+            "version": "v2.4.3",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "940f217cbc3c8a33e5403e7c595495c4884400fe"
+                "reference": "ef20f1f58d7f693ee888353962bd2db336e3bbcb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/940f217cbc3c8a33e5403e7c595495c4884400fe",
-                "reference": "940f217cbc3c8a33e5403e7c595495c4884400fe",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/ef20f1f58d7f693ee888353962bd2db336e3bbcb",
+                "reference": "ef20f1f58d7f693ee888353962bd2db336e3bbcb",
                 "shasum": ""
             },
             "require": {
@@ -302,21 +303,21 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2014-02-11 13:52:09"
+            "time": "2014-03-01 17:35:04"
         },
         {
             "name": "symfony/filesystem",
-            "version": "v2.4.2",
+            "version": "v2.4.3",
             "target-dir": "Symfony/Component/Filesystem",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Filesystem.git",
-                "reference": "7e65abb06d3b38f4be89266fe3fb4a759544e713"
+                "reference": "b717952487176a993e9b12a08b87beae25ae419c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Filesystem/zipball/7e65abb06d3b38f4be89266fe3fb4a759544e713",
-                "reference": "7e65abb06d3b38f4be89266fe3fb4a759544e713",
+                "url": "https://api.github.com/repos/symfony/Filesystem/zipball/b717952487176a993e9b12a08b87beae25ae419c",
+                "reference": "b717952487176a993e9b12a08b87beae25ae419c",
                 "shasum": ""
             },
             "require": {
@@ -351,21 +352,21 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "http://symfony.com",
-            "time": "2014-01-07 13:28:54"
+            "time": "2014-03-26 11:55:03"
         },
         {
             "name": "symfony/finder",
-            "version": "v2.4.2",
+            "version": "v2.4.3",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "b6735d1fc16da13c4c7dddfe78366a4a098cf011"
+                "reference": "ab301c7d21f536c34ab6c2c79dba8d465104c518"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/b6735d1fc16da13c4c7dddfe78366a4a098cf011",
-                "reference": "b6735d1fc16da13c4c7dddfe78366a4a098cf011",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/ab301c7d21f536c34ab6c2c79dba8d465104c518",
+                "reference": "ab301c7d21f536c34ab6c2c79dba8d465104c518",
                 "shasum": ""
             },
             "require": {
@@ -400,21 +401,21 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2014-01-07 13:28:54"
+            "time": "2014-03-01 17:35:04"
         },
         {
             "name": "symfony/process",
-            "version": "v2.4.2",
+            "version": "v2.4.3",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "c175448bac997556f8ab972908a4e14c7291fb03"
+                "reference": "c09c3b08455c35688eee3e481fdfc85518ef01d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/c175448bac997556f8ab972908a4e14c7291fb03",
-                "reference": "c175448bac997556f8ab972908a4e14c7291fb03",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/c09c3b08455c35688eee3e481fdfc85518ef01d7",
+                "reference": "c09c3b08455c35688eee3e481fdfc85518ef01d7",
                 "shasum": ""
             },
             "require": {
@@ -449,7 +450,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "http://symfony.com",
-            "time": "2014-02-11 13:52:09"
+            "time": "2014-03-26 11:35:33"
         }
     ],
     "packages-dev": [
