@@ -6,6 +6,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\Helper;
 
 class BuildCommand extends Command
 {
@@ -56,6 +58,9 @@ class BuildCommand extends Command
             }
         }
 
+        $table = new Table($output);
+        $table->setHeaders(array('provider', 'packages', 'size'));
+
         $providerIncludes = array();
         foreach ($providers as $providerGroup => $providers) {
             $content = json_encode(array('providers' => $providers));
@@ -66,8 +71,14 @@ class BuildCommand extends Command
                 'sha256' => $sha256
             );
 
-            $output->writeln('Generated packages for '.$providerGroup);
+            $table->addRow(array(
+                $providerGroup,
+                count($providers),
+                Helper::formatMemory(filesize("{$basePath}providers-$providerGroup\$$sha256.json"))
+            ));
         }
+
+        $table->render();
 
         $content = json_encode(array(
             'packages' => array(),
