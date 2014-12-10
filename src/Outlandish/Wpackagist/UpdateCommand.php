@@ -14,15 +14,15 @@ class UpdateCommand extends Command
     protected function configure()
     {
         $this
-                ->setName('update')
-                ->setDescription('Update version info for individual plugins')
-                ->addOption(
-                    'concurrent',
-                    null,
-                    InputOption::VALUE_REQUIRED,
-                    'Max concurrent connections',
-                    '10'
-                );
+            ->setName('update')
+            ->setDescription('Update version info for individual plugins')
+            ->addOption(
+                'concurrent',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Max concurrent connections',
+                '10'
+            );
     }
 
     /**
@@ -53,8 +53,8 @@ class UpdateCommand extends Command
         $stmt = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), versions = :json, is_active = 1 WHERE class_name = :class_name AND name = :name');
         $deactivate = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
 
-	    //get packages that have never been fetched or have been updated since last being fetched
-	    //or that are inactive but have been updated in the past 90 days and haven't been fetched in the past 7 days
+        // get packages that have never been fetched or have been updated since last being fetched
+        // or that are inactive but have been updated in the past 90 days and haven't been fetched in the past 7 days
         $plugins = $db->query('
             SELECT * FROM packages
             WHERE last_fetched IS NULL
@@ -73,7 +73,7 @@ class UpdateCommand extends Command
             if ($request->getResponseErrno()) {
                 $output->writeln("<error>Error while fetching ".$request->getUrl(). " (".$request->getResponseError().")"."</error>");
 
-	            return;
+                return;
             }
 
             $info = $request->getResponseInfo();
@@ -130,9 +130,9 @@ class UpdateCommand extends Command
                 $deactivate->execute(array(':class_name' => get_class($plugin), ':name' => $plugin->getName()));
             }
 
-	        //recoup some memory
-	        $request->setResponseText(null);
-	        $request->setResponseInfo(null);
+            // recoup some memory
+            $request->setResponseText(null);
+            $request->setResponseInfo(null);
         });
 
         foreach ($plugins as $plugin) {

@@ -41,14 +41,14 @@ class Plugin extends AbstractPackage
         $name = 'wpackagist/' . $this->getName();
 
         foreach ($this->versions as $version => $tag) {
-	        try {
-	            $json                      = $this->getPackageVersion($version, $uid); // we call again so we get different uids
-	            $json['name']              = $name;
-	            $packages[$name][$version] = $json;
-	            $packages[$this->getPackageName()][$version]['replace'][$name] = 'self.version';
-	        } catch (\UnexpectedValueException $e) {
-		        //skip packages with weird version numbers
-	        }
+            try {
+                $json                      = $this->getPackageVersion($version, $uid); // we call again so we get different uids
+                $json['name']              = $name;
+                $packages[$name][$version] = $json;
+                $packages[$this->getPackageName()][$version]['replace'][$name] = 'self.version';
+            } catch (\UnexpectedValueException $e) {
+                // skip packages with weird version numbers
+            }
         }
 
         return $packages;

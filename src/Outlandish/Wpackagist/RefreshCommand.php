@@ -12,15 +12,15 @@ class RefreshCommand extends Command
     protected function configure()
     {
         $this
-                ->setName('refresh')
-                ->setDescription('Refresh list of plugins from WP SVN')
-                ->addOption(
-                    'svn',
-                    null,
-                    InputOption::VALUE_REQUIRED,
-                    'Path to svn executable',
-                    'svn'
-                );
+            ->setName('refresh')
+            ->setDescription('Refresh list of plugins from WP SVN')
+            ->addOption(
+                'svn',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Path to svn executable',
+                'svn'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -49,7 +49,7 @@ class RefreshCommand extends Command
             if ($returnCode) {
                 $output->writeln('<error>Error from svn command</error>');
 
-                return 1; //error code
+                return 1; // error code
             }
             $xml = simplexml_load_string(implode("\n", $xmlLines));
 
