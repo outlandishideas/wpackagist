@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use RollingCurl\Request as RollingRequest;
 use RollingCurl\RollingCurl;
+use Composer\Package\Version\VersionParser;
 
 class UpdateCommand extends Command
 {
@@ -63,8 +64,9 @@ class UpdateCommand extends Command
         ')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 
         $count = count($plugins);
+        $versionParser = new VersionParser;
 
-        $rollingCurl->setCallback(function (RollingRequest $request, RollingCurl $rollingCurl) use ($count, $stmt, $deactivate, $output) {
+        $rollingCurl->setCallback(function (RollingRequest $request, RollingCurl $rollingCurl) use ($count, $stmt, $deactivate, $output, $versionParser) {
             $plugin = $request->getExtraInfo();
 
             $percent = $rollingCurl->countCompleted() / $count * 100;
@@ -96,7 +98,9 @@ class UpdateCommand extends Command
                 $node = $nodes->item($i);
                 $href = rtrim($node->getAttribute('href'), '/');
 
-                if (preg_match('/svn\.wordpress\.org\/[^\/]+\/(.+)$/', $href, $matches)) {
+                if (preg_match('/\/trunk$/', $href)) {
+                    $tag = 'trunk';
+                } elseif (preg_match('/\/((?:tags\/)?([^\/]+))$/', $href, $matches)) {
                     $tag = $matches[1];
                 } else {
                     continue;
@@ -104,12 +108,16 @@ class UpdateCommand extends Command
 
                 $download = $xpath->query('../a[contains(@href, ".zip")]', $node);
                 if ($download->length) {
-                    if (preg_match('/\d+(\.\d+)*/', $download->item(0)->textContent, $matches)) {
-                        $version = $matches[0];
-                    } elseif (preg_match('/development/i', $download->item(0)->textContent)) {
+                    $_version = $download->item(0)->textContent;
+                    if (preg_match('/development/i', $_version)) {
                         $version = 'dev-trunk';
                     } else {
-                        continue;
+                        try {
+                            $versionParser->normalize($_version);
+                            $version = $_version;
+                        } catch (\UnexpectedValueException $e) {
+                            continue;
+                        }
                     }
                 } else {
                     continue;
