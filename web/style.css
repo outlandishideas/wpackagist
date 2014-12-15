@@ -6,6 +6,11 @@ h1, h2, h3, h4 {
 	font-family: 'Noto Sans', serif;
 }
 
+a {
+	color: inherit;
+	text-decoration: underline;
+}
+
 ul {
 	margin-left: 25px;
 	list-style-type: square;
@@ -23,7 +28,7 @@ blockquote, pre {
 }
 
 #title {
-	margin: 60px 0;
+	margin: 50px 0;
 }
 
 .highlighter {
