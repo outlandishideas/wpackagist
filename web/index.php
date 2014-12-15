@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="foundation.css"/>
     <link rel="stylesheet" href="style.css"/>
     <link rel="shortcut icon" href="favicon.png"/>
+    <link rel="search" href="opensearch.php" type="application/opensearchdescription+xml" title="Wordpress Packagist"/>
     <script>
         (function (i, s, o, g, r, a, m) {
             i['GoogleAnalyticsObject'] = r;
