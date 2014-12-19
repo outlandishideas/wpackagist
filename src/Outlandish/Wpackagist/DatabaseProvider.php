@@ -80,4 +80,10 @@ class DatabaseProvider
         // Versions format has changed, redownload everything
         $this->db->exec('UPDATE packages SET last_fetched = NULL');
     }
+
+    protected function migrateTo3()
+    {
+        // Versions detection has changed, redownload everyting
+        $this->db->exec('UPDATE packages SET last_fetched = NULL');
+    }
 }

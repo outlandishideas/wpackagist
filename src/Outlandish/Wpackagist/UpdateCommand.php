@@ -109,6 +109,7 @@ class UpdateCommand extends Command
                 $download = $xpath->query('../a[contains(@href, ".zip")]', $node);
                 if ($download->length) {
                     $_version = $download->item(0)->textContent;
+                    $_version = trim($_version, ' ()');
                     if (preg_match('/development/i', $_version)) {
                         $version = 'dev-trunk';
                     } else {
