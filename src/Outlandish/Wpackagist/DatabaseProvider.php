@@ -6,7 +6,8 @@ class DatabaseProvider
 {
     public function __construct()
     {
-        $this->db = new \PDO('sqlite:data/packages.sqlite');
+        $file = dirname(dirname(dirname(__DIR__))) . '/data/packages.sqlite';
+        $this->db = new \PDO('sqlite:' . $file);
     }
 
     public function getDb()
