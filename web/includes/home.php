@@ -1,4 +1,4 @@
-            <p class="panel">This site provides a mirror of the WordPress <a href="http://plugins.svn.wordpress.org/">plugin</a>
+            <p>This site provides a mirror of the WordPress <a href="http://plugins.svn.wordpress.org/">plugin</a>
                 and <a href="http://themes.svn.wordpress.org/">theme</a> directories as a <a href="http://getcomposer.org/">Composer</a>
                 repository.</p>
 

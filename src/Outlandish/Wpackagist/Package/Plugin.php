@@ -21,7 +21,7 @@ class Plugin extends AbstractPackage
 
     public function getHomepageUrl()
     {
-        return "http://wordpress.org/plugins/" . $this->getName() . '/';
+        return "https://wordpress.org/plugins/" . $this->getName() . '/';
     }
 
     public function getDownloadUrl($version)

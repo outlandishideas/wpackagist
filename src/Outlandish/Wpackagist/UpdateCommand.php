@@ -150,6 +150,11 @@ class UpdateCommand extends Command
             $rollingCurl->add($request);
         }
 
+        //fix outdated CA issue on Windows
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $rollingCurl->addOptions(array(CURLOPT_CAINFO => "data/cacert.pem"));
+        }
+
         $rollingCurl->execute();
     }
 }

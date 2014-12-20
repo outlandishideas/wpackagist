@@ -4,11 +4,36 @@ body {
 
 h1, h2, h3, h4 {
 	font-family: 'Noto Sans', serif;
+    font-weight: bold;
 }
 
 a {
-	color: inherit;
-	text-decoration: underline;
+	color: #E14C41;
+	text-decoration: none;
+}
+
+a:hover {
+    color: #E14C41;
+    text-decoration: underline;
+}
+
+h1 a {
+    color: inherit;
+}
+
+h1 a:hover::after {
+    display: inline-block;
+    vertical-align: middle;
+    content: '';
+    background: url(home.svg) no-repeat center / 100%;
+    width: 35px;
+    height: 35px;
+    opacity: 0.5;
+    margin-left: 0.2em;
+}
+
+input[type="search"]:focus {
+    box-shadow: none;
 }
 
 ul {

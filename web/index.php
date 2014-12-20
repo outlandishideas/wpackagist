@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <title>WordPress Packagist: Manage your plugins and themes with Composer</title>
     <link href='http://fonts.googleapis.com/css?family=Noto+Sans' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="foundation.css"/>
-    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="assets/foundation.css"/>
+    <link rel="stylesheet" href="assets/style.css"/>
     <link rel="shortcut icon" href="favicon.png"/>
     <link rel="search" href="opensearch.php" type="application/opensearchdescription+xml" title="Wordpress Packagist"/>
     <script>
@@ -30,7 +30,7 @@
     <div class="row">
         <div class="small-12 columns">
 
-            <h1 id="title"><a href="?">WordPress Packagist</a></h1>
+            <h1 id="title"><a href=".">WordPress Packagist</a></h1>
 
 <?php
     if (isset($_GET['q'])) {
@@ -43,7 +43,7 @@
             <div class="panel">
 
                 <p class="right">
-                    <a href="https://twitter.com/wpackagist" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @wpackagist</a>
+                    <a href="https://twitter.com/wpackagist" class="twitter-follow-button" data-size="large">Follow @wpackagist</a>
                     <script>!function (d, s, id) {
                         var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
                         if (!d.getElementById(id)) {
