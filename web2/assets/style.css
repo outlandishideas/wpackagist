@@ -1,0 +1,94 @@
+body {
+	border-top: 5px solid #E14C41;
+}
+
+h1, h2, h3, h4 {
+	font-family: 'Noto Sans', serif;
+    font-weight: bold;
+}
+
+a {
+	color: #E14C41;
+	text-decoration: none;
+}
+
+a:hover {
+    color: #E14C41;
+    text-decoration: underline;
+}
+
+h1 a {
+    color: inherit;
+}
+
+h1 a:hover::after {
+    display: inline-block;
+    vertical-align: middle;
+    content: '';
+    background: url(home.svg) no-repeat center / 100%;
+    width: 35px;
+    height: 35px;
+    opacity: 0.5;
+    margin-left: 0.2em;
+}
+
+input[type="search"]:focus {
+    box-shadow: none;
+}
+
+ul {
+	margin-left: 25px;
+	list-style-type: square;
+}
+
+ol {
+	margin-left: 25px;
+}
+
+blockquote, pre {
+	border-left: 3px solid #E14C41;
+	padding: 10px 20px 10px 17px;
+	margin-bottom: 7px;
+	background-color: #f2f2f2;
+}
+
+#title {
+	margin: 50px 0;
+}
+
+.highlighter {
+	font-weight: bold;
+	background-color: #ffff99;
+}
+
+.twitter-follow-button {
+	margin-top: -3px;
+}
+
+@media only screen and (max-width: 767px) {
+	#title {
+		margin: 30px 0;
+	}
+}
+
+
+.clearfix:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+
+.clearfix {
+	display: inline-block;
+}
+
+html[xmlns] .clearfix {
+	display: block;
+}
+
+* html .clearfix {
+	height: 1%;
+}
