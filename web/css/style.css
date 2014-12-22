@@ -61,19 +61,29 @@ blockquote, pre {
 	background-color: #ffff99;
 }
 
-button.primary-color, .button.primary-color {
+.primary-color {
 	background-color: #E14C41;
 	border-color: #ce2d21;
 }
 
+.label:hover, .label:focus {
+	color: #fff;
+	background-color: #ce2d21;
+}
+
 button:hover, button:focus, .button:hover, .button:focus {
     background-color: #ce2d21;
+    text-decoration: none;
 }
 
 .no-results {
 	text-align: center;
 	font-weight: bold;
 	padding: 2em;
+}
+
+.version {
+	margin: .5em;
 }
 
 .twitter-follow-button {

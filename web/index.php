@@ -8,6 +8,10 @@ use Symfony\Component\HttpFoundation\Request;
 $app = new Silex\Application();
 // $app['debug'] = true;
 
+///////////////////
+// CONFIGURATION //
+///////////////////
+
 // Register the form provider
 $app->register(new FormServiceProvider());
 
@@ -22,7 +26,7 @@ $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
 	$formatVersions = new Twig_SimpleFilter('format_versions', function ($versions) {
 	    $versions = array_keys(json_decode($versions, true));
         usort($versions, 'version_compare');
-        return implode(', ', $versions);
+        return $versions;
 	});
 
 	$formatCategory = new Twig_SimpleFilter('format_category', function ($category) {
@@ -35,7 +39,7 @@ $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
     return $twig;
 }));
 
-// Register translation provider because the default Symfony require it
+// Register translation provider because the default Symfony form template require it
 $app->register(new Silex\Provider\TranslationServiceProvider());
 
 // Search Form
@@ -53,8 +57,11 @@ $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('
 			->add('search', 'submit')
 			->getForm();
 
+////////////
+// ROUTES //
+////////////
 
-// Routes
+// Home
 $app->get('/', function (Request $request) use ($app, $searchForm) {
     return $app['twig']->render('index.twig', array(
        'title' => "WordPress Packagist: Manage your plugins and themes with Composer",
@@ -62,6 +69,7 @@ $app->get('/', function (Request $request) use ($app, $searchForm) {
     ));
 });
 
+// Search
 $app->get('/search', function (Request $request) use ($app, $searchForm) {
 	$dbp = new \Outlandish\Wpackagist\DatabaseProvider();
 	$db = $dbp->getDb();

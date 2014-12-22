@@ -24,10 +24,10 @@
 	    <tbody>
 	        {% for package in results %}
 		        <tr>
-		            <td>
+		            <td data-type="{{ package['class_name'] | format_category | lower }}">
 		            	{{ package['class_name'] | format_category }}
 		            </td>
-		            <td>
+		            <td data-name="{{ package['name'] | e }}">
 		                {{ package['name'] | e }}
 		            </td>
 		            <td>
@@ -37,7 +37,10 @@
 		            	{{ package['last_fetched'] | default('Null') }}
 		            </td>
 		            <td>
-		                {{ package['versions'] | format_versions | default('Null')}}
+		            	{% set versions = package['versions'] | format_versions %}
+		            	{% for version in versions %}
+		                	<a href="#" data-version="{{ version }}" class="label round primary-color version js-version">{{ version }}</a>
+		            	{% endfor %}
 		            </td>
 		            <td style="text-align: center">
 		            	{% if package['is_active'] %}
