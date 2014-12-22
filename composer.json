@@ -12,7 +12,10 @@
         "symfony/twig-bridge": "~2.3",
         "symfony/form": "~2.3",
         "symfony/locale": "~2.3",
-        "symfony/translation": "~2.3"
+        "symfony/translation": "~2.3",
+        "pagerfanta/pagerfanta": "dev-master",
+        "franmomu/silex-pagerfanta-provider": "dev-master",
+        "doctrine/dbal": "2.2.*"
     },
     "autoload": {
         "psr-0": {

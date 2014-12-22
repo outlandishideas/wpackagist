@@ -22,7 +22,7 @@
 	        </tr>
 	    </thead>
 	    <tbody>
-	        {% for package in results %}
+	        {% for package in currentPageResults %}
 		        <tr>
 		            <td data-type="{{ package['class_name'] | format_category | lower }}">
 		            	{{ package['class_name'] | format_category }}
@@ -31,15 +31,17 @@
 		                {{ package['name'] | e }}
 		            </td>
 		            <td>
-		            	{{ package['last_committed'] | default('Null') }}
+		            	{{ package['last_committed'] | default('Not Committed') }}
 		            </td>
 		            <td>
-		            	{{ package['last_fetched'] | default('Null') }}
+		            	{{ package['last_fetched'] | default('Not fetched') }}
 		            </td>
 		            <td>
 		            	{% set versions = package['versions'] | format_versions %}
 		            	{% for version in versions %}
 		                	<a href="#" data-version="{{ version }}" class="label round primary-color version js-version">{{ version }}</a>
+		                {% else %}
+		                	No version available.
 		            	{% endfor %}
 		            </td>
 		            <td style="text-align: center">
@@ -58,6 +60,12 @@
 
 	    </tbody>
 	</table>
+
+	{{ pagerfanta(pager, 'default', {
+		'container_template': '<ul class="pagination">%pages%</ul>',
+		'page_template': '<li><a href="%href%">%text%</a></li>',
+		'span_template':'<li class="%class%"><a href="#">%text%</a></li>'
+	}) }}
 
 	<div class="alert-box info">
 	    If a package has no version and/or is not active, please check it is visible on

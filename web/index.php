@@ -4,13 +4,24 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 use Silex\Provider\FormServiceProvider;
 use Symfony\Component\HttpFoundation\Request;
+use Pagerfanta\Pagerfanta;
+use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
+
 
 $app = new Silex\Application();
-// $app['debug'] = true;
+$app['debug'] = true;
 
 ///////////////////
 // CONFIGURATION //
 ///////////////////
+
+// Register Doctrine provider
+$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
+    'db.options' => array(
+        'driver'   => 'pdo_sqlite',
+        'path'     => __DIR__.'/../data/packages.sqlite',
+    ),
+));
 
 // Register the form provider
 $app->register(new FormServiceProvider());
@@ -24,7 +35,7 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
 $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
 	// Custom filter to handle version parsing from the DB.
 	$formatVersions = new Twig_SimpleFilter('format_versions', function ($versions) {
-	    $versions = array_keys(json_decode($versions, true));
+	    $versions = array_keys((array) json_decode($versions, true));
         usort($versions, 'version_compare');
         return $versions;
 	});
@@ -41,6 +52,12 @@ $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
 
 // Register translation provider because the default Symfony form template require it
 $app->register(new Silex\Provider\TranslationServiceProvider());
+
+// Register Pagination provider
+$app->register(new FranMoreno\Silex\Provider\PagerfantaServiceProvider());
+
+// Register Url generator provider, required by the pager.
+$app->register(new Silex\Provider\UrlGeneratorServiceProvider());
 
 // Search Form
 $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('csrf_protection' => false))
@@ -71,44 +88,52 @@ $app->get('/', function (Request $request) use ($app, $searchForm) {
 
 // Search
 $app->get('/search', function (Request $request) use ($app, $searchForm) {
-	$dbp = new \Outlandish\Wpackagist\DatabaseProvider();
-	$db = $dbp->getDb();
+	$queryBuilder = $app['db']->createQueryBuilder();
 	$type = $request->get('type');
 	$query = $request->get('q');
+	$results = array();
 	$data = array(
 		'title' => "WordPress Packagist: Search packages",
 		'searchForm' => $searchForm->handleRequest($request)->createView(),
-		'results' => ''
+		'currentPageResults' => '',
+		'error' => ''
 	);
 
-
-	$sql = "SELECT * FROM packages WHERE name LIKE :name";
-	$params = array(':name' => "%{$query}%", ':order' => "{$query}%");
+	$queryBuilder
+		->select('*')
+		->from('packages', 'p')
+		->where('name LIKE :name');
 
 	switch ($type) {
 		case 'theme':
-			$params['class'] = 'Outlandish\Wpackagist\Package\Theme';
-			$sql .= " AND class_name = :class";
+			$queryBuilder
+				->andWhere('class_name = :class')
+				->setParameter(':class', 'Outlandish\Wpackagist\Package\Theme');
 			break;
 		case 'plugin':
-			$params['class'] = 'Outlandish\Wpackagist\Package\Plugin';
-			$sql .= " AND class_name = :class";
+			$queryBuilder
+				->andWhere('class_name = :class')
+				->setParameter(':class', 'Outlandish\Wpackagist\Package\Plugin');
 			break;
 		default:
 			# code...
 			break;
 	}
 
-	$sql .= ' ORDER BY is_active DESC, name LIKE :order DESC, name ASC LIMIT 50';
-	$query = $db->prepare($sql);
-
-	if (!$query->execute($params)) {
-	    $data['error'] = 'Database error.';
-	}
-
-	if ($row = $query->fetch()) {
-	    $data['results'] =  $query->fetchAll(PDO::FETCH_ASSOC);
-	}
+	$queryBuilder
+		->orderBy('is_active', 'DESC')
+		->addOrderBy('name LIKE :order', 'DESC')
+		->addOrderBy('name', 'ASC')
+		->setParameter(':name', "%{$query}%")
+		->setParameter(':order', "{$query}%");
+	
+	$countField = 'p.name';
+	$adapter = new DoctrineDbalSingleTableAdapter($queryBuilder, $countField);
+    $pagerfanta = new Pagerfanta($adapter);
+    $pagerfanta->setMaxPerPage(30);
+    $pagerfanta->setCurrentPage($request->query->get('page', 1));
+    $data['pager'] = $pagerfanta;
+	$data['currentPageResults'] = $pagerfanta->getCurrentPageResults();
 
     return $app['twig']->render('search.twig', $data);
 });

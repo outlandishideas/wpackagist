@@ -117,3 +117,6 @@ html[xmlns] .clearfix {
 * html .clearfix {
 	height: 1%;
 }
+.pagination a {
+	text-decoration: none;
+}
