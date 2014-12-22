@@ -9,7 +9,8 @@ use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
 
 
 $app = new Silex\Application();
-$app['debug'] = true;
+// Uncomment next line to activate the debug
+// $app['debug'] = true;
 
 ///////////////////
 // CONFIGURATION //
@@ -116,7 +117,6 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
 				->setParameter(':class', 'Outlandish\Wpackagist\Package\Plugin');
 			break;
 		default:
-			# code...
 			break;
 	}
 

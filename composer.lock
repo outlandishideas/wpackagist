@@ -72,12 +72,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "a422d67e2701860a44a4634f62f88b58b8636468"
+                "reference": "4569f528f66739ec0a3be1075e2c01d6062b0b41"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/a422d67e2701860a44a4634f62f88b58b8636468",
-                "reference": "a422d67e2701860a44a4634f62f88b58b8636468",
+                "url": "https://api.github.com/repos/composer/composer/zipball/4569f528f66739ec0a3be1075e2c01d6062b0b41",
+                "reference": "4569f528f66739ec0a3be1075e2c01d6062b0b41",
                 "shasum": ""
             },
             "require": {
@@ -132,7 +132,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2014-12-18 10:37:32"
+            "time": "2014-12-22 11:50:02"
         },
         {
             "name": "doctrine/common",
