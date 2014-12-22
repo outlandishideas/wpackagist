@@ -1,0 +1,64 @@
+{% extends "layout.twig" %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+	{% include 'searchbar.twig' %}
+	
+	{% if error %}
+		<div class="alert-box alert">{{ error }}</div>
+	{% endif %}
+	<table>
+	    <thead>
+	        <tr>
+	            <th width="8%">Type</th>
+	            <th width="20%">Name</th>
+	            <th width="18%"><abbr title="Last time a modification was commited to the SVN repository">Last commited</abbr></th>
+	            <th width="18%"><abbr title="Last time this package was updated in WPackagist's database">Last fetched</abbr></th>
+	            <th width="32%">Versions</th>
+	            <th width="4%">Active</th>
+	        </tr>
+	    </thead>
+	    <tbody>
+	        {% for package in results %}
+		        <tr>
+		            <td>
+		            	{{ package['class_name'] | format_category }}
+		            </td>
+		            <td>
+		                {{ package['name'] | e }}
+		            </td>
+		            <td>
+		            	{{ package['last_committed'] | default('Null') }}
+		            </td>
+		            <td>
+		            	{{ package['last_fetched'] | default('Null') }}
+		            </td>
+		            <td>
+		                {{ package['versions'] | format_versions | default('Null')}}
+		            </td>
+		            <td style="text-align: center">
+		            	{% if package['is_active'] %}
+		            		<span style="color: green">✔</span>
+	            		{% else %}
+	            			<span style="color: red">✘</span>
+		            	{% endif %}
+		            </td>
+		        </tr>
+		    {% else %}
+		    	<tr>
+		    		<td colspan="6" class="no-results">No results.</td>
+		    	</tr>
+	        {% endfor %}
+
+	    </tbody>
+	</table>
+
+	<div class="alert-box info">
+	    If a package has no version and/or is not active, please check it is visible on
+	    <a href="https://wordpress.org/plugins/">wordpress.org</a> before reporting a
+	    <a href="https://github.com/outlandishideas/wpackagist/issues/new">bug</a>.
+	</div>
+{% endblock %}

@@ -25,7 +25,7 @@ h1 a:hover::after {
     display: inline-block;
     vertical-align: middle;
     content: '';
-    background: url(home.svg) no-repeat center / 100%;
+    background: url(../img/home.svg) no-repeat center / 100%;
     width: 35px;
     height: 35px;
     opacity: 0.5;
@@ -59,6 +59,21 @@ blockquote, pre {
 .highlighter {
 	font-weight: bold;
 	background-color: #ffff99;
+}
+
+button.primary-color, .button.primary-color {
+	background-color: #E14C41;
+	border-color: #ce2d21;
+}
+
+button:hover, button:focus, .button:hover, .button:focus {
+    background-color: #ce2d21;
+}
+
+.no-results {
+	text-align: center;
+	font-weight: bold;
+	padding: 2em;
 }
 
 .twitter-follow-button {

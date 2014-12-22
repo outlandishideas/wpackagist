@@ -9,7 +9,10 @@
         "chuyskywalker/rolling-curl": "dev-master",
         "silex/silex": "~1.1",
         "twig/twig": ">=1.8,<2.0-dev",
-        "symfony/twig-bridge": "~2.3"
+        "symfony/twig-bridge": "~2.3",
+        "symfony/form": "~2.3",
+        "symfony/locale": "~2.3",
+        "symfony/translation": "~2.3"
     },
     "autoload": {
         "psr-0": {
