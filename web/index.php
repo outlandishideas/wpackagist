@@ -9,7 +9,7 @@ use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
 
 // Uncomment next line to activate the debug
-// $app['debug'] = true;
+$app['debug'] = true;
 
 ///////////////////
 // CONFIGURATION //
@@ -66,8 +66,8 @@ $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('
     ))
     ->add('active_only', 'choice', array(
         'choices' => array(
-            1 => 'Active',
             0 => 'All',
+            1 => 'Active',
         ),
     ))
     ->add('search', 'submit')
@@ -88,10 +88,11 @@ $app->get('/', function (Request $request) use ($app, $searchForm) {
 // Search
 $app->get('/search', function (Request $request) use ($app, $searchForm) {
     $queryBuilder = $app['db']->createQueryBuilder();
-    $type = $request->get('type');
-    $active = $request->get('active_only');
-    $query = $request->get('q');
-    $results = array();
+    $type         = $request->get('type');
+    $active       = $request->get('active_only');
+    $query        = trim($request->get('q'));
+    $results      = array();
+
     $data = array(
         'title'              => "WordPress Packagist: Search packages",
         'searchForm'         => $searchForm->handleRequest($request)->createView(),
@@ -101,8 +102,7 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
 
     $queryBuilder
         ->select('*')
-        ->from('packages', 'p')
-        ->where('name LIKE :name');
+        ->from('packages', 'p');
 
     switch ($type) {
         case 'theme':
@@ -129,11 +129,17 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
             break;
     }
 
-    $queryBuilder
-        ->addOrderBy('name LIKE :order', 'DESC')
-        ->addOrderBy('name', 'ASC')
-        ->setParameter(':name', "%{$query}%")
-        ->setParameter(':order', "{$query}%");
+    if (!empty($query)) {
+        $queryBuilder
+            ->where('name LIKE :name')
+            ->addOrderBy('name LIKE :order', 'DESC')
+            ->addOrderBy('name', 'ASC')
+            ->setParameter(':name', "%{$query}%")
+            ->setParameter(':order', "{$query}%");
+    } else {
+        $queryBuilder
+            ->addOrderBy('last_committed', 'DESC');
+    }
 
     $countField = 'p.name';
     $adapter    = new DoctrineDbalSingleTableAdapter($queryBuilder, $countField);
