@@ -73,6 +73,12 @@ $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('
 					'theme' => 'Theme'
 				)
 			))
+			->add('active_only', 'choice', array(
+				'choices' => array(
+					1 => 'Active',
+					0 => 'All'
+				)
+			))
 			->add('search', 'submit')
 			->getForm();
 
@@ -92,6 +98,7 @@ $app->get('/', function (Request $request) use ($app, $searchForm) {
 $app->get('/search', function (Request $request) use ($app, $searchForm) {
 	$queryBuilder = $app['db']->createQueryBuilder();
 	$type = $request->get('type');
+	$active = $request->get('active_only');
 	$query = $request->get('q');
 	$results = array();
 	$data = array(
@@ -121,8 +128,17 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
 			break;
 	}
 
+	switch ($active) {
+		case 1:
+			$queryBuilder->andWhere('is_active', true);
+			break;
+		
+		default:
+			$queryBuilder->orderBy('is_active', 'DESC');
+			break;
+	}
+
 	$queryBuilder
-		->orderBy('is_active', 'DESC')
 		->addOrderBy('name LIKE :order', 'DESC')
 		->addOrderBy('name', 'ASC')
 		->setParameter(':name', "%{$query}%")
