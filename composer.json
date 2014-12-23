@@ -6,7 +6,16 @@
         "composer/composer": "1.0.*@dev",
         "symfony/console": "*",
         "symfony/filesystem":"*",
-        "chuyskywalker/rolling-curl": "dev-master"
+        "chuyskywalker/rolling-curl": "dev-master",
+        "silex/silex": "~1.1",
+        "twig/twig": ">=1.8,<2.0-dev",
+        "symfony/twig-bridge": "~2.3",
+        "symfony/form": "~2.3",
+        "symfony/locale": "~2.3",
+        "symfony/translation": "~2.3",
+        "pagerfanta/pagerfanta": "dev-master",
+        "franmomu/silex-pagerfanta-provider": "dev-master",
+        "doctrine/dbal": "2.2.*"
     },
     "autoload": {
         "psr-0": {
