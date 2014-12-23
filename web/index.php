@@ -4,6 +4,7 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 use Silex\Provider\FormServiceProvider;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
 
@@ -136,6 +137,17 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
 	$data['currentPageResults'] = $pagerfanta->getCurrentPageResults();
 
     return $app['twig']->render('search.twig', $data);
+});
+
+// Opensearch path
+$app->get('/opensearch.xml', function (Request $request) use ($app) {
+	return new Response($app['twig']->render(
+			'opensearch.twig',
+        	array('host' => $request->getHttpHost())
+        ),
+        200,
+        array('Content-Type' => 'application/opensearchdescription+xml')
+    );
 });
 
 $app->run();
