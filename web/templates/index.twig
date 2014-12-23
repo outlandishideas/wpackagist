@@ -126,12 +126,24 @@
                 <code>"*"</code> as the required version.</li>
 
                 <li>Packages with unicode names might not work properly.</li>
+
+                <li>Even when packages are present on SVN, they won’t be available
+                if they are not published on <a href="https://wordpress.org/plugins/">wordpress.org</a>.
+                Try <a href="{{ app.request.basepath }}/search">searching</a> for your plugin before reporting a
+                <a href="https://github.com/outlandishideas/wpackagist/issues/new?title=[Bug]%20">bug</a>.</li>
+
+                <li>You can also check for <a href="https://github.com/outlandishideas/wpackagist/issues">open issues</a>.</li>
             </ul>
+
+            <h3>Wordpress Core</h3>
+            <p>This does not provide Wordpress itself.<br>
+            See <code><a href="https://github.com/fancyguy/webroot-installer">fancyguy/webroot-installer</a></code> or
+            <code><a href="https://github.com/johnpbloch/wordpress">johnpbloch/wordpress</a></code>.</p>
+
 
             <h3>Contribute or get support</h3>
 
-            <p>Please visit our <a href=
-            "https://github.com/outlandishideas/wpackagist">GitHub page</a>.</p>
+            <p>Please visit our <a href="https://github.com/outlandishideas/wpackagist">GitHub page</a>.</p>
         </div>
     </div>
 {% endblock %}
