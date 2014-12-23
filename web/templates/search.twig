@@ -39,7 +39,16 @@
 		            <td>
 		            	{% set versions = package['versions'] | format_versions %}
 		            	{% for version in versions %}
-		                	<a href="#" data-version="{{ version }}" class="label round primary-color version js-version">{{ version }}</a>
+		            		{# Separator allowing to toggle the shot more version #}
+		            		{% if (loop.index == 2 and loop.length > 4) %}
+		            			<a href="#" class="label round primary-color js-toggle-more">...</a>
+		            		{% endif %}
+		            		{# Hide extra versions, keep showing only the last 3 and the dev-trunk #}
+		            		{% if loop.index >= 2  and loop.index <= loop.length - 3 %}
+								<a href="#" data-version="{{ version }}" data-hide="true" class="hide label round primary-color version js-version">{{ version }}</a>
+							{% else %}
+		                		<a href="#" data-version="{{ version }}" class="label round primary-color version js-version">{{ version }}</a>
+		            		{% endif %}
 		                {% else %}
 		                	No version available.
 		            	{% endfor %}

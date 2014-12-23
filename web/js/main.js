@@ -25,4 +25,11 @@ $(document).ready(function() {
 			$('.js-composer-info .js-copy').val(copyString).select();
 		}
 	});
+	
+	$('.js-toggle-more').on('click', function(event) {
+		event.preventDefault();
+		var $element = $(this),
+			$siblingsToToggle = $element.siblings('[data-hide]');
+		$siblingsToToggle.toggleClass('hide');
+	});
 });	
