@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "24a9e04253b6976920f927d855339843",
+    "hash": "a71aaf828002299c3d443f0dd306fbd1",
     "packages": [
         {
             "name": "chuyskywalker/rolling-curl",
@@ -373,6 +373,48 @@
                 "schema"
             ],
             "time": "2014-08-25 02:48:14"
+        },
+        {
+            "name": "knplabs/console-service-provider",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/KnpLabs/ConsoleServiceProvider.git",
+                "reference": "1f1a3315409814d01702a47a8823549c6996de41"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/KnpLabs/ConsoleServiceProvider/zipball/1f1a3315409814d01702a47a8823549c6996de41",
+                "reference": "1f1a3315409814d01702a47a8823549c6996de41",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.2",
+                "symfony/console": "~2.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Knp\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "KnpLabs",
+                    "homepage": "http://knplabs.com"
+                }
+            ],
+            "description": "console service provider for Silex",
+            "homepage": "http://knplabs.com",
+            "keywords": [
+                "console",
+                "silex"
+            ],
+            "time": "2013-06-13 12:43:39"
         },
         {
             "name": "pagerfanta/pagerfanta",
@@ -1769,7 +1811,8 @@
         "composer/composer": 20,
         "chuyskywalker/rolling-curl": 20,
         "pagerfanta/pagerfanta": 20,
-        "franmomu/silex-pagerfanta-provider": 20
+        "franmomu/silex-pagerfanta-provider": 20,
+        "knplabs/console-service-provider": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

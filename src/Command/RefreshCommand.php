@@ -1,6 +1,6 @@
 <?php
 
-namespace Outlandish\Wpackagist;
+namespace Outlandish\Wpackagist\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,7 +35,7 @@ class RefreshCommand extends Command
         /**
          * @var \PDO $db
          */
-        $db = $this->getApplication()->getDb();
+        $db = $this->getApplication()->getSilexApplication()['db'];
 
         $updateStmt = $db->prepare('UPDATE packages SET last_committed = :date WHERE class_name = :class_name AND name = :name');
         $insertStmt = $db->prepare('INSERT INTO packages (class_name, name, last_committed) VALUES (:class_name, :name, :date)');
@@ -69,10 +69,9 @@ class RefreshCommand extends Command
             }
             $db->commit();
 
-            $updateCount = $db->query($s = 'SELECT COUNT(*) FROM packages WHERE last_fetched < last_committed AND class_name = ' . $db->quote($class_name))->fetchColumn();
+            $updateCount = $db->query($s = 'SELECT COUNT(*) FROM packages WHERE last_fetched < last_committed AND class_name = '.$db->quote($class_name))->fetchColumn();
 
             $output->writeln("Found $newCount new and $updateCount updated {$type}s");
         }
     }
-
 }

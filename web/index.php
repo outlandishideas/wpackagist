@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__.'/../vendor/autoload.php';
+$app = require_once dirname(__DIR__).'/bootstrap.php';
 
 use Silex\Provider\FormServiceProvider;
 use Symfony\Component\HttpFoundation\Request;
@@ -8,8 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
 
-
-$app = new Silex\Application();
 // Uncomment next line to activate the debug
 // $app['debug'] = true;
 
@@ -17,16 +15,8 @@ $app = new Silex\Application();
 // CONFIGURATION //
 ///////////////////
 
-// Register Doctrine provider
-$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-    'db.options' => array(
-        'driver'   => 'pdo_sqlite',
-        'path'     => __DIR__.'/../data/packages.sqlite',
-    ),
-));
-
 // Register the form provider
-$app->register(new FormServiceProvider());
+$app->register(new Silex\Provider\FormServiceProvider());
 
 // Register twig templates path
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
@@ -34,20 +24,21 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
 ));
 
 // Configure Twig provider
-$app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
-	// Custom filter to handle version parsing from the DB.
-	$formatVersions = new Twig_SimpleFilter('format_versions', function ($versions) {
-	    $versions = array_keys((array) json_decode($versions, true));
+$app['twig'] = $app->share($app->extend('twig', function ($twig, $app) {
+    // Custom filter to handle version parsing from the DB.
+    $formatVersions = new Twig_SimpleFilter('format_versions', function ($versions) {
+        $versions = array_keys((array) json_decode($versions, true));
         usort($versions, 'version_compare');
-        return $versions;
-	});
 
-	$formatCategory = new Twig_SimpleFilter('format_category', function ($category) {
-		return str_replace('Outlandish\Wpackagist\Package\\', '', $category);
-	});
+        return $versions;
+    });
+
+    $formatCategory = new Twig_SimpleFilter('format_category', function ($category) {
+        return str_replace('Outlandish\Wpackagist\Package\\', '', $category);
+    });
 
     $twig->addFilter($formatVersions);
-	$twig->addFilter($formatCategory);
+    $twig->addFilter($formatCategory);
 
     return $twig;
 }));
@@ -63,24 +54,24 @@ $app->register(new Silex\Provider\UrlGeneratorServiceProvider());
 
 // Search Form
 $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('csrf_protection' => false))
-			->setAction('search')
-			->setMethod('GET')
-			->add('q', 'search')
-			->add('type', 'choice', array(
-				'choices' => array(
-					'any' => 'Any',
-					'plugin' => 'Plugin',
-					'theme' => 'Theme'
-				)
-			))
-			->add('active_only', 'choice', array(
-				'choices' => array(
-					1 => 'Active',
-					0 => 'All'
-				)
-			))
-			->add('search', 'submit')
-			->getForm();
+    ->setAction('search')
+    ->setMethod('GET')
+    ->add('q', 'search')
+    ->add('type', 'choice', array(
+        'choices' => array(
+            'any'     => 'Any',
+            'plugin'  => 'Plugin',
+            'theme'   => 'Theme',
+        ),
+    ))
+    ->add('active_only', 'choice', array(
+        'choices' => array(
+            1 => 'Active',
+            0 => 'All',
+        ),
+    ))
+    ->add('search', 'submit')
+    ->getForm();
 
 ////////////
 // ROUTES //
@@ -89,77 +80,78 @@ $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('
 // Home
 $app->get('/', function (Request $request) use ($app, $searchForm) {
     return $app['twig']->render('index.twig', array(
-       'title' => "WordPress Packagist: Manage your plugins and themes with Composer",
-       'searchForm' => $searchForm->handleRequest($request)->createView()
+       'title'      => "WordPress Packagist: Manage your plugins and themes with Composer",
+       'searchForm' => $searchForm->handleRequest($request)->createView(),
     ));
 });
 
 // Search
 $app->get('/search', function (Request $request) use ($app, $searchForm) {
-	$queryBuilder = $app['db']->createQueryBuilder();
-	$type = $request->get('type');
-	$active = $request->get('active_only');
-	$query = $request->get('q');
-	$results = array();
-	$data = array(
-		'title' => "WordPress Packagist: Search packages",
-		'searchForm' => $searchForm->handleRequest($request)->createView(),
-		'currentPageResults' => '',
-		'error' => ''
-	);
+    $queryBuilder = $app['db']->createQueryBuilder();
+    $type = $request->get('type');
+    $active = $request->get('active_only');
+    $query = $request->get('q');
+    $results = array();
+    $data = array(
+        'title'              => "WordPress Packagist: Search packages",
+        'searchForm'         => $searchForm->handleRequest($request)->createView(),
+        'currentPageResults' => '',
+        'error'              => '',
+    );
 
-	$queryBuilder
-		->select('*')
-		->from('packages', 'p')
-		->where('name LIKE :name');
+    $queryBuilder
+        ->select('*')
+        ->from('packages', 'p')
+        ->where('name LIKE :name');
 
-	switch ($type) {
-		case 'theme':
-			$queryBuilder
-				->andWhere('class_name = :class')
-				->setParameter(':class', 'Outlandish\Wpackagist\Package\Theme');
-			break;
-		case 'plugin':
-			$queryBuilder
-				->andWhere('class_name = :class')
-				->setParameter(':class', 'Outlandish\Wpackagist\Package\Plugin');
-			break;
-		default:
-			break;
-	}
+    switch ($type) {
+        case 'theme':
+            $queryBuilder
+                ->andWhere('class_name = :class')
+                ->setParameter(':class', 'Outlandish\Wpackagist\Package\Theme');
+            break;
+        case 'plugin':
+            $queryBuilder
+                ->andWhere('class_name = :class')
+                ->setParameter(':class', 'Outlandish\Wpackagist\Package\Plugin');
+            break;
+        default:
+            break;
+    }
 
-	switch ($active) {
-		case 1:
-			$queryBuilder->andWhere('is_active', true);
-			break;
-		
-		default:
-			$queryBuilder->orderBy('is_active', 'DESC');
-			break;
-	}
+    switch ($active) {
+        case 1:
+            $queryBuilder->andWhere('is_active', true);
+            break;
 
-	$queryBuilder
-		->addOrderBy('name LIKE :order', 'DESC')
-		->addOrderBy('name', 'ASC')
-		->setParameter(':name', "%{$query}%")
-		->setParameter(':order', "{$query}%");
-	
-	$countField = 'p.name';
-	$adapter = new DoctrineDbalSingleTableAdapter($queryBuilder, $countField);
+        default:
+            $queryBuilder->orderBy('is_active', 'DESC');
+            break;
+    }
+
+    $queryBuilder
+        ->addOrderBy('name LIKE :order', 'DESC')
+        ->addOrderBy('name', 'ASC')
+        ->setParameter(':name', "%{$query}%")
+        ->setParameter(':order', "{$query}%");
+
+    $countField = 'p.name';
+    $adapter    = new DoctrineDbalSingleTableAdapter($queryBuilder, $countField);
     $pagerfanta = new Pagerfanta($adapter);
     $pagerfanta->setMaxPerPage(30);
     $pagerfanta->setCurrentPage($request->query->get('page', 1));
-    $data['pager'] = $pagerfanta;
-	$data['currentPageResults'] = $pagerfanta->getCurrentPageResults();
+
+    $data['pager']              = $pagerfanta;
+    $data['currentPageResults'] = $pagerfanta->getCurrentPageResults();
 
     return $app['twig']->render('search.twig', $data);
 });
 
 // Opensearch path
 $app->get('/opensearch.xml', function (Request $request) use ($app) {
-	return new Response($app['twig']->render(
-			'opensearch.twig',
-        	array('host' => $request->getHttpHost())
+    return new Response($app['twig']->render(
+            'opensearch.twig',
+            array('host' => $request->getHttpHost())
         ),
         200,
         array('Content-Type' => 'application/opensearchdescription+xml')

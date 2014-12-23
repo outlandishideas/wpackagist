@@ -15,11 +15,13 @@
         "symfony/translation": "~2.3",
         "pagerfanta/pagerfanta": "dev-master",
         "franmomu/silex-pagerfanta-provider": "dev-master",
-        "doctrine/dbal": "2.2.*"
+        "doctrine/dbal": "2.2.*",
+        "knplabs/console-service-provider": "dev-master"
     },
+    "bin-dir": "bin",
     "autoload": {
-        "psr-0": {
-            "Outlandish": "src/"
+        "psr-4": {
+            "Outlandish\\Wpackagist\\": "src/"
         }
     }
 }
