@@ -25,7 +25,7 @@ h1 a:hover::after {
     display: inline-block;
     vertical-align: middle;
     content: '';
-    background: url(home.svg) no-repeat center / 100%;
+    background: url(../img/home.svg) no-repeat center / 100%;
     width: 35px;
     height: 35px;
     opacity: 0.5;
@@ -61,6 +61,31 @@ blockquote, pre {
 	background-color: #ffff99;
 }
 
+.primary-color {
+	background-color: #E14C41;
+	border-color: #ce2d21;
+}
+
+.label:hover, .label:focus {
+	color: #fff;
+	background-color: #ce2d21;
+}
+
+button:hover, button:focus, .button:hover, .button:focus {
+    background-color: #ce2d21;
+    text-decoration: none;
+}
+
+.no-results {
+	text-align: center;
+	font-weight: bold;
+	padding: 2em;
+}
+
+.version {
+	margin: .5em;
+}
+
 .twitter-follow-button {
 	margin-top: -3px;
 }
@@ -91,4 +116,7 @@ html[xmlns] .clearfix {
 
 * html .clearfix {
 	height: 1%;
+}
+.pagination a {
+	text-decoration: none;
 }

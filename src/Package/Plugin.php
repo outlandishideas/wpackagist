@@ -21,12 +21,12 @@ class Plugin extends AbstractPackage
 
     public function getHomepageUrl()
     {
-        return "https://wordpress.org/plugins/" . $this->getName() . '/';
+        return "https://wordpress.org/plugins/".$this->getName().'/';
     }
 
     public function getDownloadUrl($version)
     {
-        $filename = $this->versions[$version] == 'trunk' ? $this->getName() : $this->getName() . '.' . $version;
+        $filename = $this->versions[$version] == 'trunk' ? $this->getName() : $this->getName().'.'.$version;
 
         return "http://downloads.wordpress.org/plugin/$filename.zip";
     }

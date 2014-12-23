@@ -1,0 +1,84 @@
+{% extends "layout.twig" %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    {% include 'searchbar.twig' %}
+
+    {% if error %}
+        <div class="alert-box alert">{{ error }}</div>
+    {% endif %}
+    <table>
+        <thead>
+            <tr>
+                <th width="8%">Type</th>
+                <th width="20%">Name</th>
+                <th width="18%"><abbr title="Last time a modification was commited to the SVN repository">Last commited</abbr></th>
+                <th width="18%"><abbr title="Last time this package was updated in WPackagist's database">Last fetched</abbr></th>
+                <th width="32%">Versions</th>
+                <th width="4%">Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for package in currentPageResults %}
+                <tr>
+                    <td data-type="{{ package['class_name'] | format_category | lower }}">
+                        {{ package['class_name'] | format_category }}
+                    </td>
+                    <td data-name="{{ package['name'] | e }}">
+                        {{ package['name'] | e }}
+                    </td>
+                    <td>
+                        {{ package['last_committed'] | default('Not Committed') }}
+                    </td>
+                    <td>
+                        {{ package['last_fetched'] | default('Not fetched') }}
+                    </td>
+                    <td>
+                        {% set versions = package['versions'] | format_versions %}
+                        {% for version in versions %}
+                            {# Separator allowing to toggle the shot more version #}
+                            {% if (loop.index == 2 and loop.length > 4) %}
+                                <a href="#" class="label round primary-color js-toggle-more">...</a>
+                            {% endif %}
+                            {# Hide extra versions, keep showing only the last 3 and the dev-trunk #}
+                            {% if loop.index >= 2  and loop.index <= loop.length - 3 %}
+                                <a href="#" data-version="{{ version }}" data-hide="true" class="hide label round primary-color version js-version">{{ version }}</a>
+                            {% else %}
+                                <a href="#" data-version="{{ version }}" class="label round primary-color version js-version">{{ version }}</a>
+                            {% endif %}
+                        {% else %}
+                            No version available.
+                        {% endfor %}
+                    </td>
+                    <td style="text-align: center">
+                        {% if package['is_active'] %}
+                            <span style="color: green">✔</span>
+                        {% else %}
+                            <span style="color: red">✘</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="no-results">No results.</td>
+                </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+    {{ pagerfanta(pager, 'default', {
+        'container_template': '<ul class="pagination">%pages%</ul>',
+        'page_template': '<li><a href="%href%">%text%</a></li>',
+        'span_template':'<li class="%class%"><a href="#">%text%</a></li>'
+    }) }}
+
+    <div class="alert-box info">
+        If a package has no version and/or is not active, please check it is visible on
+        <a href="https://wordpress.org/plugins/">wordpress.org</a> before reporting a
+        <a href="https://github.com/outlandishideas/wpackagist/issues/new">bug</a>.
+    </div>
+{% endblock %}

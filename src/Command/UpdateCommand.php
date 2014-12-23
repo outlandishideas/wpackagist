@@ -1,6 +1,6 @@
 <?php
 
-namespace Outlandish\Wpackagist;
+namespace Outlandish\Wpackagist\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -44,13 +44,14 @@ class UpdateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $rollingCurl = new RollingCurl;
+        $rollingCurl = new RollingCurl();
         $rollingCurl->setSimultaneousLimit((int) $input->getOption('concurrent'));
 
         /**
          * @var \PDO $db
          */
-        $db = $this->getApplication()->getDb();
+        $db = $this->getApplication()->getSilexApplication()['db'];
+
         $stmt = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), versions = :json, is_active = 1 WHERE class_name = :class_name AND name = :name');
         $deactivate = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
 
@@ -64,7 +65,7 @@ class UpdateCommand extends Command
         ')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 
         $count = count($plugins);
-        $versionParser = new VersionParser;
+        $versionParser = new VersionParser();
 
         $rollingCurl->setCallback(function (RollingRequest $request, RollingCurl $rollingCurl) use ($count, $stmt, $deactivate, $output, $versionParser) {
             $plugin = $request->getExtraInfo();
@@ -73,7 +74,7 @@ class UpdateCommand extends Command
             $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $plugin->getName()));
 
             if ($request->getResponseErrno()) {
-                $output->writeln("<error>Error while fetching ".$request->getUrl(). " (".$request->getResponseError().")"."</error>");
+                $output->writeln("<error>Error while fetching ".$request->getUrl()." (".$request->getResponseError().")"."</error>");
 
                 return;
             }
@@ -94,7 +95,7 @@ class UpdateCommand extends Command
             $nodes = $xpath->query('//div[@id="plugin-info"]//a[contains(., "svn")]');
             $versions = array();
 
-            for ($i=0; $i < $nodes->length; $i++) {
+            for ($i = 0; $i < $nodes->length; $i++) {
                 $node = $nodes->item($i);
                 $href = rtrim($node->getAttribute('href'), '/');
 
@@ -145,7 +146,7 @@ class UpdateCommand extends Command
         });
 
         foreach ($plugins as $plugin) {
-            $request = new RollingRequest($plugin->getHomepageUrl() . 'developers/');
+            $request = new RollingRequest($plugin->getHomepageUrl().'developers/');
             $request->setExtraInfo($plugin);
             $rollingCurl->add($request);
         }

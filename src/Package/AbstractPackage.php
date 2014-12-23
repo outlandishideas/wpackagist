@@ -83,7 +83,7 @@ abstract class AbstractPackage
 
     public function getSvnUrl()
     {
-        return static::getSvnBaseUrl() . $this->getName() . '/';
+        return static::getSvnBaseUrl().$this->getName().'/';
     }
 
     /**
@@ -92,7 +92,7 @@ abstract class AbstractPackage
      */
     public function getComposerType()
     {
-        return null;
+        return;
     }
 
     /**
@@ -100,7 +100,7 @@ abstract class AbstractPackage
      */
     public function getPackageName()
     {
-        return $this->getVendorName() . '/' . $this->getName();
+        return $this->getVendorName().'/'.$this->getName();
     }
 
     /**
@@ -162,7 +162,7 @@ abstract class AbstractPackage
      */
     public function getPackageVersion($version, &$uid = 1)
     {
-        $versionParser = new VersionParser;
+        $versionParser = new VersionParser();
         $normalizedVersion = $versionParser->normalize($version);
 
         $tag = $this->versions[$version];
