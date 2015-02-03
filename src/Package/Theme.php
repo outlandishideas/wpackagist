@@ -21,11 +21,11 @@ class Theme extends AbstractPackage
 
     public function getHomepageUrl()
     {
-        return "http://wordpress.org/themes/".$this->getName().'/';
+        return "https://wordpress.org/themes/".$this->getName().'/';
     }
 
     public function getDownloadUrl($version)
     {
-        return "http://wordpress.org/themes/download/".$this->getName().".$version.zip";
+        return "https://downloads.wordpress.org/theme/".$this->getName().".$version.zip";
     }
 }

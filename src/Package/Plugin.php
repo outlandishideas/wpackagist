@@ -28,6 +28,6 @@ class Plugin extends AbstractPackage
     {
         $filename = $this->versions[$version] == 'trunk' ? $this->getName() : $this->getName().'.'.$version;
 
-        return "http://downloads.wordpress.org/plugin/$filename.zip";
+        return "https://downloads.wordpress.org/plugin/$filename.zip";
     }
 }
