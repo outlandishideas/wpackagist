@@ -101,7 +101,7 @@
             <h3>How does the repository work?</h3>
 
             <ul>
-                <li>Scans the WordPress Subversion repository for <a href=
+                <li>Scans the WordPress Subversion repository every hour for <a href=
                 "http://plugins.svn.wordpress.org/">plugins</a> and <a href=
                 "http://themes.svn.wordpress.org/">themes</a>.
                 </li>
@@ -125,8 +125,6 @@
                 <li>Themes do not have a trunk version. It is recommended to use
                 <code>"*"</code> as the required version.</li>
 
-                <li>Packages with unicode names might not work properly.</li>
-
                 <li>Even when packages are present on SVN, they won’t be available
                 if they are not published on <a href="https://wordpress.org/plugins/">wordpress.org</a>.
                 Try <a href="{{ app.request.basepath }}/search">searching</a> for your plugin before reporting a
@@ -135,11 +133,12 @@
                 <li>You can also check for <a href="https://github.com/outlandishideas/wpackagist/issues">open issues</a>.</li>
             </ul>
 
-            <h3>Wordpress Core</h3>
-            <p>This does not provide Wordpress itself.<br>
-            See <code><a href="https://github.com/fancyguy/webroot-installer">fancyguy/webroot-installer</a></code> or
-            <code><a href="https://github.com/johnpbloch/wordpress">johnpbloch/wordpress</a></code>.</p>
+            <h3>WordPress Core</h3>
 
+            <p>See
+                <code><a href="https://github.com/fancyguy/webroot-installer">fancyguy/webroot-installer</a></code> or
+                <code><a href="https://github.com/johnpbloch/wordpress">johnpbloch/wordpress</a></code> for installing
+                WordPress itself using Composer.</p>
 
             <h3>Contribute or get support</h3>
 

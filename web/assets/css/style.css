@@ -3,7 +3,7 @@ body {
 }
 
 h1, h2, h3, h4 {
-	font-family: 'Noto Sans', serif;
+    font-family: 'Noto Sans', sans-serif;
     font-weight: bold;
 }
 

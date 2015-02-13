@@ -91,7 +91,6 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
     $type         = $request->get('type');
     $active       = $request->get('active_only');
     $query        = trim($request->get('q'));
-    $results      = array();
 
     $data = array(
         'title'              => "WordPress Packagist: Search packages",
