@@ -2,7 +2,6 @@
 
 $app = require_once dirname(__DIR__).'/bootstrap.php';
 
-use Silex\Provider\FormServiceProvider;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Pagerfanta\Pagerfanta;
@@ -87,6 +86,7 @@ $app->get('/', function (Request $request) use ($app, $searchForm) {
 
 // Search
 $app->get('/search', function (Request $request) use ($app, $searchForm) {
+    /** @var \Doctrine\DBAL\Query\QueryBuilder $queryBuilder */
     $queryBuilder = $app['db']->createQueryBuilder();
     $type         = $request->get('type');
     $active       = $request->get('active_only');
@@ -120,7 +120,7 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
 
     switch ($active) {
         case 1:
-            $queryBuilder->andWhere('is_active', true);
+            $queryBuilder->andWhere('is_active');
             break;
 
         default:
@@ -130,7 +130,7 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
 
     if (!empty($query)) {
         $queryBuilder
-            ->where('name LIKE :name')
+            ->andWhere('name LIKE :name')
             ->addOrderBy('name LIKE :order', 'DESC')
             ->addOrderBy('name', 'ASC')
             ->setParameter(':name', "%{$query}%")
