@@ -58,17 +58,17 @@ $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('
     ->add('q', 'search')
     ->add('type', 'choice', array(
         'choices' => array(
-            'any'     => 'Any',
-            'plugin'  => 'Plugin',
-            'theme'   => 'Theme',
+            'any'     => 'All packages',
+            'plugin'  => 'Plugins',
+            'theme'   => 'Themes',
         ),
     ))
-    ->add('active_only', 'choice', array(
-        'choices' => array(
-            0 => 'All',
-            1 => 'Active',
-        ),
-    ))
+//    ->add('active_only', 'choice', array(
+//        'choices' => array(
+//            0 => 'All',
+//            1 => 'Active',
+//        ),
+//    ))
     ->add('search', 'submit')
     ->getForm();
 

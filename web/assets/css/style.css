@@ -52,8 +52,12 @@ blockquote, pre {
     background-color: #f2f2f2;
 }
 
-#title {
-    margin: 50px 0;
+#title, .mission {
+    margin: 3rem 0;
+}
+
+.mission {
+    font-size: 1.125rem;
 }
 
 .highlighter {
