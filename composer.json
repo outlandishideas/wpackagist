@@ -16,7 +16,8 @@
         "pagerfanta/pagerfanta": "dev-master",
         "franmomu/silex-pagerfanta-provider": "dev-master",
         "doctrine/dbal": "2.2.*",
-        "knplabs/console-service-provider": "dev-master"
+        "knplabs/console-service-provider": "dev-master",
+        "rarst/wporg-client": "dev-master"
     },
     "bin-dir": "bin",
     "autoload": {

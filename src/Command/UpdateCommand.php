@@ -2,11 +2,13 @@
 
 namespace Outlandish\Wpackagist\Command;
 
+use Outlandish\Wpackagist\Package\Plugin;
+use Outlandish\Wpackagist\Package\Theme;
+use Rarst\Guzzle\WporgClient;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use RollingCurl\Request as RollingRequest;
 use RollingCurl\RollingCurl;
 use Composer\Package\Version\VersionParser;
 
@@ -52,110 +54,94 @@ class UpdateCommand extends Command
          */
         $db = $this->getApplication()->getSilexApplication()['db'];
 
-        $stmt = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), versions = :json, is_active = 1 WHERE class_name = :class_name AND name = :name');
+        $update = $db->prepare(
+            'UPDATE packages SET last_fetched = datetime("now"), versions = :json, is_active = 1
+            WHERE class_name = :class_name AND name = :name'
+        );
         $deactivate = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
 
         // get packages that have never been fetched or have been updated since last being fetched
         // or that are inactive but have been updated in the past 90 days and haven't been fetched in the past 7 days
-        $plugins = $db->query('
+        $packages = $db->query('
             SELECT * FROM packages
             WHERE last_fetched IS NULL
             OR last_fetched < last_committed
             OR (is_active = 0 AND last_committed > date("now", "-90 days") AND last_fetched < datetime("now", "-7 days"))
         ')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 
-        $count = count($plugins);
+        $count = count($packages);
         $versionParser = new VersionParser();
 
-        $rollingCurl->setCallback(function (RollingRequest $request, RollingCurl $rollingCurl) use ($count, $stmt, $deactivate, $output, $versionParser) {
-            $plugin = $request->getExtraInfo();
 
-            $percent = $rollingCurl->countCompleted() / $count * 100;
-            $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $plugin->getName()));
+        $wporgClient = WporgClient::getClient();
 
-            if ($request->getResponseErrno()) {
-                $output->writeln("<error>Error while fetching ".$request->getUrl()." (".$request->getResponseError().")"."</error>");
+        foreach ($packages as $index => $package) {
 
-                return;
+            $percent = $index / $count * 100;
+            $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $package->getName()));
+
+            if ($package instanceof Plugin) {
+                $info = $wporgClient->getPlugin($package->getName(), ['versions']);
+            } else {
+                $info = $wporgClient->getTheme($package->getName(), ['versions']);
             }
 
-            $info = $request->getResponseInfo();
-            if ($info['http_code'] != 200) {
+            if (!$info) {
                 // Plugin is not active
-                $deactivate->execute(array(':class_name' => get_class($plugin), ':name' => $plugin->getName()));
+                $deactivate->execute(array(':class_name' => get_class($package), ':name' => $package->getName()));
 
-                return;
+                continue;
             }
 
-            $dom = new \DOMDocument('1.0', 'UTF-8');
-            // WP.org generates some parsing errors, ignore them
-            @$dom->loadHTML($request->getResponseText());
+            //get versions as [version => url]
+            $versions = $info['versions'] ?: [];
 
-            $xpath = new \DOMXPath($dom);
-            $nodes = $xpath->query('//div[@id="plugin-info"]//a[contains(., "svn")]');
-            $versions = array();
+            //current version of plugin not present in tags so add it
+            if (empty($versions[$info['version']])) {
+                //add to front of array
+                $versions = array_reverse($versions, true);
+                $versions[$info['version']] = 'trunk';
+                $versions = array_reverse($versions, true);
+            }
 
-            for ($i = 0; $i < $nodes->length; $i++) {
-                $node = $nodes->item($i);
-                $href = rtrim($node->getAttribute('href'), '/');
+            //all plugins have a dev-trunk version
+            if ($package instanceof Plugin) {
+                unset($versions['trunk']);
+                $versions['dev-trunk'] = 'trunk';
+            }
 
-                if (preg_match('/\/trunk$/', $href)) {
-                    $tag = 'trunk';
-                } elseif (preg_match('/\/((?:tags\/)?([^\/]+))$/', $href, $matches)) {
-                    $tag = $matches[1];
-                } else {
-                    continue;
-                }
-
-                $download = $xpath->query('../a[contains(@href, ".zip")]', $node);
-                if ($download->length) {
-                    $_version = $download->item(0)->textContent;
-                    $_version = trim($_version, ' ()');
-                    if (preg_match('/development/i', $_version)) {
-                        $version = 'dev-trunk';
+            foreach ($versions as $version => $url) {
+                try {
+                    //make sure versions are parseable by Composer
+                    $versionParser->normalize($version);
+                    if ($package instanceof Theme) {
+                        //themes have different SVN folder structure
+                        $versions[$version] = $version;
+                    } elseif ($url == 'trunk') {
+                        //do nothing
                     } else {
-                        try {
-                            $versionParser->normalize($_version);
-                            $version = $_version;
-                        } catch (\UnexpectedValueException $e) {
-                            continue;
-                        }
+                        //add ref to SVN tag
+                        $versions[$version] = 'tags/'.$version;
                     }
-                } else {
-                    continue;
-                }
-
-                $versions[$version] = $tag;
-
-                // Version points directly to trunk
-                // Add dev-trunk => trunk to make sure it exists
-                if ($tag == 'trunk') {
-                    $versions['dev-trunk'] = 'trunk';
+                } catch (\UnexpectedValueException $e) {
+                    //version is invalid
+                    unset($versions[$version]);
                 }
             }
 
             if ($versions) {
-                $stmt->execute(array(':class_name' => get_class($plugin), ':name' => $plugin->getName(), ':json' => json_encode($versions)));
+                $update->execute(
+                    array(
+                        ':class_name' => get_class($package),
+                        ':name' => $package->getName(),
+                        ':json' => json_encode($versions)
+                    )
+                );
             } else {
-                $deactivate->execute(array(':class_name' => get_class($plugin), ':name' => $plugin->getName()));
+                $deactivate->execute(array(':class_name' => get_class($package), ':name' => $package->getName()));
             }
 
-            // recoup some memory
-            $request->setResponseText(null);
-            $request->setResponseInfo(null);
-        });
-
-        foreach ($plugins as $plugin) {
-            $request = new RollingRequest($plugin->getHomepageUrl().'developers/');
-            $request->setExtraInfo($plugin);
-            $rollingCurl->add($request);
         }
 
-        //fix outdated CA issue on Windows
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $rollingCurl->addOptions(array(CURLOPT_CAINFO => "data/cacert.pem"));
-        }
-
-        $rollingCurl->execute();
     }
 }
