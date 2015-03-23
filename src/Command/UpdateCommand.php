@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use RollingCurl\Request as RollingRequest;
 use RollingCurl\RollingCurl;
 use Composer\Package\Version\VersionParser;
+use Outlandish\Wpackagist\Package\Plugin;
 
 class UpdateCommand extends Command
 {
@@ -132,6 +133,11 @@ class UpdateCommand extends Command
                 if ($tag == 'trunk') {
                     $versions['dev-trunk'] = 'trunk';
                 }
+            }
+
+            if (!isset($versions['dev-trunk']) && $plugin instanceof Plugin) {
+                // plugins always have at least trunk
+                $versions['dev-trunk'] = 'trunk';
             }
 
             if ($versions) {
