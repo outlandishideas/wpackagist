@@ -28,7 +28,7 @@
                         {{ package['class_name'] | format_category }}
                     </td>
                     <td data-name="{{ package['name'] | e }}">
-                        {{ package['name'] | e }}
+                        <a target="_blank" href="https://wordpress.org/{{ package['class_name'] | format_category | lower }}s/{{ package['name'] | e }}">{{ package['name'] | e }}</a>
                     </td>
                     <td>
                         {{ package['last_committed'] | default('Not Committed') }}

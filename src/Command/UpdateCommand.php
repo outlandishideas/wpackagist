@@ -9,7 +9,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use RollingCurl\RollingCurl;
 use Composer\Package\Version\VersionParser;
 
 class UpdateCommand extends Command
@@ -46,8 +45,6 @@ class UpdateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $rollingCurl = new RollingCurl();
-        $rollingCurl->setSimultaneousLimit((int) $input->getOption('concurrent'));
 
         /**
          * @var \PDO $db
@@ -94,7 +91,11 @@ class UpdateCommand extends Command
             }
 
             //get versions as [version => url]
-            $versions = $info['versions'] ?: [];
+            if(isset($info['versions'])){
+                $versions = $info['versions'];
+            } else {
+                $versions = [];
+            }
 
             //current version of plugin not present in tags so add it
             if (empty($versions[$info['version']])) {

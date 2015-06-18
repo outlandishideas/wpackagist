@@ -5,6 +5,7 @@ $app = require_once dirname(__DIR__).'/bootstrap.php';
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Pagerfanta\Pagerfanta;
+use Pagerfanta\Adapter\FixedAdapter;
 use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
 
 // Uncomment next line to activate the debug
@@ -58,17 +59,10 @@ $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('
     ->add('q', 'search')
     ->add('type', 'choice', array(
         'choices' => array(
-            'any'     => 'All packages',
             'plugin'  => 'Plugins',
             'theme'   => 'Themes',
         ),
     ))
-//    ->add('active_only', 'choice', array(
-//        'choices' => array(
-//            0 => 'All',
-//            1 => 'Active',
-//        ),
-//    ))
     ->add('search', 'submit')
     ->getForm();
 
@@ -88,9 +82,12 @@ $app->get('/', function (Request $request) use ($app, $searchForm) {
 $app->get('/search', function (Request $request) use ($app, $searchForm) {
     /** @var \Doctrine\DBAL\Query\QueryBuilder $queryBuilder */
     $queryBuilder = $app['db']->createQueryBuilder();
+    $wporgClient  = \Rarst\Guzzle\WporgClient::getClient();
+    $currentPage  = $request->query->get('page', 1);
     $type         = $request->get('type');
     $active       = $request->get('active_only');
     $query        = trim($request->get('q'));
+    $results      = [];
 
     $data = array(
         'title'              => "WordPress Packagist: Search packages",
@@ -108,43 +105,47 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
             $queryBuilder
                 ->andWhere('class_name = :class')
                 ->setParameter(':class', 'Outlandish\Wpackagist\Package\Theme');
+            $wporgQueryResults = $wporgClient->getThemesBy('search', $query, $currentPage, 30, ['slug']);
+            $slugs = array_column($wporgQueryResults['themes'], 'slug');
             break;
         case 'plugin':
             $queryBuilder
                 ->andWhere('class_name = :class')
                 ->setParameter(':class', 'Outlandish\Wpackagist\Package\Plugin');
+            $wporgQueryResults = $wporgClient->getPluginsBy('search', $query, $currentPage, 30, ['slug']);
+            $slugs = array_column($wporgQueryResults['plugins'], 'slug');
             break;
         default:
-            break;
-    }
-
-    switch ($active) {
-        case 1:
-            $queryBuilder->andWhere('is_active');
-            break;
-
-        default:
-            $queryBuilder->orderBy('is_active', 'DESC');
             break;
     }
 
     if (!empty($query)) {
+        // We match the results from the wordpress API to our database.
         $queryBuilder
-            ->andWhere('name LIKE :name')
-            ->addOrderBy('name LIKE :order', 'DESC')
-            ->addOrderBy('name', 'ASC')
-            ->setParameter(':name', "%{$query}%")
-            ->setParameter(':order', "{$query}%");
+            ->andWhere('p.name IN (:name)')
+            ->setParameter(':name', $slugs, \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+
+        // This gymnastic is needed because the SQLITE database doesn't support ordering by FIELD, so we need to
+        // do it in PHP. We order the results from the database to match what the  wordpress API is returning us.
+        $statement = $queryBuilder->execute();
+        $packageResults = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $packageResults = array_column($packageResults, null, 'name');
+
+        foreach ($slugs as $name) {
+            $results[] = $packageResults[$name];
+        }
+
+        $adapter    = new FixedAdapter($wporgQueryResults['info']['results'], $results);
     } else {
+        // If we have no search query, we just paginate based on last committed
         $queryBuilder
             ->addOrderBy('last_committed', 'DESC');
+        $adapter    = new DoctrineDbalSingleTableAdapter($queryBuilder, 'p.name');
     }
 
-    $countField = 'p.name';
-    $adapter    = new DoctrineDbalSingleTableAdapter($queryBuilder, $countField);
     $pagerfanta = new Pagerfanta($adapter);
     $pagerfanta->setMaxPerPage(30);
-    $pagerfanta->setCurrentPage($request->query->get('page', 1));
+    $pagerfanta->setCurrentPage($currentPage);
 
     $data['pager']              = $pagerfanta;
     $data['currentPageResults'] = $pagerfanta->getCurrentPageResults();
