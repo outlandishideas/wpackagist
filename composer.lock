@@ -4,68 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4749da3e12a415f01c16d9194d890edd",
+    "hash": "e040256850ac13a171165c66ed3abd43",
     "packages": [
-        {
-            "name": "chuyskywalker/rolling-curl",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/chuyskywalker/rolling-curl.git",
-                "reference": "f7ff82f5705bd44bde92fd47524b759f616e473a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/chuyskywalker/rolling-curl/zipball/f7ff82f5705bd44bde92fd47524b759f616e473a",
-                "reference": "f7ff82f5705bd44bde92fd47524b759f616e473a",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "lib-curl": "*",
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "RollingCurl": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Jeff Minard",
-                    "homepage": "http://jrm.cc/",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Josh Fraser",
-                    "email": "joshfraz@gmail.com",
-                    "homepage": "http://joshfraser.com/",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Alexander Makarov",
-                    "email": "sam@rmcreative.ru",
-                    "homepage": "http://rmcreative.ru/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Rolling-Curl: A non-blocking, non-dos multi-curl library for PHP",
-            "homepage": "https://github.com/chuyskywalker/rolling-curl",
-            "keywords": [
-                "asynchronous",
-                "curl",
-                "http",
-                "multi",
-                "parallel",
-                "requests"
-            ],
-            "time": "2015-03-29 02:37:47"
-        },
         {
             "name": "composer/composer",
             "version": "dev-master",
@@ -1648,7 +1588,6 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "composer/composer": 20,
-        "chuyskywalker/rolling-curl": 20,
         "pagerfanta/pagerfanta": 20,
         "franmomu/silex-pagerfanta-provider": 20,
         "knplabs/console-service-provider": 20,
