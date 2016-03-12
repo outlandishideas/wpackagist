@@ -73,7 +73,7 @@ abstract class AbstractPackage
     abstract public function getVendorName();
 
     /**
-     * Ex: http://plugins.svn.wordpress.org/
+     * Ex: https://plugins.svn.wordpress.org/
      * @return string
      */
     public static function getSvnBaseUrl()
@@ -104,13 +104,13 @@ abstract class AbstractPackage
     }
 
     /**
-     * Ex: http://wordpress.org/extend/themes/THEME/
+     * Ex: https://wordpress.org/extend/themes/THEME/
      * @return string URL
      */
     abstract public function getHomepageUrl();
 
     /**
-     * Ex: http://downloads.wordpress.org/plugin/plugin.1.0.zip
+     * Ex: https://downloads.wordpress.org/plugin/plugin.1.0.zip
      * @return string URL
      */
     abstract public function getDownloadUrl($version);

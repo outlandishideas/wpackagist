@@ -16,7 +16,7 @@ class Plugin extends AbstractPackage
 
     public static function getSvnBaseUrl()
     {
-        return 'http://plugins.svn.wordpress.org/';
+        return 'https://plugins.svn.wordpress.org/';
     }
 
     public function getHomepageUrl()
