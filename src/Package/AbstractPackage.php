@@ -73,7 +73,7 @@ abstract class AbstractPackage
     abstract public function getVendorName();
 
     /**
-     * Ex: http://plugins.svn.wordpress.org/
+     * Ex: https://plugins.svn.wordpress.org/
      * @return string
      */
     public static function getSvnBaseUrl()

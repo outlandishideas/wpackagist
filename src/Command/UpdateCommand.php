@@ -41,8 +41,8 @@ class UpdateCommand extends Command
      * Wordpress.org APIs do not list versions history
      * @link http://codex.wordpress.org/WordPress.org_API
      *
-     * <li><a itemprop="downloadUrl" href="http://downloads.wordpress.org/plugin/PLUGIN.zip" rel="nofollow">Development Version</a> (<a href="http://plugins.svn.wordpress.org/PLUGIN/trunk" rel="nofollow">svn</a>)</li>
-     * <li><a itemprop="downloadUrl" href="http://downloads.wordpress.org/plugin/PLUGIN.VERSION.zip" rel="nofollow">VERSION</a> (<a href="http://plugins.svn.wordpress.org/PLUGIN/TAG" rel="nofollow">svn</a>)</li>
+     * <li><a itemprop="downloadUrl" href="http://downloads.wordpress.org/plugin/PLUGIN.zip" rel="nofollow">Development Version</a> (<a href="https://plugins.svn.wordpress.org/PLUGIN/trunk" rel="nofollow">svn</a>)</li>
+     * <li><a itemprop="downloadUrl" href="http://downloads.wordpress.org/plugin/PLUGIN.VERSION.zip" rel="nofollow">VERSION</a> (<a href="https://plugins.svn.wordpress.org/PLUGIN/TAG" rel="nofollow">svn</a>)</li>
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
