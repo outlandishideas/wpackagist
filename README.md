@@ -1,10 +1,10 @@
 WordPress Packagist
 ===
 
-This is the repository for [wpackagist.org](http://wpackagist.org) which allows WordPress plugins and themes to be
-managed along with other dependencies using [Composer](http://getcomposer.org).
+This is the repository for [wpackagist.org](https://wpackagist.org) which allows WordPress plugins and themes to be
+managed along with other dependencies using [Composer](https://getcomposer.org).
 
-More info and usage instructions at [wpackagist.org](http://wpackagist.org) or follow us on
+More info and usage instructions at [wpackagist.org](https://wpackagist.org) or follow us on
 Twitter [@wpackagist](https://twitter.com/wpackagist).
 
 For support and discussion, please use the issue tracker above.
@@ -20,7 +20,7 @@ Example composer.json:
     "repositories":[
         {
             "type":"composer",
-            "url":"http://wpackagist.org"
+            "url":"https://wpackagist.org"
         }
     ],
     "require": {

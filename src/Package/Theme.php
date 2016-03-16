@@ -16,7 +16,7 @@ class Theme extends AbstractPackage
 
     public static function getSvnBaseUrl()
     {
-        return 'http://themes.svn.wordpress.org/';
+        return 'https://themes.svn.wordpress.org/';
     }
 
     public function getHomepageUrl()
