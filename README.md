@@ -37,9 +37,9 @@ Example composer.json:
 }
 ```
 
-## Wordpress core
+## WordPress core
 
-This does not provide Wordpress itself.
+This does not provide WordPress itself.
 
 See https://github.com/fancyguy/webroot-installer or https://github.com/johnpbloch/wordpress.
 
