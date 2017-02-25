@@ -3,7 +3,7 @@
     "description": "Install and manage WordPress plugins with Composer",
     "require": {
         "php": ">=5.3.2",
-        "composer/composer": "1.0.*@dev",
+        "composer/composer": "1.3.*",
         "symfony/console": "*",
         "symfony/filesystem":"*",
         "chuyskywalker/rolling-curl": "dev-master",
@@ -16,8 +16,9 @@
         "pagerfanta/pagerfanta": "dev-master",
         "franmomu/silex-pagerfanta-provider": "dev-master",
         "doctrine/dbal": "2.2.*",
-        "knplabs/console-service-provider": "dev-master",
-        "rarst/wporg-client": "dev-master"
+        "knplabs/console-service-provider": "1.0",
+        "rarst/wporg-client": "dev-master",
+        "guzzlehttp/guzzle-services": "1.0.*"
     },
     "bin-dir": "bin",
     "autoload": {
