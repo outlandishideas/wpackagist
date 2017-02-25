@@ -130,7 +130,7 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
 
     if (!empty($query)) {
         $queryBuilder
-            ->andWhere('name LIKE :name')
+            ->where('name LIKE :name')
             ->addOrderBy('name LIKE :order', 'DESC')
             ->addOrderBy('name', 'ASC')
             ->setParameter(':name', "%{$query}%")
