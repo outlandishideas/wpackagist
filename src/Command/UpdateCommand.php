@@ -52,7 +52,7 @@ class UpdateCommand extends Command
 
         $update = $db->prepare(
             'UPDATE packages SET last_fetched = datetime("now"), versions = :json, is_active = 1
-            WHERE class_name = :class_name AND name = :name'
+            WHERE class_name = :class_name AND name = :name AND versions != :json'
         );
         $deactivate = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
 
