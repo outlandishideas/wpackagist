@@ -61,7 +61,7 @@ class UpdateCommand extends Command
         $packages = $db->query('
             SELECT * FROM packages
             WHERE last_fetched IS NULL
-            OR last_fetched < last_committed
+            OR last_fetched < datetime(last_committed, "+2 hours")
             OR (is_active = 0 AND last_committed > date("now", "-90 days") AND last_fetched < datetime("now", "-7 days"))
         ')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 
