@@ -26,8 +26,11 @@ class Plugin extends AbstractPackage
 
     public function getDownloadUrl($version)
     {
-        $filename = $this->versions[$version] == 'trunk' ? $this->getName() : $this->getName().'.'.$version;
+        $isTrunk = $this->versions[$version] === 'trunk';
 
-        return "https://downloads.wordpress.org/plugin/$filename.zip";
+        //Assemble file name and append ?timestamp= variable to the trunk version to avoid Composer cache when plugin/theme author only updates the trunk
+        $filename = ($isTrunk ? $this->getName() : $this->getName().'.'.$version) . '.zip' . ($isTrunk ? '?timestamp=' . urlencode($this->last_committed->format('U')) : '');
+
+        return "https://downloads.wordpress.org/plugin/{$filename}";
     }
 }
