@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\Version\VersionParser;
+use Outlandish\Wpackagist\Package\Plugin;
 
 class UpdateCommand extends Command
 {
@@ -123,6 +124,11 @@ class UpdateCommand extends Command
                     //version is invalid
                     unset($versions[$version]);
                 }
+            }
+
+            if (!isset($versions['dev-trunk']) && $plugin instanceof Plugin) {
+                // plugins always have at least trunk
+                $versions['dev-trunk'] = 'trunk';
             }
 
             if ($versions) {
