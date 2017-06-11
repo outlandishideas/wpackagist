@@ -14,6 +14,22 @@ $app['debug'] = true;
 // CONFIGURATION //
 ///////////////////
 
+/**
+ * @param $string
+ * @return mixed|string
+ */
+function searchKeyword($string) {
+    //Lower case everything
+    $string = strtolower($string);
+    //Make alphanumeric (removes all other characters)
+    $string = preg_replace("/[^a-z0-9_\s-]/", "", $string);
+    //Clean up multiple dashes or whitespaces
+    $string = preg_replace("/[\s-]+/", " ", $string);
+    //Convert whitespaces and underscore to dash
+    $string = preg_replace("/[\s_]/", "-", $string);
+    return $string;
+}
+
 // Register the form provider
 $app->register(new Silex\Provider\FormServiceProvider());
 
@@ -129,6 +145,7 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
     }
 
     if (!empty($query)) {
+        $query = searchKeyword($query);
         $queryBuilder
             ->andWhere('name LIKE :name')
             ->addOrderBy('name LIKE :order', 'DESC')
