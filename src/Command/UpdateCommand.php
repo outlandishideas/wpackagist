@@ -58,7 +58,8 @@ class UpdateCommand extends Command
         $db = $this->getApplication()->getSilexApplication()['db'];
 
         $update = $db->prepare(
-            'UPDATE packages SET last_fetched = datetime("now"), versions = :json, is_active = 1
+            'UPDATE packages SET 
+            last_fetched = datetime("now"), versions = :json, is_active = 1, display_name = :display_name
             WHERE class_name = :class_name AND name = :name'
         );
         $deactivate = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
@@ -147,6 +148,7 @@ class UpdateCommand extends Command
             if ($versions) {
                 $update->execute(
                     array(
+                        ':display_name' => $info['name'],
                         ':class_name' => get_class($package),
                         ':name' => $package->getName(),
                         ':json' => json_encode($versions)
