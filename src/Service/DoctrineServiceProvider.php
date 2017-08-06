@@ -97,4 +97,12 @@ class DoctrineServiceProvider extends BaseDoctrineServiceProvider
         // Versions detection has changed, redownload everyting
         $conn->exec('UPDATE packages SET last_fetched = NULL');
     }
+
+    protected function migrateTo4(Connection $conn)
+    {
+        $conn->exec('ALTER TABLE packages ADD COLUMN display_name TEXT');
+
+        // redownload everything to get display names
+        $conn->exec('UPDATE packages SET last_fetched = NULL');
+    }
 }
