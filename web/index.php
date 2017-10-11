@@ -2,6 +2,9 @@
 
 $app = require_once dirname(__DIR__).'/bootstrap.php';
 
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\NullOutput;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Pagerfanta\Pagerfanta;
@@ -63,12 +66,6 @@ $searchForm = $app['form.factory']->createNamedBuilder('', 'form', null, array('
             'theme'   => 'Themes',
         ),
     ))
-//    ->add('active_only', 'choice', array(
-//        'choices' => array(
-//            0 => 'All',
-//            1 => 'Active',
-//        ),
-//    ))
     ->add('search', 'submit')
     ->getForm();
 
@@ -153,6 +150,29 @@ $app->get('/search', function (Request $request) use ($app, $searchForm) {
     return $app['twig']->render('search.twig', $data);
 });
 
+$app->post('/update', function (Request $request) use ($app, $searchForm) {
+    // first run the update command
+    $name = $request->get('name');
+    if (!trim($name)) {
+        return new Response('Invalid Request',400);
+    }
+
+    $count = getRequestCountByIp($_SERVER['REMOTE_ADDR'], $app['db']);
+    if ($count > 10) {
+        return new Response('Too many requests. Try again in an hour.', 403);
+    }
+
+    $input = new ArrayInput(array(
+        'command' => 'update',
+        '--name' => $name
+    ));
+    $output = new NullOutput();
+    $app['console']->doRun($input, $output);
+
+    // then redirect to the search page
+    return new RedirectResponse('/search?q=' . htmlspecialchars($name));
+});
+
 // Opensearch path
 $app->get('/opensearch.xml', function (Request $request) use ($app) {
     return new Response($app['twig']->render(
@@ -165,3 +185,40 @@ $app->get('/opensearch.xml', function (Request $request) use ($app) {
 });
 
 $app->run();
+
+/**
+ * @var $db \Doctrine\DBAL\Connection
+ *
+ * @return int The number of requests within the past 24 hours
+ */
+function getRequestCountByIp($ip, $db) {
+
+    $query = $db->prepare(
+        'SELECT * FROM requests WHERE ip_address = :ip'
+    );
+    $query->execute([ $ip ]);
+
+    $requestHistory = $query->fetch(PDO::FETCH_ASSOC);
+    if (!$requestHistory) {
+        $insert = $db->prepare(
+            'INSERT INTO requests (ip_address, last_request, request_count) VALUES (:ip_address, CURRENT_TIMESTAMP, 1)'
+        );
+        $insert->execute([ $ip ]);
+        return 1;
+    }
+
+    if (strtotime($requestHistory['last_request']) < strtotime('now') - 60 * 60) {
+        $reset = $db->prepare(
+            'UPDATE requests SET request_count = 1, last_request = CURRENT_TIMESTAMP WHERE ip_address = :ip'
+        );
+        $reset->execute([ $ip ]);
+        return 1;
+    }
+
+    $update = $db->prepare(
+        'UPDATE requests SET request_count = request_count + 1, last_request = CURRENT_TIMESTAMP WHERE ip_address = :ip'
+    );
+
+    $update->execute([ $ip ]);
+    return $requestHistory['request_count'] + 1;
+}

@@ -94,13 +94,14 @@ class UpdateCommand extends Command
         foreach ($packages as $index => $package) {
 
             $percent = $index / $count * 100;
-            $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $package->getName()));
 
             if ($package instanceof Plugin) {
                 $info = $wporgClient->getPlugin($package->getName(), ['versions']);
             } else {
                 $info = $wporgClient->getTheme($package->getName(), ['versions']);
             }
+
+            $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $package->getName()));
 
             if (!$info) {
                 // Plugin is not active

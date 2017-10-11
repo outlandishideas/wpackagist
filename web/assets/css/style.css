@@ -80,6 +80,17 @@ button:hover, button:focus, .button:hover, .button:focus {
     text-decoration: none;
 }
 
+.search-result__refresh-form {
+    margin: 0;
+}
+
+.search-result__refresh-button {
+    border-radius: 100%;
+    line-height: 0.75rem;
+    margin: 0;
+    padding: 0.5rem;
+}
+
 .no-results {
     text-align: center;
     font-weight: bold;
