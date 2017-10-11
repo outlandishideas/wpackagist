@@ -164,4 +164,15 @@ $app->get('/opensearch.xml', function (Request $request) use ($app) {
     );
 });
 
+$app->error(function (\Exception $e, $code) use ($app) {
+
+    switch ($code) {
+        case 404:
+            return new Response('The requested page could not be found.', 404);
+        default:
+            return new Response('Something went wrong.', 500);
+    }
+    
+});
+
 $app->run();
