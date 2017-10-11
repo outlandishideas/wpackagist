@@ -202,6 +202,11 @@ $app->run();
  */
 function getRequestCountByIp($ip, $db) {
 
+    $prune = $db->prepare(
+        "DELETE FROM requests WHERE last_request < DATETIME(CURRENT_TIMESTAMP, '-1 hour')"
+    );
+    $prune->execute();
+
     $query = $db->prepare(
         'SELECT * FROM requests WHERE ip_address = :ip'
     );
@@ -213,14 +218,6 @@ function getRequestCountByIp($ip, $db) {
             'INSERT INTO requests (ip_address, last_request, request_count) VALUES (:ip_address, CURRENT_TIMESTAMP, 1)'
         );
         $insert->execute([ $ip ]);
-        return 1;
-    }
-
-    if (strtotime($requestHistory['last_request']) < strtotime('now') - 60 * 60) {
-        $reset = $db->prepare(
-            'UPDATE requests SET request_count = 1, last_request = CURRENT_TIMESTAMP WHERE ip_address = :ip'
-        );
-        $reset->execute([ $ip ]);
         return 1;
     }
 
