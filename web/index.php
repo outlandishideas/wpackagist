@@ -157,6 +157,15 @@ $app->post('/update', function (Request $request) use ($app, $searchForm) {
         return new Response('Invalid Request',400);
     }
 
+    $query = $app['db']->prepare('SELECT * FROM packages WHERE name = :name');
+    $query->execute([ $name ]);
+    $package = $query->fetch(PDO::FETCH_ASSOC);
+
+    if (!$package) {
+        return new Response('Not Found',404);
+    }
+    $safeName = $package['name'];
+
     $count = getRequestCountByIp($_SERVER['REMOTE_ADDR'], $app['db']);
     if ($count > 10) {
         return new Response('Too many requests. Try again in an hour.', 403);
@@ -164,13 +173,13 @@ $app->post('/update', function (Request $request) use ($app, $searchForm) {
 
     $input = new ArrayInput(array(
         'command' => 'update',
-        '--name' => $name
+        '--name' => $safeName
     ));
     $output = new NullOutput();
     $app['console']->doRun($input, $output);
 
     // then redirect to the search page
-    return new RedirectResponse('/search?q=' . htmlspecialchars($name));
+    return new RedirectResponse('/search?q=' . $safeName);
 });
 
 // Opensearch path
