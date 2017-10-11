@@ -202,22 +202,14 @@ $app->run();
  */
 function getRequestCountByIp($ip, $db) {
 
-    $prune = $db->prepare(
-        "DELETE FROM requests WHERE last_request < DATETIME(CURRENT_TIMESTAMP, '-1 hour')"
-    );
-    $prune->execute();
-
     $query = $db->prepare(
-        'SELECT * FROM requests WHERE ip_address = :ip'
+        "SELECT * FROM requests WHERE ip_address = :ip AND last_request > DATETIME(CURRENT_TIMESTAMP, '-1 hour')"
     );
     $query->execute([ $ip ]);
 
     $requestHistory = $query->fetch(PDO::FETCH_ASSOC);
     if (!$requestHistory) {
-        $insert = $db->prepare(
-            'INSERT INTO requests (ip_address, last_request, request_count) VALUES (:ip_address, CURRENT_TIMESTAMP, 1)'
-        );
-        $insert->execute([ $ip ]);
+        resetRequestCount($ip, $db);
         return 1;
     }
 
@@ -227,4 +219,21 @@ function getRequestCountByIp($ip, $db) {
 
     $update->execute([ $ip ]);
     return $requestHistory['request_count'] + 1;
+}
+
+/**
+ * Add an entry to the requests table for the provided IP address.
+ * Has the side effect of removing all expired entries.
+ *
+ * @param $db \Doctrine\DBAL\Connection
+ */
+function resetRequestCount($ip, $db) {
+    $prune = $db->prepare(
+        "DELETE FROM requests WHERE last_request < DATETIME(CURRENT_TIMESTAMP, '-1 hour')"
+    );
+    $prune->execute();
+    $insert = $db->prepare(
+        'INSERT INTO requests (ip_address, last_request, request_count) VALUES (:ip_address, CURRENT_TIMESTAMP, 1)'
+    );
+    $insert->execute([ $ip ]);
 }
