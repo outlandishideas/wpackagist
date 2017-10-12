@@ -105,4 +105,16 @@ class DoctrineServiceProvider extends BaseDoctrineServiceProvider
         // redownload everything to get display names
         $conn->exec('UPDATE packages SET last_fetched = NULL');
     }
+
+    protected function migrateTo5(Connection $conn)
+    {
+        $conn->exec('
+            CREATE TABLE IF NOT EXISTS requests (
+                ip_address TEXT UNIQUE,
+                last_request DATETIME,
+                request_count INT
+            );
+            CREATE INDEX IF NOT EXISTS ip_address_idx ON requests(ip_address);
+        ');
+    }
 }

@@ -15,10 +15,11 @@
             <tr>
                 <th width="8%">Type</th>
                 <th width="20%">Name</th>
-                <th width="18%"><abbr title="Last time a modification was committed to the SVN repository">Last committed</abbr></th>
-                <th width="18%"><abbr title="Last time this package was updated in the WordPress Packagist database">Last fetched</abbr></th>
+                <th width="16%"><abbr title="Last time a modification was committed to the SVN repository">Last committed</abbr></th>
+                <th width="16%"><abbr title="Last time this package was updated in the WordPress Packagist database">Last fetched</abbr></th>
                 <th width="32%">Versions</th>
                 <th width="4%">Active</th>
+                <th width="4%">Refresh</th>
             </tr>
         </thead>
         <tbody>
@@ -59,6 +60,12 @@
                         {% else %}
                             <span style="color: red">✘</span>
                         {% endif %}
+                    </td>
+                    <td style="text-align: center">
+                        <form class="search-result__refresh-form" action="/update" method="post">
+                            <input type="hidden" name="name" value="{{ package['name'] }}">
+                            <button class="search-result__refresh-button">↺</button>
+                        </form>
                     </td>
                 </tr>
             {% else %}
