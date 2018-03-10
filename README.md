@@ -26,7 +26,7 @@ Example composer.json:
     "require": {
         "aws/aws-sdk-php":"*",
         "wpackagist-plugin/akismet":"dev-trunk",
-        "wpackagist-plugin/captcha":">=3.9",
+        "wpackagist-plugin/wordpress-seo":">=7.0.2",
         "wpackagist-theme/hueman":"*"
     },
     "autoload": {
