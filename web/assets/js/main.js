@@ -8,7 +8,7 @@ $(document).ready(function () {
             name = $parentRow.find('[data-name]').data('name'),
             type = $parentRow.find('[data-type]').data('type'),
             version = $element.data('version'),
-            copyString = '"wpackagist-' + type + '/' + name + '": "' + version + '"';
+            copyString = '"wpackagist-' + type + '/' + name + '":"' + version + '"';
 
         //remove any existing info boxes
         $('.js-composer-info').remove();
