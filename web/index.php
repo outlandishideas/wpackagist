@@ -177,6 +177,12 @@ $app->post('/update', function (Request $request) use ($app, $searchForm) {
     ));
     $output = new NullOutput();
     $app['console']->doRun($input, $output);
+    
+    $input = new ArrayInput(array(
+        'command' => 'build'
+    ));
+    $output = new NullOutput();
+    $app['console']->doRun($input, $output);
 
     // then redirect to the search page
     return new RedirectResponse('/search?q=' . $safeName);
