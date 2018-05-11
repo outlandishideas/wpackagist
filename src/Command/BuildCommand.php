@@ -55,7 +55,8 @@ class BuildCommand extends Command
 
         $fs = new Filesystem();
 
-        $basePath = 'web/p.new/';
+        $webPath = dirname(__FILE__) . '/../../web/';
+        $basePath = $webPath . 'p.new/';
         $fs->mkdir($basePath.'wpackagist');
         $fs->mkdir($basePath.'wpackagist-plugin');
         $fs->mkdir($basePath.'wpackagist-theme');
@@ -118,16 +119,20 @@ class BuildCommand extends Command
         ));
 
         // switch old and new files
-        if ($fs->exists('web/p')) {
-            $fs->rename('web/p', 'web/p.old');
+        $originalPath = $webPath . 'p';
+        $oldPath = $webPath . 'p.old';
+        if ($fs->exists($originalPath)) {
+            $fs->rename($originalPath, $oldPath);
         }
-        $fs->rename($basePath, 'web/p/');
-        file_put_contents('web/packages.json', $content);
+        $fs->rename($basePath, $originalPath . '/');
+        
+        $packagesPath = $webPath . 'packages.json';
+        file_put_contents($packagesPath, $content);
 
         // this doesn't work
         // $fs->remove('web/p.old');
 
-        exec('rm -rf web/p.old', $return, $code);
+        exec('rm -rf ' . $oldPath, $return, $code);
 
         $output->writeln("Wrote packages.json file");
     }
