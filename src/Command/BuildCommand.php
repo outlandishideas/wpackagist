@@ -156,7 +156,7 @@ class BuildCommand extends Command
 
         $stateUpdate = $db->prepare('
             UPDATE state
-            SET value = "" WHERE key="update_required"
+            SET value = "" WHERE key="build_required"
         ');
         $stateUpdate->execute();
 
