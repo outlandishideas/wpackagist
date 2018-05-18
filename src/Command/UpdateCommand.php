@@ -138,7 +138,7 @@ class UpdateCommand extends Command
                         //do nothing
                     } else {
                         //add ref to SVN tag
-                        $versions[$version] = 'tags/'.$version;
+                        $versions[$version] = 'tags/' . $version;
                     }
                 } catch (\UnexpectedValueException $e) {
                     //version is invalid
@@ -158,8 +158,13 @@ class UpdateCommand extends Command
             } else {
                 $deactivate->execute(array(':class_name' => get_class($package), ':name' => $package->getName()));
             }
-
         }
+
+        $stateUpdate = $db->prepare('
+            UPDATE state
+            SET value = "yes" WHERE key="build_required"
+        ');
+        $stateUpdate->execute();
 
     }
 }

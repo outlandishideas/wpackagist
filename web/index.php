@@ -178,19 +178,6 @@ $app->post('/update', function (Request $request) use ($app, $searchForm) {
     $output = new NullOutput();
     $app['console']->doRun($input, $output);
 
-    // don't run build if already building to prevent server overload
-    $file = fopen(dirname(__FILE__) . '/packages.lock',"w+");
-    if (flock($file,LOCK_EX|LOCK_NB)) {
-        $input = new ArrayInput(array(
-            'command' => 'build'
-        ));
-        $output = new NullOutput();
-        $app['console']->doRun($input, $output);
-        flock($file,LOCK_UN);
-    } else {
-        error_log('Could not obtain lock');
-    }
-
     // then redirect to the search page
     return new RedirectResponse('/search?q=' . $safeName);
 });

@@ -117,4 +117,16 @@ class DoctrineServiceProvider extends BaseDoctrineServiceProvider
             CREATE INDEX IF NOT EXISTS ip_address_idx ON requests(ip_address);
         ');
     }
+
+    protected function migrateTo6(Connection $conn)
+    {
+        $conn->exec('
+            CREATE TABLE IF NOT EXISTS state (
+                key TEXT UNIQUE,
+                value TEXT
+            );
+            CREATE INDEX IF NOT EXISTS key_idx ON state(key);
+            INSERT INTO state (key, value) VALUES ("build_required", "");
+        ');
+    }
 }

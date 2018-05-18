@@ -4,6 +4,7 @@ namespace Outlandish\Wpackagist\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Console\Helper\Table;
@@ -16,7 +17,14 @@ class BuildCommand extends Command
     {
         $this
             ->setName('build')
-            ->setDescription('Build package.json from DB');
+            ->setDescription('Build package.json from DB')
+            ->addOption(
+                'force',
+                null,
+                InputOption::VALUE_NONE,
+                'Name of package to update',
+                null
+            );
     }
 
     /**
@@ -31,14 +39,14 @@ class BuildCommand extends Command
 
         if ($date >= new \DateTime('monday last week')) {
             return 'this-week';
-        } elseif ($date >= new \DateTime(date('Y').'-01-01')) {
+        } elseif ($date >= new \DateTime(date('Y') . '-01-01')) {
             // split current by chunks of 3 months, current month included
             // past chunks will never be update this year
             $month = $date->format('n');
             $month = ceil($month / 3) * 3;
             $month = str_pad($month, 2, '0', STR_PAD_LEFT);
 
-            return $date->format('Y-').$month;
+            return $date->format('Y-') . $month;
         } elseif ($date >= new \DateTime('2011-01-01')) {
             // split by years, limit at 2011 so we never update 'old' again
             return $date->format('Y');
@@ -51,20 +59,32 @@ class BuildCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /**
+         * @var \PDO $db
+         */
+        $db = $this->getApplication()->getSilexApplication()['db'];
+
+        if (!$input->getOption('force')) {
+            $state = $db->query('
+                SELECT value FROM state WHERE key="build_required"   
+            ')->fetch();
+
+            if (!$state['value']) {
+                $output->writeln("Not building packages as build_required was falsey");
+                return;
+            }
+        }
+
         $output->writeln("Building packages");
 
         $fs = new Filesystem();
 
         $webPath = dirname(__FILE__) . '/../../web/';
         $basePath = $webPath . 'p.new/';
-        $fs->mkdir($basePath.'wpackagist');
-        $fs->mkdir($basePath.'wpackagist-plugin');
-        $fs->mkdir($basePath.'wpackagist-theme');
+        $fs->mkdir($basePath . 'wpackagist');
+        $fs->mkdir($basePath . 'wpackagist-plugin');
+        $fs->mkdir($basePath . 'wpackagist-theme');
 
-        /**
-         * @var \PDO $db
-         */
-        $db = $this->getApplication()->getSilexApplication()['db'];
 
         $packages = $db->query('
             SELECT * FROM packages
@@ -125,7 +145,7 @@ class BuildCommand extends Command
             $fs->rename($originalPath, $oldPath);
         }
         $fs->rename($basePath, $originalPath . '/');
-        
+
         $packagesPath = $webPath . 'packages.json';
         file_put_contents($packagesPath, $content);
 
@@ -133,6 +153,12 @@ class BuildCommand extends Command
         // $fs->remove('web/p.old');
 
         exec('rm -rf ' . $oldPath, $return, $code);
+
+        $stateUpdate = $db->prepare('
+            UPDATE state
+            SET value = "" WHERE key="update_required"
+        ');
+        $stateUpdate->execute();
 
         $output->writeln("Wrote packages.json file");
     }
