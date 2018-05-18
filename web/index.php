@@ -180,7 +180,7 @@ $app->post('/update', function (Request $request) use ($app, $searchForm) {
 
     // don't run build if already building to prevent server overload
     $file = fopen(dirname(__FILE__) . '/packages.lock',"w+");
-    if (flock($file,LOCK_EX)) {
+    if (flock($file,LOCK_EX|LOCK_NB)) {
         $input = new ArrayInput(array(
             'command' => 'build'
         ));
