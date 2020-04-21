@@ -20,7 +20,8 @@ Example composer.json:
     "repositories":[
         {
             "type":"composer",
-            "url":"https://wpackagist.org"
+            "url":"https://wpackagist.org",
+            "only": ["wpackagist-plugin/*", "wpackagist-theme/*"]
         }
     ],
     "require": {
