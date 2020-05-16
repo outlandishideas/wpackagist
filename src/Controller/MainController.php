@@ -3,12 +3,11 @@
 namespace Outlandish\Wpackagist\Controller;
 
 use Doctrine\DBAL\Connection;
+use Outlandish\Wpackagist\Service;
 use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
 use Pagerfanta\Pagerfanta;
 use PDO;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -113,7 +112,7 @@ class MainController extends AbstractController
         return $this->render('search.twig', $data);
     }
 
-    public function update(Request $request, Application $consoleApp, Connection $connection): Response
+    public function update(Request $request, Connection $connection, Service\Update $updateService): Response
     {
         // first run the update command
         $name = $request->get('name');
@@ -135,14 +134,8 @@ class MainController extends AbstractController
             return new Response('Too many requests. Try again in an hour.', 403);
         }
 
-        $input = new ArrayInput([
-            'command' => 'update',
-            '--name' => $safeName
-        ]);
-        $output = new NullOutput();
-        $consoleApp->doRun($input, $output);
+        $updateService->update(new NullOutput(), $safeName);
 
-        // then redirect to the search page
         return new RedirectResponse('/search?q=' . $safeName);
     }
 
