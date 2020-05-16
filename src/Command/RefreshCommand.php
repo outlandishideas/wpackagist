@@ -26,10 +26,10 @@ class RefreshCommand extends DbAwareCommand
     {
         $svn = $input->getOption('svn');
 
-        $types = array(
+        $types = [
             'plugin' => 'Outlandish\Wpackagist\Package\Plugin',
             'theme'  => 'Outlandish\Wpackagist\Package\Theme',
-        );
+        ];
 
         $updateStmt = $this->connection->prepare('UPDATE packages SET last_committed = :date WHERE class_name = :class_name AND name = :name');
         $insertStmt = $this->connection->prepare('INSERT INTO packages (class_name, name, last_committed) VALUES (:class_name, :name, :date)');
@@ -53,7 +53,7 @@ class RefreshCommand extends DbAwareCommand
             $newCount = 0;
             foreach ($xml->list->entry as $entry) {
                 $date = date('Y-m-d H:i:s', strtotime((string) $entry->commit->date));
-                $params = array(':class_name' => $class_name, ':name' => (string) $entry->name, ':date' => $date);
+                $params = [':class_name' => $class_name, ':name' => (string) $entry->name, ':date' => $date];
 
                 $updateStmt->execute($params);
                 if ($updateStmt->rowCount() == 0) {

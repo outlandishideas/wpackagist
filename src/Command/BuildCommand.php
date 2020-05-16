@@ -16,12 +16,8 @@ class BuildCommand extends DbAwareCommand
     {
         $this
             ->setName('build')
-            ->setDescription('Build package.json from DB')
-            ->addOption(
-                'force',
-                null,
-                InputOption::VALUE_NONE
-            );
+            ->setDescription('Build packages.json from DB')
+            ->addOption('force', null, InputOption::VALUE_NONE);
     }
 
     /**
@@ -71,7 +67,7 @@ class BuildCommand extends DbAwareCommand
 
         $fs = new Filesystem();
 
-        $webPath = dirname(__FILE__) . '/../../web/';
+        $webPath = __DIR__ . '/../../web/';
         $basePath = $webPath . 'p.new/';
         $fs->mkdir($basePath . 'wpackagist');
         $fs->mkdir($basePath . 'wpackagist-plugin');
@@ -86,39 +82,39 @@ class BuildCommand extends DbAwareCommand
 
         $uid = 1; // don't know what this does but composer requires it
 
-        $providers = array();
+        $providers = [];
 
         foreach ($packages as $package) {
             $packagesData = $package->getPackages($uid);
 
             foreach ($packagesData as $packageName => $packageData) {
-                $content = json_encode(array('packages' => array($packageName => $packageData)));
+                $content = json_encode(['packages' => [$packageName => $packageData]]);
                 $sha256 = hash('sha256', $content);
                 file_put_contents("$basePath$packageName\$$sha256.json", $content);
-                $providers[$this->getComposerProviderGroup($package)][$packageName] = array(
+                $providers[$this->getComposerProviderGroup($package)][$packageName] = [
                     'sha256' => $sha256,
-                );
+                ];
             }
         }
 
         $table = new Table($output);
-        $table->setHeaders(array('provider', 'packages', 'size'));
+        $table->setHeaders(['provider', 'packages', 'size']);
 
-        $providerIncludes = array();
+        $providerIncludes = [];
         foreach ($providers as $providerGroup => $providers) {
-            $content = json_encode(array('providers' => $providers));
+            $content = json_encode(['providers' => $providers]);
             $sha256 = hash('sha256', $content);
             file_put_contents("{$basePath}providers-$providerGroup\$$sha256.json", $content);
 
-            $providerIncludes["p/providers-$providerGroup\$%hash%.json"] = array(
+            $providerIncludes["p/providers-$providerGroup\$%hash%.json"] = [
                 'sha256' => $sha256,
-            );
+            ];
 
-            $table->addRow(array(
+            $table->addRow([
                 $providerGroup,
                 count($providers),
                 Helper::formatMemory(filesize("{$basePath}providers-$providerGroup\$$sha256.json")),
-            ));
+            ]);
         }
 
         $table->render();
