@@ -143,7 +143,8 @@ class MainController extends AbstractController
     {
         if (!$this->form) {
             $this->form = $this->formFactory
-                ->createBuilder(FormType::class, null, ['csrf_protection' => false])
+                // A named builder with blank name enables not having a param prefix like `formName[fieldName]`.
+                ->createNamedBuilder('', FormType::class, null, ['csrf_protection' => false])
                 ->setAction('search')
                 ->setMethod('GET')
                 ->add('q', SearchType::class)
