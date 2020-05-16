@@ -5,13 +5,12 @@ namespace Outlandish\Wpackagist\Command;
 use Outlandish\Wpackagist\Package\Plugin;
 use Outlandish\Wpackagist\Package\Theme;
 use Rarst\Guzzle\WporgClient;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\Version\VersionParser;
 
-class UpdateCommand extends Command
+class UpdateCommand extends DbAwareCommand
 {
     protected function configure()
     {
@@ -50,30 +49,25 @@ class UpdateCommand extends Command
      * <li><a itemprop="downloadUrl" href="http://downloads.wordpress.org/plugin/PLUGIN.zip" rel="nofollow">Development Version</a> (<a href="http://plugins.svn.wordpress.org/PLUGIN/trunk" rel="nofollow">svn</a>)</li>
      * <li><a itemprop="downloadUrl" href="http://downloads.wordpress.org/plugin/PLUGIN.VERSION.zip" rel="nofollow">VERSION</a> (<a href="http://plugins.svn.wordpress.org/PLUGIN/TAG" rel="nofollow">svn</a>)</li>
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        /**
-         * @var $db \Doctrine\DBAL\Connection
-         */
-        $db = $this->getApplication()->getSilexApplication()['db'];
-
-        $update = $db->prepare(
-            'UPDATE packages SET 
+        $update = $this->connection->prepare(
+            'UPDATE packages SET
             last_fetched = datetime("now"), versions = :json, is_active = 1, display_name = :display_name
             WHERE class_name = :class_name AND name = :name'
         );
-        $deactivate = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
+        $deactivate = $this->connection->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
 
         $name = $input->getOption('name');
 
         if ($name) {
-            $query = $db->prepare('
+            $query = $this->connection->prepare('
                 SELECT * FROM packages
                 WHERE name = :name
             ');
             $query->bindValue("name", $name);
         } else {
-            $query = $db->prepare('
+            $query = $this->connection->prepare('
                 SELECT * FROM packages
                 WHERE last_fetched IS NULL
                 OR last_fetched < datetime(last_committed, "+2 hours")
@@ -134,12 +128,10 @@ class UpdateCommand extends Command
                     if ($package instanceof Theme) {
                         //themes have different SVN folder structure
                         $versions[$version] = $version;
-                    } elseif ($url == 'trunk') {
-                        //do nothing
-                    } else {
+                    } elseif ($url !== 'trunk') {
                         //add ref to SVN tag
                         $versions[$version] = 'tags/' . $version;
-                    }
+                    } // else do nothing, for 'trunk'.
                 } catch (\UnexpectedValueException $e) {
                     //version is invalid
                     unset($versions[$version]);
@@ -160,11 +152,12 @@ class UpdateCommand extends Command
             }
         }
 
-        $stateUpdate = $db->prepare('
+        $stateUpdate = $this->connection->prepare('
             UPDATE state
             SET value = "yes" WHERE key="build_required"
         ');
         $stateUpdate->execute();
 
+        return 0;
     }
 }

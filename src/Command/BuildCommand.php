@@ -2,7 +2,6 @@
 
 namespace Outlandish\Wpackagist\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,7 +10,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\Helper;
 use Outlandish\Wpackagist\Package\AbstractPackage;
 
-class BuildCommand extends Command
+class BuildCommand extends DbAwareCommand
 {
     protected function configure()
     {
@@ -21,9 +20,7 @@ class BuildCommand extends Command
             ->addOption(
                 'force',
                 null,
-                InputOption::VALUE_NONE,
-                'Name of package to update',
-                null
+                InputOption::VALUE_NONE
             );
     }
 
@@ -57,21 +54,16 @@ class BuildCommand extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        /**
-         * @var \PDO $db
-         */
-        $db = $this->getApplication()->getSilexApplication()['db'];
-
         if (!$input->getOption('force')) {
-            $state = $db->query('
-                SELECT value FROM state WHERE key="build_required"   
+            $state = $this->connection->query('
+                SELECT value FROM state WHERE key="build_required"
             ')->fetch();
 
             if (!$state['value']) {
                 $output->writeln("Not building packages as build_required was falsey");
-                return;
+                return 1;
             }
         }
 
@@ -86,7 +78,7 @@ class BuildCommand extends Command
         $fs->mkdir($basePath . 'wpackagist-theme');
 
 
-        $packages = $db->query('
+        $packages = $this->connection->query('
             SELECT * FROM packages
             WHERE versions IS NOT NULL AND is_active
             ORDER BY name
@@ -97,7 +89,6 @@ class BuildCommand extends Command
         $providers = array();
 
         foreach ($packages as $package) {
-            $packageName = $package->getPackageName();
             $packagesData = $package->getPackages($uid);
 
             foreach ($packagesData as $packageName => $packageData) {
@@ -132,11 +123,11 @@ class BuildCommand extends Command
 
         $table->render();
 
-        $content = json_encode(array(
-            'packages' => array(),
+        $content = json_encode([
+            'packages' => [],
             'providers-url' => '/p/%package%$%hash%.json',
             'provider-includes' => $providerIncludes,
-        ));
+        ]);
 
         // switch old and new files
         $originalPath = $webPath . 'p';
@@ -154,12 +145,14 @@ class BuildCommand extends Command
 
         exec('rm -rf ' . $oldPath, $return, $code);
 
-        $stateUpdate = $db->prepare('
+        $stateUpdate = $this->connection->prepare('
             UPDATE state
             SET value = "" WHERE key="build_required"
         ');
         $stateUpdate->execute();
 
         $output->writeln("Wrote packages.json file");
+
+        return 0;
     }
 }
