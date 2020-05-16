@@ -2,6 +2,9 @@
 
 namespace Outlandish\Wpackagist\Command;
 
+use Doctrine\DBAL\Statement;
+use GuzzleHttp\Exception\GuzzleException;
+use Outlandish\Wpackagist\Package\AbstractPackage;
 use Outlandish\Wpackagist\Package\Plugin;
 use Outlandish\Wpackagist\Package\Theme;
 use Rarst\Guzzle\WporgClient;
@@ -90,16 +93,24 @@ class UpdateCommand extends DbAwareCommand
             $percent = $index / $count * 100;
 
             if ($package instanceof Plugin) {
-                $info = $wporgClient->getPlugin($package->getName(), ['versions']);
+                try {
+                    $info = $wporgClient->getPlugin($package->getName(), ['versions']);
+                } catch (GuzzleException $exception) {
+                    $output->writeln("<warn>Skipped plugin '{$package->getName()}' due to error: '{$exception->getMessage()}'</warn>");
+                }
             } else {
-                $info = $wporgClient->getTheme($package->getName(), ['versions']);
+                try {
+                    $info = $wporgClient->getTheme($package->getName(), ['versions']);
+                } catch (GuzzleException $exception) {
+                    $output->writeln("<warn>Skipped theme '{$package->getName()}' due to error: '{$exception->getMessage()}'</warn>");
+                }
             }
 
             $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $package->getName()));
 
-            if (!$info) {
+            if (empty($info)) {
                 // Plugin is not active
-                $deactivate->execute(array(':class_name' => get_class($package), ':name' => $package->getName()));
+                $this->deactivate($deactivate, $package, 'not active', $output);
 
                 continue;
             }
@@ -139,16 +150,15 @@ class UpdateCommand extends DbAwareCommand
             }
 
             if ($versions) {
-                $update->execute(
-                    array(
-                        ':display_name' => $info['name'],
-                        ':class_name' => get_class($package),
-                        ':name' => $package->getName(),
-                        ':json' => json_encode($versions)
-                    )
-                );
+                $update->execute([
+                    ':display_name' => $info['name'],
+                    ':class_name' => get_class($package),
+                    ':name' => $package->getName(),
+                    ':json' => json_encode($versions)
+                ]);
             } else {
-                $deactivate->execute(array(':class_name' => get_class($package), ':name' => $package->getName()));
+                // Plugin is not active
+                $this->deactivate($deactivate, $package, 'no versions found', $output);
             }
         }
 
@@ -159,5 +169,12 @@ class UpdateCommand extends DbAwareCommand
         $stateUpdate->execute();
 
         return 0;
+    }
+
+    private function deactivate(Statement $statement, AbstractPackage $package, string $reason, OutputInterface $output)
+    {
+        $statement->execute([':class_name' => get_class($package), ':name' => $package->getName()]);
+
+        $output->writeln(sprintf("<info>Deactivated package %s because %s", $package->getName(), $reason));
     }
 }
