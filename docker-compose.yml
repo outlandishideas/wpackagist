@@ -3,7 +3,7 @@
 version: "3.7"
 
 services:
-    command:
+    cron:
         build: .
         entrypoint: docker-php-entrypoint
         command: /var/www/html/run-cron.sh
