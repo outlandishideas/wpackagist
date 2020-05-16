@@ -64,13 +64,13 @@ class Update
                 try {
                     $info = $wporgClient->getPlugin($package->getName(), ['versions']);
                 } catch (GuzzleException $exception) {
-                    $output->writeln("<warning>Skipped plugin '{$package->getName()}' due to error: '{$exception->getMessage()}'</warning>");
+                    $output->writeln("Skipped plugin '{$package->getName()}' due to error: '{$exception->getMessage()}'");
                 }
             } else {
                 try {
                     $info = $wporgClient->getTheme($package->getName(), ['versions']);
                 } catch (GuzzleException $exception) {
-                    $output->writeln("<warning>Skipped theme '{$package->getName()}' due to error: '{$exception->getMessage()}'</warning>");
+                    $output->writeln("Skipped theme '{$package->getName()}' due to error: '{$exception->getMessage()}'");
                 }
             }
 
