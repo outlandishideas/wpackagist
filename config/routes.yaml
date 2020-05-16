@@ -1,3 +1,19 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+home:
+    path: /
+    controller: Outlandish\Wpackagist\Controller\MainController::home
+    methods: GET
+
+search:
+    path: /search
+    controller: Outlandish\Wpackagist\Controller\MainController::search
+    methods: GET
+
+update:
+    path: /update
+    controller: Outlandish\Wpackagist\Controller\MainController::update
+    methods: POST
+
+opensearch:
+    path: /opensearch.xml
+    controller: Outlandish\Wpackagist\Controller\OpenSearchController::go
+    methods: GET

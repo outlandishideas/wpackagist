@@ -4,8 +4,81 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d80bf266f6adfafca1adc26214578a57",
+    "content-hash": "745bcab588f469f83c27cdb7309d0fea",
     "packages": [
+        {
+            "name": "babdev/pagerfanta-bundle",
+            "version": "v2.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/BabDev/BabDevPagerfantaBundle.git",
+                "reference": "90e07eea762d8b1b5955d08f8fdd91731189d6e1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/BabDev/BabDevPagerfantaBundle/zipball/90e07eea762d8b1b5955d08f8fdd91731189d6e1",
+                "reference": "90e07eea762d8b1b5955d08f8fdd91731189d6e1",
+                "shasum": ""
+            },
+            "require": {
+                "pagerfanta/pagerfanta": "^1.1 || ^2.0",
+                "php": "^7.2",
+                "symfony/config": "^3.4 || ^4.4 || ^5.0",
+                "symfony/dependency-injection": "^3.4 || ^4.4 || ^5.0",
+                "symfony/http-foundation": "^3.4 || ^4.4 || ^5.0",
+                "symfony/http-kernel": "^3.4 || ^4.4 || ^5.0",
+                "symfony/property-access": "^3.4 || ^4.4 || ^5.0",
+                "symfony/routing": "^3.4 || ^4.4 || ^5.0"
+            },
+            "conflict": {
+                "twig/twig": "<1.34 || >=2.0,<2.4",
+                "white-october/pagerfanta-bundle": "*"
+            },
+            "require-dev": {
+                "doctrine/annotations": "^1.8",
+                "friendsofphp/php-cs-fixer": "^2.16",
+                "matthiasnoback/symfony-dependency-injection-test": "^4.1",
+                "phpunit/phpunit": "^8.5 || ^9.0",
+                "symfony/translation": "^3.4 || ^4.4 || ^5.0",
+                "symfony/twig-bridge": "^3.4 || ^4.4 || ^5.0",
+                "twig/twig": "^1.34 || ^2.4 || ^3.0"
+            },
+            "suggest": {
+                "symfony/translation": "To use the Pagerfanta views with translation support",
+                "twig/twig": "To integrate Pagerfanta with Twig through extensions"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "branch-alias": {
+                    "dev-2.x": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "BabDev\\PagerfantaBundle\\": ""
+                },
+                "exclude-from-classmap": [
+                    "Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Bundle integrating Pagerfanta with Symfony",
+            "keywords": [
+                "pagerfanta",
+                "pagination",
+                "symfony"
+            ],
+            "funding": [
+                {
+                    "url": "https://github.com/mbabker",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-04-20T22:23:43+00:00"
+        },
         {
             "name": "doctrine/annotations",
             "version": "1.10.2",
