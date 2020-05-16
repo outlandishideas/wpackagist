@@ -43,13 +43,18 @@ class MainController extends AbstractController
     public function search(Request $request, Connection $connection): Response
     {
         $queryBuilder = $connection->createQueryBuilder();
-        $type         = $request->get('type');
-        $active       = $request->get('active_only');
-        $query        = trim($request->get('q'));
+
+        $form = $this->getForm();
+        $form->handleRequest($request);
+
+        $data = $form->getData();
+        $type = $data['type'] ?? null;
+        $active = $data['active_only'] ?? false;
+        $query = empty($data['q']) ? null : trim($data['q']);
 
         $data = [
             'title'              => "WordPress Packagist: Search packages",
-            'searchForm'         => $this->getForm()->handleRequest($request)->createView(),
+            'searchForm'         => $form->createView(),
             'currentPageResults' => '',
             'error'              => '',
         ];
@@ -151,9 +156,9 @@ class MainController extends AbstractController
                 ->add('q', SearchType::class)
                 ->add('type', ChoiceType::class, [
                     'choices' => [
-                        'any'     => 'All packages',
-                        'plugin'  => 'Plugins',
-                        'theme'   => 'Themes',
+                        'All packages' => 'any',
+                        'Plugins' => 'plugin',
+                        'Themes' => 'theme',
                     ],
                 ])
                 ->add('search', SubmitType::class)
