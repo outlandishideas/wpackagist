@@ -69,8 +69,8 @@
     "doctrine/reflection": {
         "version": "1.2.1"
     },
-    "jdorn/sql-formatter": {
-        "version": "v1.2.17"
+    "doctrine/sql-formatter": {
+        "version": "1.0.1"
     },
     "laminas/laminas-code": {
         "version": "3.4.1"
@@ -88,7 +88,7 @@
         "version": "2.8.0"
     },
     "php": {
-        "version": "7.4"
+        "version": "7.2.24"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -221,8 +221,5 @@
     },
     "twig/extra-bundle": {
         "version": "v3.0.3"
-    },
-    "webimpress/safe-writer": {
-        "version": "2.0.1"
     }
 }

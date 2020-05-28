@@ -2,11 +2,14 @@
     "name": "outlandish/wpackagist",
     "description": "Install and manage WordPress plugins with Composer",
     "config": {
+        "platform": {
+            "php": "7.2.24"
+        },
         "sort-packages": true
     },
     "minimum-stability": "stable",
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.2.24",
         "ext-json": "*",
         "ext-pdo": "*",
         "ext-pdo_sqlite": "*",
