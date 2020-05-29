@@ -10,6 +10,11 @@ class ExceptionListener
 {
     public function onKernelException(ExceptionEvent $event)
     {
+        // Let Symfony's default error tracing happen in dev.
+        if (getenv('APP_ENV') === 'dev') {
+            return;
+        }
+
         $message = 'Something went wrong.';
         $exception = $event->getThrowable();
         $response = new Response();
