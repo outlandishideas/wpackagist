@@ -10,7 +10,7 @@ services:
         volumes:
             - .:/var/www/html
         env_file:
-            - .env
+            - .env.local
     web:
         build: .
         ports:
@@ -18,4 +18,4 @@ services:
         volumes:
             - .:/var/www/html
         env_file:
-            - .env
+            - .env.local
