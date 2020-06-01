@@ -75,6 +75,12 @@ The first database fetch may easily take 30-60 minutes, be patient.
 This may be simpler than setting up native dependencies, but is
 experimental.
 
+To prepare environment variables:
+
+    cp .env .env.local
+
+and edit as necessary.
+
 To set up and update the database:
 
     docker-compose run --rm cron composer install
