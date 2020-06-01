@@ -36,7 +36,7 @@ class RefreshCommand extends DbAwareCommand
 
         foreach ($types as $type => $class_name) {
             $url = call_user_func([$class_name, 'getSvnBaseUrl']);
-            $output->writeln("Fetching full plugin list from $url");
+            $output->writeln("Fetching full $type list from $url");
 
             $xmlLines = [];
             exec("$svn ls --xml $url 2>&1", $xmlLines, $returnCode);

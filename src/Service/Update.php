@@ -4,7 +4,7 @@ namespace Outlandish\Wpackagist\Service;
 
 use Composer\Package\Version\VersionParser;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Statement;
+use Doctrine\DBAL\Driver\Statement;
 use GuzzleHttp\Exception\GuzzleException;
 use Outlandish\Wpackagist\Package\AbstractPackage;
 use Outlandish\Wpackagist\Package\Plugin;
@@ -56,25 +56,27 @@ class Update
 
         $wporgClient = WporgClient::getClient();
 
+        $output->writeln("Updating {$count} packages");
+
         foreach ($packages as $index => $package) {
 
             $percent = $index / $count * 100;
 
-            if ($package instanceof Plugin) {
-                try {
-                    $info = $wporgClient->getPlugin($package->getName(), ['versions']);
-                } catch (GuzzleException $exception) {
-                    $output->writeln("Skipped plugin '{$package->getName()}' due to error: '{$exception->getMessage()}'");
+            $info = null;
+            $fields = ['versions'];
+            $type = $package instanceof Plugin ? 'plugin' : 'theme';
+            try {
+                if ($type === 'plugin') {
+                    $info = $wporgClient->getPlugin($package->getName(), $fields);
+                } else {
+                    $info = $wporgClient->getTheme($package->getName(), $fields);
                 }
-            } else {
-                try {
-                    $info = $wporgClient->getTheme($package->getName(), ['versions']);
-                } catch (GuzzleException $exception) {
-                    $output->writeln("Skipped theme '{$package->getName()}' due to error: '{$exception->getMessage()}'");
-                }
+
+                $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s %s", $percent, $type, $package->getName()));
+            } catch (GuzzleException $exception) {
+                $output->writeln("Skipped {$type} '{$package->getName()}' due to error: '{$exception->getMessage()}'");
             }
 
-            $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $package->getName()));
 
             if (empty($info)) {
                 // Plugin is not active
@@ -140,6 +142,6 @@ class Update
     private function deactivate(Statement $statement, AbstractPackage $package, string $reason, OutputInterface $output)
     {
         $statement->execute([':class_name' => get_class($package), ':name' => $package->getName()]);
-        $output->writeln(sprintf("<info>Deactivated package %s because %s", $package->getName(), $reason));
+        $output->writeln(sprintf("<error>Deactivated package %s because %s</error>", $package->getName(), $reason));
     }
 }
