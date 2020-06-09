@@ -11,7 +11,7 @@ class ExceptionListener
     public function onKernelException(ExceptionEvent $event)
     {
         // Let Symfony's default error tracing happen in dev.
-        if (getenv('APP_ENV') === 'dev') {
+        if ($_SERVER['APP_ENV'] === 'dev') {
             return;
         }
 
