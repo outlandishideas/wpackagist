@@ -11,7 +11,7 @@ use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
 
 // Uncomment next line to activate the debug
-$app['debug'] = true;
+// $app['debug'] = true;
 
 ///////////////////
 // CONFIGURATION //
