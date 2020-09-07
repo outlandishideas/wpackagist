@@ -1,6 +1,13 @@
-# Experimental Dockerfile for local dev use.
-
 FROM php:7.4-apache
+
+# Install the AWS CLI - needed to load in secrets safely from S3. See https://aws.amazon.com/blogs/security/how-to-manage-secrets-for-amazon-ec2-container-service-based-applications-by-using-amazon-s3-and-docker/
+RUN apt-get update -qq && apt-get install -y python unzip && \
+    cd /tmp && \
+    curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip" && \
+    unzip awscli-bundle.zip && \
+    ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws && \
+    rm awscli-bundle.zip && rm -rf awscli-bundle && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apk/*
 
 # Install svn client, a requirement for the current native exec approach, and git+unzip to clone
 # the Composer performance-helping plugin below.
@@ -21,4 +28,4 @@ RUN a2enmod rewrite \
  && echo ServerName localhost >> /etc/apache2/apache2.conf
 
 # Configure PHP to e.g. not hit 128M memory limit.
-COPY config/php/php.ini /usr/local/etc/php/
+COPY ../config/php/php.ini /usr/local/etc/php/

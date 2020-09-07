@@ -1,0 +1,52 @@
+version: 2.1
+
+orbs:
+  aws-ecr: circleci/aws-ecr@6.12.2
+  aws-ecs: circleci/aws-ecs@1.3.0
+
+workflows:
+  deploy-staging:
+    jobs:
+      - aws-ecr/build-and-push-image:
+          filters:
+            branches:
+              only:
+                - develop
+          repo: '${AWS_ECR_REPO_NAME}'
+          region: AWS_REGION
+          tag: 'staging,staging-${CIRCLE_SHA1}'
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build-and-push-image
+          aws-region: '${AWS_REGION}'
+          family: 'staging-wpackagist-tasks'
+          cluster-name: 'ol-ecs-staging-shared'
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build-and-push-image
+          aws-region: '${AWS_REGION}'
+          family: 'staging-wpackagist-web'
+          cluster-name: 'ol-ecs-staging-shared'
+
+  deploy-production:
+    jobs:
+      - aws-ecr/build-and-push-image:
+          filters:
+            branches:
+              only:
+                - master
+          repo: '${AWS_ECR_REPO_NAME}'
+          region: AWS_REGION
+          tag: 'production,production-${CIRCLE_SHA1}'
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build-and-push-image
+          aws-region: '${AWS_REGION}'
+          family: 'production-wpackagist-tasks'
+          cluster-name: 'ol-ecs-production-shared'
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build-and-push-image
+          aws-region: '${AWS_REGION}'
+          family: 'production-wpackagist-web'
+          cluster-name: 'ol-ecs-production-shared'
