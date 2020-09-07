@@ -28,4 +28,4 @@ RUN a2enmod rewrite \
  && echo ServerName localhost >> /etc/apache2/apache2.conf
 
 # Configure PHP to e.g. not hit 128M memory limit.
-COPY ../config/php/php.ini /usr/local/etc/php/
+COPY ./config/php/php.ini /usr/local/etc/php/
