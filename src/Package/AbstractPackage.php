@@ -24,9 +24,9 @@ abstract class AbstractPackage
     /**
      * @var array
      */
-    protected $versions = array();
+    protected $versions = [];
 
-    public function __construct(array $data = array())
+    public function __construct(array $data = [])
     {
         foreach ($data as $key => $value) {
             if (property_exists($this, $key)) {
@@ -38,7 +38,7 @@ abstract class AbstractPackage
             $this->versions = json_decode($this->versions, true);
         }
         if (!$this->versions) {
-            $this->versions = array();
+            $this->versions = [];
         }
 
         if (is_string($this->last_committed)) {
@@ -141,7 +141,7 @@ abstract class AbstractPackage
 
     public function getPackages(&$uid = 1)
     {
-        $packages = array();
+        $packages = [];
 
         foreach ($this->versions as $version => $tag) {
             try {
@@ -167,30 +167,30 @@ abstract class AbstractPackage
 
         $tag = $this->versions[$version];
 
-        $package = array(
+        $package = [
             'name'               => $this->getPackageName(),
             'version'            => $version,
             'version_normalized' => $normalizedVersion,
             'uid'                => $uid++,
-        );
+        ];
 
         if ($version == 'dev-trunk') {
             $package['time'] = $this->getLastCommited()->format('Y-m-d H:i:s');
         }
 
         if ($url = $this->getDownloadUrl($version)) {
-            $package['dist'] = array(
+            $package['dist'] = [
                 'type' => 'zip',
                 'url'  => $url,
-            );
+            ];
         }
 
         if (($url = $this->getSvnUrl()) && $tag) {
-            $package['source'] = array(
+            $package['source'] = [
                 'type'      => 'svn',
                 'url'       => $this->getSvnUrl(),
                 'reference' => $tag,
-            );
+            ];
         }
 
         if ($url = $this->getHomepageUrl()) {

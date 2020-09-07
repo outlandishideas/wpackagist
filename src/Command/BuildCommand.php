@@ -2,7 +2,6 @@
 
 namespace Outlandish\Wpackagist\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,20 +10,14 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\Helper;
 use Outlandish\Wpackagist\Package\AbstractPackage;
 
-class BuildCommand extends Command
+class BuildCommand extends DbAwareCommand
 {
     protected function configure()
     {
         $this
             ->setName('build')
-            ->setDescription('Build package.json from DB')
-            ->addOption(
-                'force',
-                null,
-                InputOption::VALUE_NONE,
-                'Name of package to update',
-                null
-            );
+            ->setDescription('Build packages.json from DB')
+            ->addOption('force', null, InputOption::VALUE_NONE);
     }
 
     /**
@@ -57,21 +50,16 @@ class BuildCommand extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        /**
-         * @var \PDO $db
-         */
-        $db = $this->getApplication()->getSilexApplication()['db'];
-
         if (!$input->getOption('force')) {
-            $state = $db->query('
-                SELECT value FROM state WHERE key="build_required"   
+            $state = $this->connection->query('
+                SELECT value FROM state WHERE key="build_required"
             ')->fetch();
 
             if (!$state['value']) {
                 $output->writeln("Not building packages as build_required was falsey");
-                return;
+                return 1;
             }
         }
 
@@ -79,14 +67,14 @@ class BuildCommand extends Command
 
         $fs = new Filesystem();
 
-        $webPath = dirname(__FILE__) . '/../../web/';
+        $webPath = __DIR__ . '/../../web/';
         $basePath = $webPath . 'p.new/';
         $fs->mkdir($basePath . 'wpackagist');
         $fs->mkdir($basePath . 'wpackagist-plugin');
         $fs->mkdir($basePath . 'wpackagist-theme');
 
 
-        $packages = $db->query('
+        $packages = $this->connection->query('
             SELECT * FROM packages
             WHERE versions IS NOT NULL AND is_active
             ORDER BY name
@@ -94,49 +82,48 @@ class BuildCommand extends Command
 
         $uid = 1; // don't know what this does but composer requires it
 
-        $providers = array();
+        $providers = [];
 
         foreach ($packages as $package) {
-            $packageName = $package->getPackageName();
             $packagesData = $package->getPackages($uid);
 
             foreach ($packagesData as $packageName => $packageData) {
-                $content = json_encode(array('packages' => array($packageName => $packageData)));
+                $content = json_encode(['packages' => [$packageName => $packageData]]);
                 $sha256 = hash('sha256', $content);
                 file_put_contents("$basePath$packageName\$$sha256.json", $content);
-                $providers[$this->getComposerProviderGroup($package)][$packageName] = array(
+                $providers[$this->getComposerProviderGroup($package)][$packageName] = [
                     'sha256' => $sha256,
-                );
+                ];
             }
         }
 
         $table = new Table($output);
-        $table->setHeaders(array('provider', 'packages', 'size'));
+        $table->setHeaders(['provider', 'packages', 'size']);
 
-        $providerIncludes = array();
+        $providerIncludes = [];
         foreach ($providers as $providerGroup => $providers) {
-            $content = json_encode(array('providers' => $providers));
+            $content = json_encode(['providers' => $providers]);
             $sha256 = hash('sha256', $content);
             file_put_contents("{$basePath}providers-$providerGroup\$$sha256.json", $content);
 
-            $providerIncludes["p/providers-$providerGroup\$%hash%.json"] = array(
+            $providerIncludes["p/providers-$providerGroup\$%hash%.json"] = [
                 'sha256' => $sha256,
-            );
+            ];
 
-            $table->addRow(array(
+            $table->addRow([
                 $providerGroup,
                 count($providers),
                 Helper::formatMemory(filesize("{$basePath}providers-$providerGroup\$$sha256.json")),
-            ));
+            ]);
         }
 
         $table->render();
 
-        $content = json_encode(array(
-            'packages' => array(),
+        $content = json_encode([
+            'packages' => [],
             'providers-url' => '/p/%package%$%hash%.json',
             'provider-includes' => $providerIncludes,
-        ));
+        ]);
 
         // switch old and new files
         $originalPath = $webPath . 'p';
@@ -154,12 +141,14 @@ class BuildCommand extends Command
 
         exec('rm -rf ' . $oldPath, $return, $code);
 
-        $stateUpdate = $db->prepare('
+        $stateUpdate = $this->connection->prepare('
             UPDATE state
             SET value = "" WHERE key="build_required"
         ');
         $stateUpdate->execute();
 
         $output->writeln("Wrote packages.json file");
+
+        return 0;
     }
 }

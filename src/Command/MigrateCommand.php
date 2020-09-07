@@ -1,30 +1,25 @@
 <?php
 
-namespace Outlandish\Wpackagist\Service;
+namespace Outlandish\Wpackagist\Command;
 
-use Silex\Provider\DoctrineServiceProvider as BaseDoctrineServiceProvider;
-use Silex\Application;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Event\ConnectionEventArgs;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
-class DoctrineServiceProvider extends BaseDoctrineServiceProvider
+class MigrateCommand extends DbAwareCommand
 {
-    public function register(Application $app)
+    protected function configure()
     {
-        parent::register($app);
-
-        $provider = $this;
-
-        $app['db.event_manager'] = $app->share($app->extend('db.event_manager', function ($manager, $app) use ($provider) {
-            $manager->addEventListener('postConnect', $provider);
-
-            return $manager;
-        }));
+        $this
+            ->setName('migrate')
+            ->setDescription('Apply any missing migrations to set up the DB');
     }
 
-    public function postConnect(ConnectionEventArgs $args)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->migrate($args->getConnection());
+        $this->migrate($this->connection);
+
+        return 0;
     }
 
     protected function migrate(Connection $conn)

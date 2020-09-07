@@ -1,0 +1,21 @@
+# Experimental docker-compose for local use. Access `web` at localhost:30100.
+
+version: "3.7"
+
+services:
+    cron:
+        build: .
+        entrypoint: docker-php-entrypoint
+        command: /var/www/html/run-cron.sh
+        volumes:
+            - .:/var/www/html
+        env_file:
+            - .env.local
+    web:
+        build: .
+        ports:
+            - 30100:80
+        volumes:
+            - .:/var/www/html
+        env_file:
+            - .env.local

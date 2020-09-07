@@ -1,7 +1,0 @@
-#!/usr/bin/env php
-<?php
-
-$app = require_once dirname(__DIR__) . '/bootstrap.php';
-
-$application = $app['console'];
-$application->run();

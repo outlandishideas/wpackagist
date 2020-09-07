@@ -2,17 +2,24 @@
 
 namespace Outlandish\Wpackagist\Command;
 
-use Outlandish\Wpackagist\Package\Plugin;
-use Outlandish\Wpackagist\Package\Theme;
-use Rarst\Guzzle\WporgClient;
-use Symfony\Component\Console\Command\Command;
+use Doctrine\DBAL\Connection;
+use Outlandish\Wpackagist\Service;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Package\Version\VersionParser;
 
-class UpdateCommand extends Command
+class UpdateCommand extends DbAwareCommand
 {
+    /** @var Service\Update */
+    protected $updateService;
+
+    public function __construct(Service\Update $updateService, Connection $connection, $name = null)
+    {
+        $this->updateService = $updateService;
+
+        parent::__construct($connection, $name);
+    }
+
     protected function configure()
     {
         $this
@@ -50,121 +57,10 @@ class UpdateCommand extends Command
      * <li><a itemprop="downloadUrl" href="http://downloads.wordpress.org/plugin/PLUGIN.zip" rel="nofollow">Development Version</a> (<a href="http://plugins.svn.wordpress.org/PLUGIN/trunk" rel="nofollow">svn</a>)</li>
      * <li><a itemprop="downloadUrl" href="http://downloads.wordpress.org/plugin/PLUGIN.VERSION.zip" rel="nofollow">VERSION</a> (<a href="http://plugins.svn.wordpress.org/PLUGIN/TAG" rel="nofollow">svn</a>)</li>
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        /**
-         * @var $db \Doctrine\DBAL\Connection
-         */
-        $db = $this->getApplication()->getSilexApplication()['db'];
+        $this->updateService->update($output, $input->getOption('name'));
 
-        $update = $db->prepare(
-            'UPDATE packages SET 
-            last_fetched = datetime("now"), versions = :json, is_active = 1, display_name = :display_name
-            WHERE class_name = :class_name AND name = :name'
-        );
-        $deactivate = $db->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
-
-        $name = $input->getOption('name');
-
-        if ($name) {
-            $query = $db->prepare('
-                SELECT * FROM packages
-                WHERE name = :name
-            ');
-            $query->bindValue("name", $name);
-        } else {
-            $query = $db->prepare('
-                SELECT * FROM packages
-                WHERE last_fetched IS NULL
-                OR last_fetched < datetime(last_committed, "+2 hours")
-                OR (is_active = 0 AND last_committed > date("now", "-90 days") AND last_fetched < datetime("now", "-7 days"))
-            ');
-        }
-        // get packages that have never been fetched or have been updated since last being fetched
-        // or that are inactive but have been updated in the past 90 days and haven't been fetched in the past 7 days
-        $query->execute();
-        $packages = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
-
-        $count = count($packages);
-        $versionParser = new VersionParser();
-
-
-        $wporgClient = WporgClient::getClient();
-
-        foreach ($packages as $index => $package) {
-
-            $percent = $index / $count * 100;
-
-            if ($package instanceof Plugin) {
-                $info = $wporgClient->getPlugin($package->getName(), ['versions']);
-            } else {
-                $info = $wporgClient->getTheme($package->getName(), ['versions']);
-            }
-
-            $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s", $percent, $package->getName()));
-
-            if (!$info) {
-                // Plugin is not active
-                $deactivate->execute(array(':class_name' => get_class($package), ':name' => $package->getName()));
-
-                continue;
-            }
-
-            //get versions as [version => url]
-            $versions = $info['versions'] ?: [];
-
-            //current version of plugin not present in tags so add it
-            if (empty($versions[$info['version']])) {
-                //add to front of array
-                $versions = array_reverse($versions, true);
-                $versions[$info['version']] = 'trunk';
-                $versions = array_reverse($versions, true);
-            }
-
-            //all plugins have a dev-trunk version
-            if ($package instanceof Plugin) {
-                unset($versions['trunk']);
-                $versions['dev-trunk'] = 'trunk';
-            }
-
-            foreach ($versions as $version => $url) {
-                try {
-                    //make sure versions are parseable by Composer
-                    $versionParser->normalize($version);
-                    if ($package instanceof Theme) {
-                        //themes have different SVN folder structure
-                        $versions[$version] = $version;
-                    } elseif ($url == 'trunk') {
-                        //do nothing
-                    } else {
-                        //add ref to SVN tag
-                        $versions[$version] = 'tags/' . $version;
-                    }
-                } catch (\UnexpectedValueException $e) {
-                    //version is invalid
-                    unset($versions[$version]);
-                }
-            }
-
-            if ($versions) {
-                $update->execute(
-                    array(
-                        ':display_name' => $info['name'],
-                        ':class_name' => get_class($package),
-                        ':name' => $package->getName(),
-                        ':json' => json_encode($versions)
-                    )
-                );
-            } else {
-                $deactivate->execute(array(':class_name' => get_class($package), ':name' => $package->getName()));
-            }
-        }
-
-        $stateUpdate = $db->prepare('
-            UPDATE state
-            SET value = "yes" WHERE key="build_required"
-        ');
-        $stateUpdate->execute();
-
+        return 0;
     }
 }
