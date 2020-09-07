@@ -19,12 +19,6 @@ workflows:
           requires:
             - aws-ecr/build-and-push-image
           aws-region: '${AWS_REGION}'
-          family: 'ol-ecs-staging-wpackagist-tasks'
-          cluster-name: 'ol-ecs-staging-shared'
-      - aws-ecs/deploy-service-update:
-          requires:
-            - aws-ecr/build-and-push-image
-          aws-region: '${AWS_REGION}'
           family: 'ol-ecs-staging-wpackagist'
           cluster-name: 'ol-ecs-staging-shared'
           service-name: 'staging-wpackagist'
@@ -39,12 +33,6 @@ workflows:
           repo: 'production-wpackagist'
           region: AWS_REGION
           tag: 'production,production-${CIRCLE_SHA1}'
-      - aws-ecs/deploy-service-update:
-          requires:
-            - aws-ecr/build-and-push-image
-          aws-region: '${AWS_REGION}'
-          family: 'ol-ecs-production-wpackagist-tasks'
-          cluster-name: 'ol-ecs-production-shared'
       - aws-ecs/deploy-service-update:
           requires:
             - aws-ecr/build-and-push-image
