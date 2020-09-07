@@ -12,7 +12,7 @@ workflows:
             branches:
               only:
                 - develop
-          repo: '${AWS_ECR_REPO_NAME}'
+          repo: 'staging-wpackagist'
           region: AWS_REGION
           tag: 'staging,staging-${CIRCLE_SHA1}'
       - aws-ecs/deploy-service-update:
@@ -25,7 +25,7 @@ workflows:
           requires:
             - aws-ecr/build-and-push-image
           aws-region: '${AWS_REGION}'
-          family: 'staging-wpackagist-web'
+          family: 'staging-wpackagist'
           cluster-name: 'ol-ecs-staging-shared'
 
   deploy-production:
@@ -35,7 +35,7 @@ workflows:
             branches:
               only:
                 - master
-          repo: '${AWS_ECR_REPO_NAME}'
+          repo: 'production-wpackagist'
           region: AWS_REGION
           tag: 'production,production-${CIRCLE_SHA1}'
       - aws-ecs/deploy-service-update:
@@ -48,5 +48,5 @@ workflows:
           requires:
             - aws-ecr/build-and-push-image
           aws-region: '${AWS_REGION}'
-          family: 'production-wpackagist-web'
+          family: 'production-wpackagist'
           cluster-name: 'ol-ecs-production-shared'
