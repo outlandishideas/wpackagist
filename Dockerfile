@@ -27,5 +27,7 @@ RUN a2enmod rewrite \
  && a2ensite symfony \
  && echo ServerName localhost >> /etc/apache2/apache2.conf
 
+ADD . /var/www/html
+
 # Configure PHP to e.g. not hit 128M memory limit.
 COPY ./config/php/php.ini /usr/local/etc/php/
