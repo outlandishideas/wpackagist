@@ -27,6 +27,7 @@ workflows:
           aws-region: '${AWS_REGION}'
           family: 'ol-ecs-staging-wpackagist'
           cluster-name: 'ol-ecs-staging-shared'
+          service-name: 'staging-wpackagist'
 
   deploy-production:
     jobs:
@@ -50,3 +51,4 @@ workflows:
           aws-region: '${AWS_REGION}'
           family: 'ol-ecs-production-wpackagist'
           cluster-name: 'ol-ecs-production-shared'
+          service-name: 'production-wpackagist'
