@@ -31,3 +31,5 @@ ADD . /var/www/html
 
 # Configure PHP to e.g. not hit 128M memory limit.
 COPY ./config/php/php.ini /usr/local/etc/php/
+
+RUN composer install --no-interaction --quiet --optimize-autoloader --no-dev

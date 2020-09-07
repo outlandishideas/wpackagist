@@ -31,7 +31,7 @@
         "symfony/yaml": "^5.0"
     },
     "require-dev": {
-        "composer/composer": "^1.10.6",
+        "composer/composer": "^1.10.10",
         "roave/security-advisories": "dev-master"
     },
     "conflict": {
