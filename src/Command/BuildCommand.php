@@ -67,11 +67,11 @@ class BuildCommand extends DbAwareCommand
 
         $fs = new Filesystem();
 
-        $webPath = __DIR__ . '/../../web/';
-        $basePath = $webPath . 'p.new/';
-        $fs->mkdir($basePath . 'wpackagist');
-        $fs->mkdir($basePath . 'wpackagist-plugin');
-        $fs->mkdir($basePath . 'wpackagist-theme');
+        $webPath = $_SERVER['PACKAGE_PATH'];
+        $basePath = "$webPath/p.new";
+        $fs->mkdir("$basePath/wpackagist");
+        $fs->mkdir("$basePath/wpackagist-plugin");
+        $fs->mkdir("$basePath/wpackagist-theme");
 
 
         $packages = $this->connection->query('
@@ -90,7 +90,7 @@ class BuildCommand extends DbAwareCommand
             foreach ($packagesData as $packageName => $packageData) {
                 $content = json_encode(['packages' => [$packageName => $packageData]]);
                 $sha256 = hash('sha256', $content);
-                file_put_contents("$basePath$packageName\$$sha256.json", $content);
+                file_put_contents("$basePath/$packageName\$$sha256.json", $content);
                 $providers[$this->getComposerProviderGroup($package)][$packageName] = [
                     'sha256' => $sha256,
                 ];
@@ -104,7 +104,7 @@ class BuildCommand extends DbAwareCommand
         foreach ($providers as $providerGroup => $providers) {
             $content = json_encode(['providers' => $providers]);
             $sha256 = hash('sha256', $content);
-            file_put_contents("{$basePath}providers-$providerGroup\$$sha256.json", $content);
+            file_put_contents("$basePath/providers-$providerGroup\$$sha256.json", $content);
 
             $providerIncludes["p/providers-$providerGroup\$%hash%.json"] = [
                 'sha256' => $sha256,
@@ -113,7 +113,7 @@ class BuildCommand extends DbAwareCommand
             $table->addRow([
                 $providerGroup,
                 count($providers),
-                Helper::formatMemory(filesize("{$basePath}providers-$providerGroup\$$sha256.json")),
+                Helper::formatMemory(filesize("{$basePath}/providers-$providerGroup\$$sha256.json")),
             ]);
         }
 
@@ -126,14 +126,14 @@ class BuildCommand extends DbAwareCommand
         ]);
 
         // switch old and new files
-        $originalPath = $webPath . 'p';
-        $oldPath = $webPath . 'p.old';
+        $originalPath = "$webPath/p";
+        $oldPath = "$webPath/p.old";
         if ($fs->exists($originalPath)) {
             $fs->rename($originalPath, $oldPath);
         }
-        $fs->rename($basePath, $originalPath . '/');
+        $fs->rename($basePath, "$originalPath/");
 
-        $packagesPath = $webPath . 'packages.json';
+        $packagesPath = "$webPath/packages.json";
         file_put_contents($packagesPath, $content);
 
         // this doesn't work
