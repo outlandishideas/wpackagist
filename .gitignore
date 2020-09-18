@@ -1,8 +1,8 @@
 .idea
 /data/packages.sqlite
 /vendor
-/web/packages.json
-/web/p
+/packages/*
+!/packages/Readme.md
 
 ###> symfony/framework-bundle ###
 /.env.local
