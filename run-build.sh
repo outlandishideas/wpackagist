@@ -7,9 +7,6 @@ chgrp -R www-data "${PACKAGE_PATH}" || true
 find "${PACKAGE_PATH}" -type d -exec chmod 775 {} + || true
 find "${PACKAGE_PATH}" -type f -exec chmod 664 {} + || true
 
-php bin/console migrate
-php bin/console refresh
-php bin/console update
-php bin/console build --force
+php bin/console build
 
 echo "Done!"

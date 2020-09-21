@@ -68,7 +68,7 @@ The first database fetch may easily take 30-60 minutes, be patient.
 0. `bin/console migrate`: Ensure the database schema is up to date with the code.
 1. `bin/console refresh`: Query the WordPress.org SVN in order to find new and updated packages.
 2. `bin/console update`: Update the version information for packages identified in `1`. Uses the WordPress.org API.
-3. `bin/console build`: Rebuild all `.json` files in `web/`.
+3. `bin/console build`: Rebuild all `.json` files in `$PACKAGE_PATH`.
 
 ## Running locally with Docker
 

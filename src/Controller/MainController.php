@@ -15,9 +15,13 @@ use Symfony\Component\Form\Extension\Core\Type\SearchType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 
 class MainController extends AbstractController
 {
@@ -29,6 +33,48 @@ class MainController extends AbstractController
     public function __construct(FormFactoryInterface $formFactory)
     {
         $this->formFactory = $formFactory;
+    }
+
+    /**
+     * @Route("packages.json", name="json_index")
+     */
+    public function packageIndexJson(): Response
+    {
+        $response = new Response(
+            file_get_contents($_SERVER['PACKAGE_PATH'] . '/packages.json')
+        );
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+    }
+
+    /**
+     * @Route("p/{file}.json", name="json_provider")
+     * @Route("p/{dir}/{file}.json", name="json_package")
+     * @param ?string $dir   Directory: wpackagist-plugin or wpackagist-theme.
+     * @param string $file  Filename excluding '.json'.
+     * @return Response
+     */
+    public function packageJson(string $file, ?string $dir = null): Response
+    {
+        $dir = str_replace('.', '', $dir);
+        $file = str_replace('.', '', $file);
+
+        if (!empty($dir) && !in_array($dir, ['wpackagist-plugin', 'wpackagist-theme'], true)) {
+            throw new BadRequestException('Unexpected package path');
+        }
+
+        $fullPath = empty($dir)
+            ? "{$_SERVER['PACKAGE_PATH']}/p/{$file}.json"
+            : "{$_SERVER['PACKAGE_PATH']}/p/$dir/{$file}.json";
+        if (!file_exists($fullPath)) {
+            throw new NotFoundHttpException();
+        }
+
+        $response = new Response(file_get_contents($fullPath));
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
     }
 
     public function home(Request $request): Response

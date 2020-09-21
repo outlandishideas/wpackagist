@@ -91,7 +91,7 @@
         "version": "v9.99.99"
     },
     "php": {
-        "version": "7.2.24"
+        "version": "7.4"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -239,5 +239,8 @@
     },
     "twig/extra-bundle": {
         "version": "v3.0.3"
+    },
+    "webimpress/safe-writer": {
+        "version": "2.1.0"
     }
 }

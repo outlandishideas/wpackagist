@@ -12,21 +12,16 @@ workflows:
             branches:
               only:
                 - develop
-          repo: '${AWS_ECR_REPO_NAME}'
+          repo: 'staging-wpackagist'
           region: AWS_REGION
           tag: 'staging,staging-${CIRCLE_SHA1}'
       - aws-ecs/deploy-service-update:
           requires:
             - aws-ecr/build-and-push-image
           aws-region: '${AWS_REGION}'
-          family: 'staging-wpackagist-tasks'
+          family: 'ol-ecs-staging-wpackagist'
           cluster-name: 'ol-ecs-staging-shared'
-      - aws-ecs/deploy-service-update:
-          requires:
-            - aws-ecr/build-and-push-image
-          aws-region: '${AWS_REGION}'
-          family: 'staging-wpackagist-web'
-          cluster-name: 'ol-ecs-staging-shared'
+          service-name: 'staging-wpackagist'
 
   deploy-production:
     jobs:
@@ -35,18 +30,13 @@ workflows:
             branches:
               only:
                 - master
-          repo: '${AWS_ECR_REPO_NAME}'
+          repo: 'production-wpackagist'
           region: AWS_REGION
           tag: 'production,production-${CIRCLE_SHA1}'
       - aws-ecs/deploy-service-update:
           requires:
             - aws-ecr/build-and-push-image
           aws-region: '${AWS_REGION}'
-          family: 'production-wpackagist-tasks'
+          family: 'ol-ecs-production-wpackagist'
           cluster-name: 'ol-ecs-production-shared'
-      - aws-ecs/deploy-service-update:
-          requires:
-            - aws-ecr/build-and-push-image
-          aws-region: '${AWS_REGION}'
-          family: 'production-wpackagist-web'
-          cluster-name: 'ol-ecs-production-shared'
+          service-name: 'production-wpackagist'
