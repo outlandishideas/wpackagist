@@ -120,12 +120,19 @@ class Update
             }
 
             if ($versions) {
-                $updateStmt->execute([
-                    ':display_name' => $info['name'],
-                    ':class_name' => get_class($package),
-                    ':name' => $package->getName(),
-                    ':json' => json_encode($versions)
-                ]);
+                try {
+                    $updateStmt->execute([
+                        ':display_name' => $info['name'],
+                        ':class_name' => get_class($package),
+                        ':name' => $package->getName(),
+                        ':json' => json_encode($versions)
+                    ]);
+                } catch (\Exception $exception) {
+                    // Probably a DB lock contention issue - skip for now instead of crashing.
+                    // TODO remove this try/catch when we are confident-ish DB lock waits aren't
+                    // an issue with the live implementation.
+                    return;
+                }
             } else {
                 // Plugin is not active
                 $this->deactivate($deactivateStmt, $package, 'no versions found', $output);
