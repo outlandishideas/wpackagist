@@ -53,9 +53,9 @@ class BuildCommand extends DbAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$input->getOption('force')) {
-            $state = $this->connection->query('
-                SELECT value FROM state WHERE key="build_required"
-            ')->fetch();
+            $state = $this->connection->executeQuery("
+                SELECT value FROM state WHERE key='build_required'
+            ")->fetch();
 
             if (!$state['value']) {
                 $output->writeln("Not building packages as build_required was falsey");
@@ -74,8 +74,8 @@ class BuildCommand extends DbAwareCommand
         $fs->mkdir("$basePath/wpackagist-theme");
 
 
-        $packages = $this->connection->query('
-            SELECT * FROM packages
+        $packages = $this->connection->executeQuery('
+            SELECT class_name, * FROM packages
             WHERE versions IS NOT NULL AND is_active
             ORDER BY name
         ')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
@@ -141,10 +141,10 @@ class BuildCommand extends DbAwareCommand
 
         exec('rm -rf ' . $oldPath, $return, $code);
 
-        $stateUpdate = $this->connection->prepare('
+        $stateUpdate = $this->connection->prepare("
             UPDATE state
-            SET value = "" WHERE key="build_required"
-        ');
+            SET value = '' WHERE key='build_required'
+        ");
         $stateUpdate->execute();
 
         $output->writeln("Wrote packages.json file");

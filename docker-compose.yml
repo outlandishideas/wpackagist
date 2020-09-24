@@ -2,7 +2,19 @@
 
 version: "3.7"
 
+volumes:
+    local_data: {}
+
 services:
+    db:
+        # Stick with 9.6 for now to ensure compatibility with shared infrastructure's instance.
+        image: postgres:9.6-alpine
+        volumes:
+            - local_data:/var/lib/postgresql/data
+        ports:
+            - 5432:5432
+        env_file:
+            - .env.postgres.local
     cron:
         build: .
         entrypoint: docker-php-entrypoint
@@ -11,6 +23,8 @@ services:
             - .:/var/www/html
         env_file:
             - .env.local
+        depends_on:
+            - db
     web:
         build: .
         ports:
@@ -19,3 +33,5 @@ services:
             - .:/var/www/html
         env_file:
             - .env.local
+        depends_on:
+            - db
