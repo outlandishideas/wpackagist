@@ -13,7 +13,7 @@ fi
 export $(aws s3 cp ${SECRETS_URI} - | grep -v '^#' | xargs)
 
 echo "Dumping env..."
-RUN composer dump-env "${APP_ENV}"
+composer dump-env "${APP_ENV}"
 
 echo "Running DB migrations..."
 bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
