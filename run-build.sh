@@ -7,6 +7,7 @@ chgrp -R www-data "${PACKAGE_PATH}" || true
 find "${PACKAGE_PATH}" -type d -exec chmod 775 {} + || true
 find "${PACKAGE_PATH}" -type f -exec chmod 664 {} + || true
 
+echo "Starting build..."
 php bin/console build
 
 echo "Done!"
