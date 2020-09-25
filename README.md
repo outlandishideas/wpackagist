@@ -89,7 +89,7 @@ To set up and update the database:
 
 To start a web server on `localhost:30100`:
 
-    docker-compose up web
+    docker-compose up web adminer
 
 #### Services
 
