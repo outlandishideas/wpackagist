@@ -84,8 +84,15 @@ and edit as necessary.
 To set up and update the database:
 
     docker-compose run --rm cron composer install
+    docker-compose run --rm cron deploy/migrate-db.sh
     docker-compose run --rm cron
 
 To start a web server on `localhost:30100`:
 
-    docker-compose up -d web
+    docker-compose up web adminer
+
+#### Services
+
+* Web: http://localhost:30100/
+* Adminer: http://localhost:30101/ (See credentials in `.env.postgres.local`)
+
