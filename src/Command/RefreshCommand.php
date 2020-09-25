@@ -32,7 +32,7 @@ class RefreshCommand extends DbAwareCommand
         ];
 
         $updateStmt = $this->connection->prepare('UPDATE packages SET last_committed = :date WHERE class_name = :class_name AND name = :name');
-        $insertStmt = $this->connection->prepare('INSERT INTO packages (class_name, name, last_committed) VALUES (:class_name, :name, :date)');
+        $insertStmt = $this->connection->prepare('INSERT INTO packages (class_name, name, last_committed, is_active) VALUES (:class_name, :name, :date, true)');
 
         foreach ($types as $type => $class_name) {
             $url = call_user_func([$class_name, 'getSvnBaseUrl']);

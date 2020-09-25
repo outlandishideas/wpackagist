@@ -15,6 +15,7 @@ workflows:
           repo: 'staging-wpackagist'
           region: AWS_REGION
           tag: 'staging,staging-${CIRCLE_SHA1}'
+          extra-build-args: '--build-arg env=stg'
       - aws-ecs/deploy-service-update:
           requires:
             - aws-ecr/build-and-push-image
@@ -33,6 +34,7 @@ workflows:
           repo: 'production-wpackagist'
           region: AWS_REGION
           tag: 'production,production-${CIRCLE_SHA1}'
+          extra-build-args: '--build-arg env=prod'
       - aws-ecs/deploy-service-update:
           requires:
             - aws-ecr/build-and-push-image
