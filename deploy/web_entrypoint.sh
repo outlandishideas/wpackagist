@@ -15,6 +15,9 @@ export $(aws s3 cp ${SECRETS_URI} - | grep -v '^#' | xargs)
 echo "Dumping env..."
 composer dump-env "${APP_ENV}"
 
+echo "Warming cache..."
+bin/console cache:warmup --no-debug --env=$APP_ENV
+
 echo "Running DB migrations..."
 bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=$APP_ENV
 
