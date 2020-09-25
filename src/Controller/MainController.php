@@ -16,7 +16,6 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -218,9 +217,12 @@ class MainController extends AbstractController
     private function getRequestCountByIp(string $ip, Connection $db): int
     {
         $query = $db->prepare(
-            "SELECT * FROM requests WHERE ip_address = :ip AND last_request > DATETIME(CURRENT_TIMESTAMP, '-1 hour')"
+            "SELECT * FROM requests WHERE ip_address = :ip AND last_request > :cutoff"
         );
-        $query->execute([ $ip ]);
+        $query->execute([
+            'cutoff' => (new \DateTime())->sub(new \DateInterval('PT1H'))->format($db->getDatabasePlatform()->getDateTimeFormatString()),
+            'ip' => $ip,
+        ]);
 
         $requestHistory = $query->fetch(PDO::FETCH_ASSOC);
         if (!$requestHistory) {
@@ -247,9 +249,8 @@ class MainController extends AbstractController
      */
     private function resetRequestCount(string $ip, Connection $db)
     {
-        $prune = $db->prepare(
-            "DELETE FROM requests WHERE last_request < DATETIME(CURRENT_TIMESTAMP, '-1 hour')"
-        );
+        $prune = $db->prepare('DELETE FROM requests WHERE last_request < :cutoff');
+        $prune->bindValue('cutoff', (new \DateTime())->sub(new \DateInterval('PT1H'))->format($db->getDatabasePlatform()->getDateTimeFormatString()));
         $prune->execute();
         $insert = $db->prepare(
             'INSERT INTO requests (ip_address, last_request, request_count) VALUES (:ip_address, CURRENT_TIMESTAMP, 1)'

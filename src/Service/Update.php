@@ -26,24 +26,26 @@ class Update
     {
         $updateStmt = $this->connection->prepare(
             'UPDATE packages SET
-            last_fetched = datetime("now"), versions = :json, is_active = 1, display_name = :display_name
+            last_fetched = NOW(), versions = :json, is_active = true, display_name = :display_name
             WHERE class_name = :class_name AND name = :name'
         );
-        $deactivateStmt = $this->connection->prepare('UPDATE packages SET last_fetched = datetime("now"), is_active = 0 WHERE class_name = :class_name AND name = :name');
+        $deactivateStmt = $this->connection->prepare('UPDATE packages SET last_fetched = NOW(), is_active = false WHERE class_name = :class_name AND name = :name');
 
         if ($name) {
             $query = $this->connection->prepare('
-                SELECT * FROM packages
+                SELECT class_name, * FROM packages
                 WHERE name = :name
             ');
             $query->bindValue("name", $name);
         } else {
-            $query = $this->connection->prepare('
-                SELECT * FROM packages
+            $query = $this->connection->prepare(<<<EOT
+                SELECT class_name, * FROM packages
                 WHERE last_fetched IS NULL
-                OR last_fetched < datetime(last_committed, "+2 hours")
-                OR (is_active = 0 AND last_committed > date("now", "-90 days") AND last_fetched < datetime("now", "-7 days"))
-            ');
+                OR DATE_PART('hour', last_committed) - DATE_PART('hour', last_fetched) > 2
+                OR (is_active = false AND last_committed > :threeMonthsAgo AND last_fetched < :oneWeekAgo)
+EOT);
+            $query->bindValue('threeMonthsAgo', (new \DateTime())->sub(new \DateInterval('P3M'))->format($this->connection->getDatabasePlatform()->getDateTimeFormatString()));
+            $query->bindValue('oneWeekAgo', (new \DateTime())->sub(new \DateInterval('P1W'))->format($this->connection->getDatabasePlatform()->getDateTimeFormatString()));
         }
         // get packages that have never been fetched or have been updated since last being fetched
         // or that are inactive but have been updated in the past 90 days and haven't been fetched in the past 7 days
@@ -139,10 +141,10 @@ class Update
             }
         }
 
-        $stateUpdate = $this->connection->prepare('
+        $stateUpdate = $this->connection->prepare("
             UPDATE state
-            SET value = "yes" WHERE key="build_required"
-        ');
+            SET value = 'yes' WHERE key='build_required'
+        ");
         $stateUpdate->execute();
     }
 
