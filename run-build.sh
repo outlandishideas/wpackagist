@@ -11,6 +11,6 @@
 #find "${PACKAGE_PATH}" -type f -exec chmod 664 {} + || true
 
 echo "Starting build..."
-php bin/console build
+APP_ENV=${APP_ENV} php bin/console build
 
 echo "Done!"

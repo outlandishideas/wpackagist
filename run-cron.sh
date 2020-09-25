@@ -11,10 +11,10 @@
 #find "${PACKAGE_PATH}" -type f -exec chmod 664 {} + || true
 
 echo "Starting refresh..."
-php bin/console refresh
+APP_ENV=${APP_ENV} php bin/console refresh
 echo "Starting update..."
-php bin/console update
+APP_ENV=${APP_ENV} php bin/console update
 echo "Starting (force) build..."
-php bin/console build --force
+APP_ENV=${APP_ENV} php bin/console build --force
 
 echo "Done!"
