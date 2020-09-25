@@ -10,7 +10,7 @@ services:
         # Stick with 9.6 for now to ensure compatibility with shared infrastructure's instance.
         image: postgres:9.6-alpine
         volumes:
-            - local_data:/var/lib/postgresql/data
+            - ./local_data:/var/lib/postgresql/
         ports:
             - 5432:5432
         env_file:
@@ -41,3 +41,7 @@ services:
             - .env.local
         depends_on:
             - db
+    adminer:
+        image: adminer
+        ports:
+            - 30101:8080
