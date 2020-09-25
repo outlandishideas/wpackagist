@@ -16,7 +16,7 @@ echo "Dumping env..."
 composer dump-env "${APP_ENV}"
 
 echo "Running DB migrations..."
-bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=$APP_ENV
 
 echo "Starting task..."
 # Call the normal CLI entry-point script, passing on script name and any other arguments
