@@ -1,5 +1,8 @@
 FROM php:7.4-apache
 
+ARG env
+RUN test -n "$env"
+
 # Install the AWS CLI - needed to load in secrets safely from S3. See https://aws.amazon.com/blogs/security/how-to-manage-secrets-for-amazon-ec2-container-service-based-applications-by-using-amazon-s3-and-docker/
 RUN apt-get update -qq && apt-get install -y python unzip && \
     cd /tmp && \
@@ -37,4 +40,4 @@ ADD . /var/www/html
 # Configure PHP to e.g. not hit 128M memory limit.
 COPY ./config/php/php.ini /usr/local/etc/php/
 
-RUN composer install --no-interaction --quiet --optimize-autoloader --no-dev
+RUN APP_ENV=${env} composer install --no-interaction --quiet --optimize-autoloader --no-dev
