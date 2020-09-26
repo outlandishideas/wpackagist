@@ -129,6 +129,9 @@ class BuildCommand extends DbAwareCommand
         $originalPath = "$webPath/p";
         $oldPath = "$webPath/p.old";
         if ($fs->exists($originalPath)) {
+            if ($fs->exists($oldPath)) {
+                $fs->remove($oldPath);
+            }
             $fs->rename($originalPath, $oldPath);
         }
         $fs->rename($basePath, "$originalPath/");
@@ -136,10 +139,9 @@ class BuildCommand extends DbAwareCommand
         $packagesPath = "$webPath/packages.json";
         file_put_contents($packagesPath, $content);
 
-        // this doesn't work
-        // $fs->remove('web/p.old');
-
-        exec('rm -rf ' . $oldPath, $return, $code);
+        if ($fs->exists($oldPath)) {
+            $fs->remove($oldPath);
+        }
 
         $stateUpdate = $this->connection->prepare("
             UPDATE state
