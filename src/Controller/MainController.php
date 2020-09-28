@@ -174,7 +174,14 @@ class MainController extends AbstractController
         }
         $safeName = $package['name'];
 
-        $count = $this->getRequestCountByIp($_SERVER['REMOTE_ADDR'], $connection);
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
+            $splitIp = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $userIp  = trim($splitIp[0]);
+        } else {
+            $userIp = $_SERVER['REMOTE_ADDR'];
+        }
+
+        $count = $this->getRequestCountByIp($userIp, $connection);
         if ($count > 10) {
             return new Response('Too many requests. Try again in an hour.', 403);
         }
