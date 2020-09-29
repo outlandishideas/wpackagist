@@ -141,11 +141,17 @@ EOT);
             }
         }
 
-        $stateUpdate = $this->connection->prepare("
-            UPDATE state
-            SET value = 'yes' WHERE key='build_required'
-        ");
-        $stateUpdate->execute();
+        // Build required flag update is a no-op for now. Queuing a full rebuild which is
+        // pretty likely to overlap with the regularly schedule task is a recipe for file
+        // I/O errors and always has been, with the risk increased with slow filesystems
+        // like EFS.
+        // TODO complete all updates synchronously (while tightening rate limits) OR queue
+        // a more sensible, narrowly scoped update here.
+//        $stateUpdate = $this->connection->prepare("
+//            UPDATE state
+//            SET value = 'yes' WHERE key='build_required'
+//        ");
+//        $stateUpdate->execute();
     }
 
     private function deactivate(Statement $statement, AbstractPackage $package, string $reason, OutputInterface $output)
