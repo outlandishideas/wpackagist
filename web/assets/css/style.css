@@ -52,6 +52,10 @@ blockquote, pre {
     background-color: #f2f2f2;
 }
 
+pre {
+    overflow: auto;
+}
+
 #title, .mission {
     margin: 3rem 0;
 }
