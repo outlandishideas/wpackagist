@@ -2,22 +2,28 @@
 
 namespace Outlandish\Wpackagist\Command;
 
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\Helper;
 use Outlandish\Wpackagist\Package\AbstractPackage;
 
-class BuildCommand extends DbAwareCommand
+class BuildCommand extends DbAwareCommand implements ContainerAwareInterface
 {
+    protected $packagePath;
+
     protected function configure()
     {
         $this
             ->setName('build')
             ->setDescription('Build packages.json from DB')
-            ->addOption('force', null, InputOption::VALUE_NONE);
+            ->addOption('force', 'f', InputOption::VALUE_NONE);
     }
 
     /**
@@ -63,17 +69,22 @@ class BuildCommand extends DbAwareCommand
             }
         }
 
-        $output->writeln("Building packages");
+        $start = new \DateTime();
+        $webPath = $this->packagePath;
+
+        $output->writeln("Building packages into {$webPath}");
 
         $fs = new Filesystem();
 
-        $webPath = $_SERVER['PACKAGE_PATH'];
         $basePath = "$webPath/p.new";
+        if ($fs->exists($basePath)) {
+            $fs->remove($basePath);
+        }
         $fs->mkdir("$basePath/wpackagist");
         $fs->mkdir("$basePath/wpackagist-plugin");
         $fs->mkdir("$basePath/wpackagist-theme");
 
-
+        /** @var AbstractPackage[] $packages */
         $packages = $this->connection->executeQuery('
             SELECT class_name, * FROM packages
             WHERE versions IS NOT NULL AND is_active
@@ -82,7 +93,9 @@ class BuildCommand extends DbAwareCommand
 
         $uid = 1; // don't know what this does but composer requires it
 
-        $providers = [];
+        $providerGroups = [];
+
+        $progressBar = new ProgressBar($output, count($packages));
 
         foreach ($packages as $package) {
             $packagesData = $package->getPackages($uid);
@@ -91,17 +104,24 @@ class BuildCommand extends DbAwareCommand
                 $content = json_encode(['packages' => [$packageName => $packageData]]);
                 $sha256 = hash('sha256', $content);
                 file_put_contents("$basePath/$packageName\$$sha256.json", $content);
-                $providers[$this->getComposerProviderGroup($package)][$packageName] = [
+                $providerGroups[$this->getComposerProviderGroup($package)][$packageName] = [
                     'sha256' => $sha256,
                 ];
             }
+            $progressBar->advance();
         }
+
+        $progressBar->finish();
+
+        $output->writeln('');
 
         $table = new Table($output);
         $table->setHeaders(['provider', 'packages', 'size']);
 
         $providerIncludes = [];
-        foreach ($providers as $providerGroup => $providers) {
+        $totalSize = 0;
+        $totalProviders = 0;
+        foreach ($providerGroups as $providerGroup => $providers) {
             $content = json_encode(['providers' => $providers]);
             $sha256 = hash('sha256', $content);
             file_put_contents("$basePath/providers-$providerGroup\$$sha256.json", $content);
@@ -110,12 +130,22 @@ class BuildCommand extends DbAwareCommand
                 'sha256' => $sha256,
             ];
 
+            $filesize = filesize("{$basePath}/providers-$providerGroup\$$sha256.json");
+            $totalSize += $filesize;
+            $totalProviders += count($providers);
             $table->addRow([
                 $providerGroup,
                 count($providers),
-                Helper::formatMemory(filesize("{$basePath}/providers-$providerGroup\$$sha256.json")),
+                Helper::formatMemory($filesize),
             ]);
         }
+
+        $table->addRow(new TableSeparator());
+        $table->addRow([
+            'Total',
+            $totalProviders,
+            Helper::formatMemory($totalSize),
+        ]);
 
         $table->render();
 
@@ -149,8 +179,15 @@ class BuildCommand extends DbAwareCommand
         ");
         $stateUpdate->execute();
 
-        $output->writeln("Wrote packages.json file");
+        $interval = $start->diff(new \DateTime());
+
+        $output->writeln("Wrote packages.json file in " . $interval->format('%Hh %Im %Ss'));
 
         return 0;
+    }
+
+    public function setContainer(ContainerInterface $container = null)
+    {
+        $this->packagePath = $container->getParameter('wpackagist.packages.path');
     }
 }

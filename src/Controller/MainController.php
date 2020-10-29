@@ -4,7 +4,7 @@ namespace Outlandish\Wpackagist\Controller;
 
 use Doctrine\DBAL\Connection;
 use Outlandish\Wpackagist\Service;
-use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
+use Pagerfanta\Doctrine\DBAL\SingleTableQueryAdapter;
 use Pagerfanta\Pagerfanta;
 use PDO;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,7 +40,7 @@ class MainController extends AbstractController
     public function packageIndexJson(): Response
     {
         $response = new Response(
-            file_get_contents($_SERVER['PACKAGE_PATH'] . '/packages.json')
+            file_get_contents($this->getParameter('wpackagist.packages.path') . '/packages.json')
         );
         $response->headers->set('Content-Type', 'application/json');
 
@@ -63,9 +63,7 @@ class MainController extends AbstractController
             throw new BadRequestException('Unexpected package path');
         }
 
-        $fullPath = empty($dir)
-            ? "{$_SERVER['PACKAGE_PATH']}/p/{$file}.json"
-            : "{$_SERVER['PACKAGE_PATH']}/p/$dir/{$file}.json";
+        $fullPath = implode('/', array_filter([$this->getParameter('wpackagist.packages.path'), 'p', $dir, "{$file}.json"]));
         if (!file_exists($fullPath)) {
             throw new NotFoundHttpException();
         }
@@ -134,8 +132,10 @@ class MainController extends AbstractController
 
         if (!empty($query)) {
             $queryBuilder
-                ->andWhere('name LIKE :name')
-                ->orWhere('display_name LIKE :name')
+                ->andWhere($queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->like('name', ':name'),
+                    $queryBuilder->expr()->like('display_name', ':name')
+                ))
                 ->addOrderBy('name LIKE :order', 'DESC')
                 ->addOrderBy('name', 'ASC')
                 ->setParameter(':name', "%{$query}%")
@@ -146,7 +146,7 @@ class MainController extends AbstractController
         }
 
         $countField = 'p.name';
-        $adapter    = new DoctrineDbalSingleTableAdapter($queryBuilder, $countField);
+        $adapter    = new SingleTableQueryAdapter($queryBuilder, $countField);
         $pagerfanta = new Pagerfanta($adapter);
         $pagerfanta->setMaxPerPage(30);
         $pagerfanta->setCurrentPage($request->query->get('page', 1));

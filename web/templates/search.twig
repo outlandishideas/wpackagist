@@ -80,7 +80,9 @@
     {{ pagerfanta(pager, 'default', {
         'container_template': '<ul class="pagination">%pages%</ul>',
         'page_template': '<li><a href="%href%">%text%</a></li>',
-        'span_template':'<li class="%class%"><a href="#">%text%</a></li>'
+        'css_disabled_class': 'unavailable disabled',
+        'css_dots_class': 'unavailable dots',
+        'span_template':'<li class="%class%"><button>%text%</button></li>'
     }) }}
 
     <div class="alert-box info">

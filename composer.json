@@ -2,11 +2,13 @@
     "name": "outlandish/wpackagist",
     "description": "Install and manage WordPress plugins with Composer",
     "config": {
+        "platform": {
+            "php": "7.2.24"
+        },
         "sort-packages": true
     },
     "minimum-stability": "stable",
     "require": {
-        "php": "7.4.*",
         "ext-intl": "*",
         "ext-json": "*",
         "ext-pdo": "*",
@@ -16,7 +18,7 @@
         "babdev/pagerfanta-bundle": "^2.2",
         "composer/composer": "^1.10.10",
         "composer/package-versions-deprecated": "^1.11",
-        "doctrine/dbal": "^2.10.2",
+        "doctrine/dbal": "^2.10.4",
         "doctrine/doctrine-bundle": "^2.1",
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "doctrine/orm": "^2.7",

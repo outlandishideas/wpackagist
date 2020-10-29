@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Outlandish\Wpackagist\Service;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class UpdateCommand extends DbAwareCommand
@@ -59,7 +60,7 @@ class UpdateCommand extends DbAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->updateService->update($output, $input->getOption('name'));
+        $this->updateService->update(new ConsoleLogger($output), $input->getOption('name'));
 
         return 0;
     }
