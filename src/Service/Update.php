@@ -5,24 +5,30 @@ namespace Outlandish\Wpackagist\Service;
 use Composer\Package\Version\VersionParser;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Statement;
+use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\GuzzleException;
-use Outlandish\Wpackagist\Package\AbstractPackage;
-use Outlandish\Wpackagist\Package\Plugin;
-use Outlandish\Wpackagist\Package\Theme;
+use Outlandish\Wpackagist\Builder;
+use Outlandish\Wpackagist\Entity\Package;
+use Outlandish\Wpackagist\Entity\Plugin;
+use Outlandish\Wpackagist\Entity\Theme;
+use Psr\Log\LoggerInterface;
 use Rarst\Guzzle\WporgClient;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Update
 {
-    /** @var Connection */
-    private $connection;
+    private Builder $builder;
+    private Connection $connection;
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(Connection $connection)
+    public function __construct(Builder $builder, Connection $connection,  EntityManagerInterface $entityManager)
     {
+        $this->builder = $builder;
         $this->connection = $connection;
+        $this->entityManager = $entityManager;
     }
 
-    public function update(OutputInterface $output, ?string $name = null)
+    public function update(OutputInterface $output, LoggerInterface $logger, ?string $name = null)
     {
         $updateStmt = $this->connection->prepare(
             'UPDATE packages SET
@@ -31,54 +37,42 @@ class Update
         );
         $deactivateStmt = $this->connection->prepare('UPDATE packages SET last_fetched = NOW(), is_active = false WHERE class_name = :class_name AND name = :name');
 
+        $repo = $this->entityManager->getRepository(Package::class);
+        /** @var Package[] $packages */
         if ($name) {
-            $query = $this->connection->prepare('
-                SELECT class_name, * FROM packages
-                WHERE name = :name
-            ');
-            $query->bindValue("name", $name);
+            $packages = $repo->findBy(['name' => $name]);
         } else {
-            $query = $this->connection->prepare(<<<EOT
-                SELECT class_name, * FROM packages
-                WHERE last_fetched IS NULL
-                OR DATE_PART('hour', last_committed) - DATE_PART('hour', last_fetched) > 2
-                OR (is_active = false AND last_committed > :threeMonthsAgo AND last_fetched < :oneWeekAgo)
-EOT);
-            $query->bindValue('threeMonthsAgo', (new \DateTime())->sub(new \DateInterval('P3M'))->format($this->connection->getDatabasePlatform()->getDateTimeFormatString()));
-            $query->bindValue('oneWeekAgo', (new \DateTime())->sub(new \DateInterval('P1W'))->format($this->connection->getDatabasePlatform()->getDateTimeFormatString()));
+            $packages = $repo->findDueUpdate();
         }
-        // get packages that have never been fetched or have been updated since last being fetched
-        // or that are inactive but have been updated in the past 90 days and haven't been fetched in the past 7 days
-        $query->execute();
-        $packages = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
 
         $count = count($packages);
         $versionParser = new VersionParser();
-
 
         $wporgClient = WporgClient::getClient();
 
         $output->writeln("Updating {$count} packages");
 
-        foreach ($packages as $index => $package) {
+        $logger->info('test!');
 
+        foreach ($packages as $index => $package) {
             $percent = $index / $count * 100;
 
             $info = null;
             $fields = ['versions'];
-            $type = $package instanceof Plugin ? 'plugin' : 'theme';
             try {
-                if ($type === 'plugin') {
+                if ($package->getType() === 'plugin') {
                     $info = $wporgClient->getPlugin($package->getName(), $fields);
                 } else {
                     $info = $wporgClient->getTheme($package->getName(), $fields);
                 }
 
-                $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s %s", $percent, $type, $package->getName()));
+                $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s %s", $percent, $package->getType(), $package->getName()));
+                $logger->info(sprintf("Fetched %s %s", $package->getType(), $package->getName()));
             } catch (GuzzleException $exception) {
-                $output->writeln("Skipped {$type} '{$package->getName()}' due to error: '{$exception->getMessage()}'");
+                $skippedMessage = "Skipped {$package->getType()} '{$package->getName()}' due to error: '{$exception->getMessage()}'";
+                $output->writeln($skippedMessage);
+                $logger->warning($skippedMessage);
             }
-
 
             if (empty($info)) {
                 // Plugin is not active
@@ -86,6 +80,8 @@ EOT);
 
                 continue;
             }
+
+            $logger->info('info! ' . json_encode($info));
 
             //get versions as [version => url]
             $versions = $info['versions'] ?: [];
@@ -121,40 +117,34 @@ EOT);
                 }
             }
 
+            $logger->info('versions processed! ' . json_encode($versions));
+
             if ($versions) {
-                try {
                     $updateStmt->execute([
                         ':display_name' => $info['name'],
                         ':class_name' => get_class($package),
                         ':name' => $package->getName(),
-                        ':json' => json_encode($versions)
+                        ':json' => json_encode($versions),
                     ]);
-                } catch (\Exception $exception) {
-                    // Probably a DB lock contention issue - skip for now instead of crashing.
-                    // TODO remove this try/catch when we are confident-ish DB lock waits aren't
-                    // an issue with the live implementation.
-                    return;
-                }
             } else {
                 // Plugin is not active
                 $this->deactivate($deactivateStmt, $package, 'no versions found', $output);
             }
         }
 
-        // Build required flag update is a no-op for now. Queuing a full rebuild which is
-        // pretty likely to overlap with the regularly schedule task is a recipe for file
-        // I/O errors and always has been, with the risk increased with slow filesystems
-        // like EFS.
-        // TODO complete all updates synchronously (while tightening rate limits) OR queue
-        // a more sensible, narrowly scoped update here.
-//        $stateUpdate = $this->connection->prepare("
-//            UPDATE state
-//            SET value = 'yes' WHERE key='build_required'
-//        ");
-//        $stateUpdate->execute();
+        // Update just this package synchronously.
+        if (!$package) {
+            return;
+        }
+
+        // Update the package *if* everything we did above left it in an active state with 1+ versions.
+        $package = $this->entityManager->getRepository(Package::class)->find($package->getId());
+        if (!empty($package->getVersions()) && $package->isActive()) {
+            $this->builder->updatePackage($package);
+        }
     }
 
-    private function deactivate(Statement $statement, AbstractPackage $package, string $reason, OutputInterface $output)
+    private function deactivate(Statement $statement, Package $package, string $reason, OutputInterface $output)
     {
         $statement->execute([':class_name' => get_class($package), ':name' => $package->getName()]);
         $output->writeln(sprintf("<error>Deactivated package %s because %s</error>", $package->getName(), $reason));

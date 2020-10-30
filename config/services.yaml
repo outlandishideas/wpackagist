@@ -17,6 +17,9 @@ services:
         resource: '../src/*'
         exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
 
+    Outlandish\Wpackagist\Storage\Provider:
+        alias: Outlandish\Wpackagist\Storage\Database
+
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class
     Outlandish\Wpackagist\Controller\:

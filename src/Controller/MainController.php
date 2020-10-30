@@ -3,10 +3,16 @@
 namespace Outlandish\Wpackagist\Controller;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Outlandish\Wpackagist\Entity\Package;
+use Outlandish\Wpackagist\Entity\Plugin;
+use Outlandish\Wpackagist\Entity\Theme;
 use Outlandish\Wpackagist\Service;
-use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
+use Pagerfanta\Adapter\DoctrineORMAdapter;
 use Pagerfanta\Pagerfanta;
 use PDO;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -21,17 +27,18 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Outlandish\Wpackagist\Storage;
 
 class MainController extends AbstractController
 {
-    /** @var FormFactoryInterface */
-    private $formFactory;
-    /** @var FormInterface */
-    private $form;
+    private FormFactoryInterface $formFactory;
+    private ?FormInterface $form;
+    private Storage\Provider $storage;
 
-    public function __construct(FormFactoryInterface $formFactory)
+    public function __construct(FormFactoryInterface $formFactory, Storage\Provider $storage)
     {
         $this->formFactory = $formFactory;
+        $this->storage = $storage;
     }
 
     /**
@@ -39,15 +46,17 @@ class MainController extends AbstractController
      */
     public function packageIndexJson(): Response
     {
-        $response = new Response(
-            file_get_contents($_SERVER['PACKAGE_PATH'] . '/packages.json')
-        );
+        $response = new Response($this->storage->load('packages.json'));
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
     }
 
     /**
+     * Requests with a directory get an individual plugin or theme's Composer data.
+     * Those without are for the more specific package list metadata files referenced
+     * in the top level `packages.json` in its `provider-includes`.
+     *
      * @Route("p/{file}.json", name="json_provider")
      * @Route("p/{dir}/{file}.json", name="json_package")
      * @param ?string $dir   Directory: wpackagist-plugin or wpackagist-theme.
@@ -63,14 +72,15 @@ class MainController extends AbstractController
             throw new BadRequestException('Unexpected package path');
         }
 
-        $fullPath = empty($dir)
-            ? "{$_SERVER['PACKAGE_PATH']}/p/{$file}.json"
-            : "{$_SERVER['PACKAGE_PATH']}/p/$dir/{$file}.json";
-        if (!file_exists($fullPath)) {
+        $key = empty($dir) ? "p/$file.json" : "p/$dir/{$file}.json";
+
+        $data = $this->storage->load($key);
+
+        if (empty($data)) {
             throw new NotFoundHttpException();
         }
 
-        $response = new Response(file_get_contents($fullPath));
+        $response = new Response($data);
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -84,9 +94,9 @@ class MainController extends AbstractController
         ]);
     }
 
-    public function search(Request $request, Connection $connection): Response
+    public function search(Request $request, Connection $connection, EntityManagerInterface $entityManager): Response
     {
-        $queryBuilder = $connection->createQueryBuilder();
+        $queryBuilder = new QueryBuilder($entityManager);
 
         $form = $this->getForm();
         $form->handleRequest($request);
@@ -103,50 +113,43 @@ class MainController extends AbstractController
             'error'              => '',
         ];
 
+        // TODO move search query logic to PackageRepository.
         $queryBuilder
-            ->select('*')
-            ->from('packages', 'p');
+            ->select('p');
 
         switch ($type) {
             case 'theme':
-                $queryBuilder
-                    ->andWhere('class_name = :class')
-                    ->setParameter(':class', 'Outlandish\Wpackagist\Package\Theme');
+                $queryBuilder->from(Theme::class, 'p');
                 break;
             case 'plugin':
-                $queryBuilder
-                    ->andWhere('class_name = :class')
-                    ->setParameter(':class', 'Outlandish\Wpackagist\Package\Plugin');
+                $queryBuilder->from(Plugin::class, 'p');
                 break;
             default:
-                break;
+                $queryBuilder->from(Package::class, 'p');
         }
 
         switch ($active) {
             case 1:
-                $queryBuilder->andWhere('is_active');
+                $queryBuilder->andWhere('p.isActive = true');
                 break;
 
             default:
-                $queryBuilder->orderBy('is_active', 'DESC');
+                $queryBuilder->addOrderBy('p.isActive', 'DESC');
                 break;
         }
 
         if (!empty($query)) {
             $queryBuilder
-                ->andWhere('name LIKE :name')
-                ->orWhere('display_name LIKE :name')
-                ->addOrderBy('name LIKE :order', 'DESC')
-                ->addOrderBy('name', 'ASC')
-                ->setParameter(':name', "%{$query}%")
-                ->setParameter(':order', "{$query}%");
+                ->andWhere('p.name LIKE :name OR p.displayName LIKE :name')
+                ->addOrderBy('p.name', 'ASC')
+                ->setParameter('name', "%{$query}%");
         } else {
             $queryBuilder
-                ->addOrderBy('last_committed', 'DESC');
+                ->addOrderBy('p.lastCommitted', 'DESC');
         }
 
         $countField = 'p.name';
-        $adapter    = new DoctrineDbalSingleTableAdapter($queryBuilder, $countField);
+        $adapter    = new DoctrineORMAdapter($queryBuilder);
         $pagerfanta = new Pagerfanta($adapter);
         $pagerfanta->setMaxPerPage(30);
         $pagerfanta->setCurrentPage($request->query->get('page', 1));
@@ -157,7 +160,7 @@ class MainController extends AbstractController
         return $this->render('search.twig', $data);
     }
 
-    public function update(Request $request, Connection $connection, Service\Update $updateService): Response
+    public function update(Request $request, Connection $connection, EntityManagerInterface $entityManager, LoggerInterface $logger, Service\Update $updateService): Response
     {
         // first run the update command
         $name = $request->get('name');
@@ -165,14 +168,13 @@ class MainController extends AbstractController
             return new Response('Invalid Request',400);
         }
 
-        $query = $connection->prepare('SELECT * FROM packages WHERE name = :name');
-        $query->execute([ $name ]);
-        $package = $query->fetch(PDO::FETCH_ASSOC);
-
-        if (!$package) {
+        $packages = $entityManager->getRepository(Package::class)->findBy(['name' => $name]);
+        if (count($packages) === 0) {
             return new Response('Not Found',404);
         }
-        $safeName = $package['name'];
+
+        $package = $packages[0];
+        $safeName = $package->getName();
 
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
             $splitIp = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
@@ -182,18 +184,18 @@ class MainController extends AbstractController
         }
 
         $count = $this->getRequestCountByIp($userIp, $connection);
-        if ($count > 10) {
+        if ($count > 500) { // todo make 5
             return new Response('Too many requests. Try again in an hour.', 403);
         }
 
-        $updateService->update(new NullOutput(), $safeName);
+        $updateService->update(new NullOutput(), $logger, $safeName);
 
         return new RedirectResponse('/search?q=' . $safeName);
     }
 
     private function getForm(): FormInterface
     {
-        if (!$this->form) {
+        if (!isset($this->form)) {
             $this->form = $this->formFactory
                 // A named builder with blank name enables not having a param prefix like `formName[fieldName]`.
                 ->createNamedBuilder('', FormType::class, null, ['csrf_protection' => false])

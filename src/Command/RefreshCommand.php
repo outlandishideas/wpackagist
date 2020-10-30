@@ -2,6 +2,8 @@
 
 namespace Outlandish\Wpackagist\Command;
 
+use Outlandish\Wpackagist\Entity\Plugin;
+use Outlandish\Wpackagist\Entity\Theme;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -27,8 +29,8 @@ class RefreshCommand extends DbAwareCommand
         $svn = $input->getOption('svn');
 
         $types = [
-            'plugin' => 'Outlandish\Wpackagist\Package\Plugin',
-            'theme'  => 'Outlandish\Wpackagist\Package\Theme',
+            'plugin' => Plugin::class,
+            'theme'  => Theme::class,
         ];
 
         $updateStmt = $this->connection->prepare('UPDATE packages SET last_committed = :date WHERE class_name = :class_name AND name = :name');
