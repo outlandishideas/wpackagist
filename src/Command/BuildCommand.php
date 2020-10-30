@@ -13,9 +13,12 @@ use Outlandish\Wpackagist\Storage;
 
 class BuildCommand extends DbAwareCommand
 {
-    protected Builder $builder;
-    private EntityManagerInterface $entityManager;
-    protected Storage\Provider $storage;
+    /** @var Builder */
+    protected $builder;
+    /** @var EntityManagerInterface */
+    private $entityManager;
+    /** @var Storage\Provider */
+    protected $storage;
 
     public function __construct(
         Builder $builder,

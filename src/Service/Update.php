@@ -17,9 +17,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Update
 {
-    private Builder $builder;
-    private Connection $connection;
-    private EntityManagerInterface $entityManager;
+    /** @var Builder */
+    private $builder;
+    /** @var Connection */
+    private $connection;
+    /** @var EntityManagerInterface */
+    private $entityManager;
 
     public function __construct(Builder $builder, Connection $connection,  EntityManagerInterface $entityManager)
     {

@@ -15,21 +15,25 @@ class Request
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @var int
      */
-    protected int $id;
+    protected $id;
 
     /**
      * @ORM\Column(type="string", length=15, unique=true)
+     * @var string
      */
-    protected string $ipAddress;
+    protected $ipAddress;
 
     /**
      * @ORM\Column(type="datetime")
+     * @var DateTime
      */
-    protected DateTime $lastRequest;
+    protected $lastRequest;
 
     /**
      * @ORM\Column(type="integer")
+     * @var int
      */
-    protected int $requestCount;
+    protected $requestCount;
 }

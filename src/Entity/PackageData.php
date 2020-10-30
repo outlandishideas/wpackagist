@@ -13,13 +13,15 @@ class PackageData
     /**
      * @ORM\Id()
      * @ORM\Column(type="string", length=200)
+     * @var string
      */
-    protected string $key;
+    protected $key;
 
     /**
      * @ORM\Column(type="text", length=65535, nullable=true)
+     * @var string
      */
-    protected string $value;
+    protected $value;
 
     /**
      * @return string

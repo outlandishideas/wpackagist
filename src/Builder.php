@@ -6,7 +6,8 @@ use Outlandish\Wpackagist\Entity\Package;
 
 class Builder
 {
-    private Storage\Provider $storage;
+    /** @var Storage\Provider */
+    private $storage;
 
     public function __construct(Storage\Provider $storage)
     {
@@ -31,7 +32,7 @@ class Builder
         $this->updateProviderGroup(
             $this->getComposerProviderGroup($package),
             $packageName,
-            $versionHashArrays,
+            $versionHashArrays
         );
     }
 

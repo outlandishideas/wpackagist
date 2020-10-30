@@ -31,9 +31,12 @@ use Outlandish\Wpackagist\Storage;
 
 class MainController extends AbstractController
 {
-    private FormFactoryInterface $formFactory;
-    private ?FormInterface $form;
-    private Storage\Provider $storage;
+    /** @var FormFactoryInterface */
+    private $formFactory;
+    /** @var FormInterface|null */
+    private $form;
+    /** @var Storage\Provider */
+    private $storage;
 
     public function __construct(FormFactoryInterface $formFactory, Storage\Provider $storage)
     {

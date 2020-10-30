@@ -7,7 +7,8 @@ use Outlandish\Wpackagist\Entity\PackageData;
 
 final class Database extends Provider
 {
-    private EntityManagerInterface $entityManager;
+    /** @var EntityManagerInterface */
+    private $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager)
     {

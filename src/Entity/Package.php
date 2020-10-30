@@ -31,40 +31,45 @@ abstract class Package
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @var int
      */
-    protected int $id;
+    protected $id;
 
     /**
      * @ORM\Column(type="string")
      * @var string WordPress package name
      */
-    protected string $name;
+    protected $name;
 
     /**
      * @ORM\Column(type="datetime")
+     * @var DateTime
      */
-    protected DateTime $lastCommitted;
+    protected $lastCommitted;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @var DateTime|null
      */
-    protected ?DateTime $lastFetched = null;
+    protected $lastFetched = null;
 
     /**
      * @ORM\Column(type="json", nullable=true)
+     * @var array|null
      */
-    protected ?array $versions = null;
+    protected $versions = null;
 
     /**
      * @ORM\Column(type="boolean")
+     * @var bool
      */
-    protected bool $isActive;
+    protected $isActive;
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     * @var string WordPress package name
+     * @var string|null WordPress package name
      */
-    protected ?string $displayName = null;
+    protected $displayName = null;
 
     /**
      * @return string|null  e.g. 'wordpress-plugin'.
