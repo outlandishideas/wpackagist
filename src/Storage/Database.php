@@ -17,7 +17,7 @@ final class Database extends Provider
 
     public function load(string $key): ?string
     {
-        $data = $this->entityManager->getRepository(PackageData::class)->findOneBy(['key' => $key]);
+        $data = $this->loadFromDb($key);
         if ($data) {
             return $data->getValue();
         }
@@ -27,12 +27,22 @@ final class Database extends Provider
 
     public function save(string $key, string $json): bool
     {
-        $data = new PackageData();
+        // Update or insert as needed.
+        $data = $this->loadFromDb($key);
+        if (!$data) {
+            $data = new PackageData();
+        }
+
         $data->setKey($key);
         $data->setValue($json);
         $this->entityManager->persist($data);
         $this->entityManager->flush();
 
         return true;
+    }
+
+    protected function loadFromDb(string $key): ?PackageData
+    {
+        return $this->entityManager->getRepository(PackageData::class)->findOneBy(['key' => $key]);
     }
 }
