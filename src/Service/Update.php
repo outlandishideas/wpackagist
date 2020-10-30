@@ -52,8 +52,6 @@ class Update
 
         $output->writeln("Updating {$count} packages");
 
-        $logger->info('test!');
-
         foreach ($packages as $index => $package) {
             $percent = $index / $count * 100;
 
@@ -80,8 +78,6 @@ class Update
 
                 continue;
             }
-
-            $logger->info('info! ' . json_encode($info));
 
             //get versions as [version => url]
             $versions = $info['versions'] ?: [];
@@ -116,8 +112,6 @@ class Update
                     unset($versions[$version]);
                 }
             }
-
-            $logger->info('versions processed! ' . json_encode($versions));
 
             if ($versions) {
                     $updateStmt->execute([
