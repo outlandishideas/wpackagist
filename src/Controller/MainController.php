@@ -194,7 +194,7 @@ class MainController extends AbstractController
             return new Response('Too many requests. Try again in an hour.', 403);
         }
 
-        $updateService->update(new NullOutput(), $logger, $safeName);
+        $updateService->update($logger, $safeName);
 
         return new RedirectResponse('/search?q=' . $safeName);
     }
