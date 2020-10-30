@@ -6,14 +6,14 @@ use Composer\Package\Version\VersionParser;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Command\Exception\CommandClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Outlandish\Wpackagist\Builder;
 use Outlandish\Wpackagist\Entity\Package;
 use Outlandish\Wpackagist\Entity\Plugin;
 use Outlandish\Wpackagist\Entity\Theme;
-use Psr\Log\LoggerInterface;
+use Psr\Log\AbstractLogger;
 use Rarst\Guzzle\WporgClient;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class Update
 {
@@ -31,7 +31,7 @@ class Update
         $this->entityManager = $entityManager;
     }
 
-    public function update(OutputInterface $output, LoggerInterface $logger, ?string $name = null)
+    public function update(AbstractLogger $logger, ?string $name = null)
     {
         $updateStmt = $this->connection->prepare(
             'UPDATE packages SET
@@ -53,7 +53,7 @@ class Update
 
         $wporgClient = WporgClient::getClient();
 
-        $output->writeln("Updating {$count} packages");
+        $logger->info("Updating {$count} packages");
 
         foreach ($packages as $index => $package) {
             $percent = $index / $count * 100;
@@ -67,17 +67,18 @@ class Update
                     $info = $wporgClient->getTheme($package->getName(), $fields);
                 }
 
-                $output->writeln(sprintf("<info>%04.1f%%</info> Fetched %s %s", $percent, $package->getType(), $package->getName()));
-                $logger->info(sprintf("Fetched %s %s", $package->getType(), $package->getName()));
+                $logger->info(sprintf("<info>%04.1f%%</info> Fetched %s %s", $percent, $package->getType(), $package->getName()));
+            } catch (CommandClientException $exception) {
+                $res = $exception->getResponse();
+                $this->deactivate($deactivateStmt, $package, $res->getStatusCode() . ': ' . $res->getReasonPhrase(), $logger);
+                continue;
             } catch (GuzzleException $exception) {
-                $skippedMessage = "Skipped {$package->getType()} '{$package->getName()}' due to error: '{$exception->getMessage()}'";
-                $output->writeln($skippedMessage);
-                $logger->warning($skippedMessage);
+                $logger->error("Skipped {$package->getType()} '{$package->getName()}' due to error: '{$exception->getMessage()}'");
             }
 
             if (empty($info)) {
                 // Plugin is not active
-                $this->deactivate($deactivateStmt, $package, 'not active', $output);
+                $this->deactivate($deactivateStmt, $package, 'not active', $logger);
 
                 continue;
             }
@@ -117,15 +118,15 @@ class Update
             }
 
             if ($versions) {
-                    $updateStmt->execute([
-                        ':display_name' => $info['name'],
-                        ':class_name' => get_class($package),
-                        ':name' => $package->getName(),
-                        ':json' => json_encode($versions),
-                    ]);
+                $updateStmt->execute([
+                    ':display_name' => $info['name'],
+                    ':class_name' => get_class($package),
+                    ':name' => $package->getName(),
+                    ':json' => json_encode($versions),
+                ]);
             } else {
                 // Plugin is not active
-                $this->deactivate($deactivateStmt, $package, 'no versions found', $output);
+                $this->deactivate($deactivateStmt, $package, 'no versions found', $logger);
             }
         }
 
@@ -141,9 +142,9 @@ class Update
         }
     }
 
-    private function deactivate(Statement $statement, Package $package, string $reason, OutputInterface $output)
+    private function deactivate(Statement $statement, Package $package, string $reason, AbstractLogger $logger)
     {
         $statement->execute([':class_name' => get_class($package), ':name' => $package->getName()]);
-        $output->writeln(sprintf("<error>Deactivated package %s because %s</error>", $package->getName(), $reason));
+        $logger->error(sprintf("<error>Deactivated package %s because %s</error>", $package->getName(), $reason));
     }
 }

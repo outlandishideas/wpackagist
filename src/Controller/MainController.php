@@ -143,7 +143,10 @@ class MainController extends AbstractController
 
         if (!empty($query)) {
             $queryBuilder
-                ->andWhere('p.name LIKE :name OR p.displayName LIKE :name')
+                ->andWhere($queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->like('p.name', ':name'),
+                    $queryBuilder->expr()->like('p.displayName', ':name')
+                ))
                 ->addOrderBy('p.name', 'ASC')
                 ->setParameter('name', "%{$query}%");
         } else {
@@ -187,7 +190,7 @@ class MainController extends AbstractController
         }
 
         $count = $this->getRequestCountByIp($userIp, $connection);
-        if ($count > 500) { // todo make 5
+        if ($count > 5) {
             return new Response('Too many requests. Try again in an hour.', 403);
         }
 

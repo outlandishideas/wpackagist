@@ -4,21 +4,18 @@ namespace Outlandish\Wpackagist\Command;
 
 use Doctrine\DBAL\Connection;
 use Outlandish\Wpackagist\Service;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class UpdateCommand extends DbAwareCommand
 {
-    /** @var LoggerInterface */
-    protected $logger;
     /** @var Service\Update */
     protected $updateService;
 
-    public function __construct(Service\Update $updateService, Connection $connection, LoggerInterface  $logger, $name = null)
+    public function __construct(Service\Update $updateService, Connection $connection, $name = null)
     {
-        $this->logger = $logger;
         $this->updateService = $updateService;
 
         parent::__construct($connection, $name);
@@ -63,7 +60,7 @@ class UpdateCommand extends DbAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->updateService->update($output, $this->logger, $input->getOption('name'));
+        $this->updateService->update(new ConsoleLogger($output), $input->getOption('name'));
 
         return 0;
     }

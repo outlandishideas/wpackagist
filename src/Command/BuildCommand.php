@@ -5,6 +5,8 @@ namespace Outlandish\Wpackagist\Command;
 use Doctrine\ORM\EntityManagerInterface;
 use Outlandish\Wpackagist\Builder;
 use Outlandish\Wpackagist\Entity\Package;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\Table;
@@ -45,13 +47,16 @@ class BuildCommand extends DbAwareCommand
     {
         $output->writeln("Building packages");
 
+        $start = new \DateTime();
         $this->storage->prepare();
 
         $packages = $this->entityManager->getRepository(Package::class)->findActive();
 
         $uid = 1; // don't know what this does but composer requires it
 
-        $providers = [];
+        $providerGroups = [];
+
+        $progressBar = new ProgressBar($output, count($packages));
 
         /** @var Package[] $packages */
         foreach ($packages as $package) {
@@ -60,39 +65,57 @@ class BuildCommand extends DbAwareCommand
             foreach ($packagesData as $packageName => $packageData) {
                 $content = json_encode(['packages' => [$packageName => $packageData]]);
                 $sha256 = hash('sha256', $content);
-                $providers[$this->builder->getComposerProviderGroup($package)][$packageName] = [
+                $providerGroups[$this->builder->getComposerProviderGroup($package)][$packageName] = [
                     'sha256' => $sha256,
                 ];
                 $this->storage->save("p/$packageName\$$sha256.json", $content);
                 $this->builder->updatePackage($package);
             }
+            $progressBar->advance();
         }
+
+        $progressBar->finish();
+
+        $output->writeln('');
 
         $table = new Table($output);
         $table->setHeaders(['provider', 'packages', 'size']);
 
         $providerIncludes = [];
-        foreach ($providers as $providerGroup => $includedProviders) {
-            $content = json_encode(['providers' => $includedProviders]);
+        $totalSize = 0;
+        $totalProviders = 0;
+        foreach ($providerGroups as $providerGroup => $providers) {
+            $content = json_encode(['providers' => $providers]);
             $sha256 = hash('sha256', $content);
             $providerIncludes["p/providers-$providerGroup\$%hash%.json"] = [
                 'sha256' => $sha256,
             ];
 
+            // Get size in bytes, without resorting to e.g. filesystem operations.
+            // https://stackoverflow.com/a/9718273/2803757
+            $filesize = mb_strlen($content, '8bit');
+            $totalSize += $filesize;
+            $totalProviders += count($providers);
             $table->addRow([
                 $providerGroup,
-                count($includedProviders),
-                // Get size in bytes, without resorting to e.g. filesystem operations.
-                // https://stackoverflow.com/a/9718273/2803757
-                Helper::formatMemory(mb_strlen($content, '8bit')),
+                count($providers),
+                Helper::formatMemory($filesize),
             ]);
         }
+
+        $table->addRow(new TableSeparator());
+        $table->addRow([
+            'Total',
+            $totalProviders,
+            Helper::formatMemory($totalSize),
+        ]);
 
         $table->render();
 
         $this->builder->updateRoot($providerIncludes, true);
 
-        $output->writeln("Wrote packages.json file");
+        $interval = $start->diff(new \DateTime());
+        $output->writeln("Wrote packages.json file in " . $interval->format('%Hh %Im %Ss'));
 
         return 0;
     }
