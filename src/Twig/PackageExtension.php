@@ -26,6 +26,10 @@ class PackageExtension extends AbstractExtension
 
     public function formatVersions(?array $versionsIn): array
     {
+        if (empty($versionsIn)) {
+            return [];
+        }
+
         $versions = array_keys($versionsIn);
         usort($versions, 'version_compare');
 
