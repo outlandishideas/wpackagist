@@ -14,6 +14,12 @@ class Builder
         $this->storage = $storage;
     }
 
+    /**
+     * Doesn't prepare or finalise storage – call these methods once before and
+     * after calling this on all packages if updating many.
+     *
+     * @param Package $package
+     */
     public function updatePackage(Package $package): void
     {
         $versionHashArrays = [];

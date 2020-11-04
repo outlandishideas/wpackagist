@@ -3,12 +3,15 @@
 namespace Outlandish\Wpackagist\Storage;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ObjectRepository;
 use Outlandish\Wpackagist\Entity\PackageData;
 
 final class Database extends Provider
 {
     /** @var EntityManagerInterface */
     private $entityManager;
+    /** @var ObjectRepository */
+    private $repository;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -36,13 +39,26 @@ final class Database extends Provider
         $data->setKey($key);
         $data->setValue($json);
         $this->entityManager->persist($data);
-        $this->entityManager->flush();
 
         return true;
     }
 
+    public function finalise(): void
+    {
+        $this->entityManager->flush();
+    }
+
     protected function loadFromDb(string $key): ?PackageData
     {
-        return $this->entityManager->getRepository(PackageData::class)->findOneBy(['key' => $key]);
+        return $this->getRepository()->findOneBy(['key' => $key]);
+    }
+
+    protected function getRepository(): ObjectRepository
+    {
+        if (!$this->repository) {
+            $this->repository = $this->entityManager->getRepository(PackageData::class);
+        }
+
+        return $this->repository;
     }
 }

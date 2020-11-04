@@ -23,4 +23,11 @@ abstract class Provider
     public function prepare(): void
     {
     }
+
+    /**
+     * Override with any once-per-run persistence steps for the end of the process.
+     */
+    public function finalise(): void
+    {
+    }
 }

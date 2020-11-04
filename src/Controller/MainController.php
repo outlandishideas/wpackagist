@@ -14,7 +14,6 @@ use Pagerfanta\Pagerfanta;
 use PDO;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\SearchType;
@@ -166,8 +165,10 @@ class MainController extends AbstractController
         return $this->render('search.twig', $data);
     }
 
-    public function update(Request $request, Connection $connection, EntityManagerInterface $entityManager, LoggerInterface $logger, Service\Update $updateService): Response
+    public function update(Request $request, Connection $connection, EntityManagerInterface $entityManager, LoggerInterface $logger, Service\Update $updateService, Storage\Provider $storage): Response
     {
+        $storage->prepare();
+
         // first run the update command
         $name = $request->get('name');
         if (!trim($name)) {
@@ -195,6 +196,8 @@ class MainController extends AbstractController
         }
 
         $updateService->update($logger, $safeName);
+
+        $storage->finalise();
 
         return new RedirectResponse('/search?q=' . $safeName);
     }

@@ -114,8 +114,11 @@ class BuildCommand extends DbAwareCommand
 
         $this->builder->updateRoot($providerIncludes, true);
 
+        $output->writeln('Finalising package data...');
+        $this->storage->finalise();
+
         $interval = $start->diff(new \DateTime());
-        $output->writeln("Wrote packages.json file in " . $interval->format('%Hh %Im %Ss'));
+        $output->writeln("Wrote package data in " . $interval->format('%Hh %Im %Ss'));
 
         return 0;
     }
