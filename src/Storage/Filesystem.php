@@ -4,7 +4,7 @@ namespace Outlandish\Wpackagist\Storage;
 
 /**
  * Could support local use when no need to scale horizontally; also used briefly with
- * EFS in late 2020. This was very slow! Quicker key/value options should be prefered
+ * EFS in late 2020. This was very slow! Quicker key/value options should be preferred
  * except for local testing.
  */
 final class Filesystem extends Provider
