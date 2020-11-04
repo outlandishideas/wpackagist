@@ -25,6 +25,8 @@ RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
 
 # Get latest Composer & parallel install plugin prestissimo.
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Due to an issue of hirak/prestissimo with docker 2, downgrade docker: https://github.com/hirak/prestissimo/issues/233
+RUN composer self-update 1.10.16
 RUN composer global require hirak/prestissimo
 
 # Set up virtual host.
