@@ -6,10 +6,11 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Outlandish\Wpackagist\Entity\Package;
+use Outlandish\Wpackagist\Entity\PackageRepository;
 use Outlandish\Wpackagist\Entity\Plugin;
 use Outlandish\Wpackagist\Entity\Theme;
 use Outlandish\Wpackagist\Service;
-use Pagerfanta\Adapter\DoctrineORMAdapter;
+use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
 use PDO;
 use Psr\Log\LoggerInterface;
@@ -34,10 +35,10 @@ class MainController extends AbstractController
     private $formFactory;
     /** @var FormInterface|null */
     private $form;
-    /** @var Storage\Provider */
+    /** @var Storage\PackageStore */
     private $storage;
 
-    public function __construct(FormFactoryInterface $formFactory, Storage\Provider $storage)
+    public function __construct(FormFactoryInterface $formFactory, Storage\PackageStore $storage)
     {
         $this->formFactory = $formFactory;
         $this->storage = $storage;
@@ -48,35 +49,48 @@ class MainController extends AbstractController
      */
     public function packageIndexJson(): Response
     {
-        $response = new Response($this->storage->load('packages.json'));
+        $response = new Response($this->storage->loadRoot());
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
     }
 
     /**
-     * Requests with a directory get an individual plugin or theme's Composer data.
-     * Those without are for the more specific package list metadata files referenced
-     * in the top level `packages.json` in its `provider-includes`.
-     *
-     * @Route("p/{file}.json", name="json_provider")
-     * @Route("p/{dir}/{file}.json", name="json_package")
-     * @param ?string $dir   Directory: wpackagist-plugin or wpackagist-theme.
-     * @param string $file  Filename excluding '.json'.
+     * @Route("p/{package}${hash}.json", name="json_provider", requirements={"hash"="[0-9a-f]{64}"})
+     * @param string $provider
+     * @param string $hash
      * @return Response
      */
-    public function packageJson(string $file, ?string $dir = null): Response
+    public function providerJson(string $provider, string $hash): Response
+    {
+        $data = $this->storage->loadProvider($provider, $hash);
+
+        if (empty($data)) {
+            throw new NotFoundHttpException();
+        }
+
+        $response = new Response($data);
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+    }
+
+    /**
+     * @Route("p/{dir}/{package}${hash}.json", name="json_package", requirements={"hash"="[0-9a-f]{64}"})
+     * @param string $dir   Directory: wpackagist-plugin or wpackagist-theme.
+     * @param string $package
+     * @param string $hash
+     * @return Response
+     */
+    public function packageJson(string $package, string $hash, string $dir): Response
     {
         $dir = str_replace('.', '', $dir);
-        $file = str_replace('.', '', $file);
 
-        if (!empty($dir) && !in_array($dir, ['wpackagist-plugin', 'wpackagist-theme'], true)) {
+        if (!in_array($dir, ['wpackagist-plugin', 'wpackagist-theme'], true)) {
             throw new BadRequestException('Unexpected package path');
         }
 
-        $key = empty($dir) ? "p/$file.json" : "p/$dir/{$file}.json";
-
-        $data = $this->storage->load($key);
+        $data = $this->storage->loadPackage("{$dir}/{$package}", $hash);
 
         if (empty($data)) {
             throw new NotFoundHttpException();
@@ -153,8 +167,7 @@ class MainController extends AbstractController
                 ->addOrderBy('p.lastCommitted', 'DESC');
         }
 
-        $countField = 'p.name';
-        $adapter    = new DoctrineORMAdapter($queryBuilder);
+        $adapter    = new QueryAdapter($queryBuilder);
         $pagerfanta = new Pagerfanta($adapter);
         $pagerfanta->setMaxPerPage(30);
         $pagerfanta->setCurrentPage($request->query->get('page', 1));
@@ -165,9 +178,17 @@ class MainController extends AbstractController
         return $this->render('search.twig', $data);
     }
 
-    public function update(Request $request, Connection $connection, EntityManagerInterface $entityManager, LoggerInterface $logger, Service\Update $updateService, Storage\Provider $storage): Response
+    public function update(
+        Request $request,
+        Connection $connection,
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger,
+        Service\Update $updateService,
+        Storage\PackageStore $storage,
+        Service\Builder $builder
+    ): Response
     {
-        $storage->prepare();
+        $storage->prepare(true);
 
         // first run the update command
         $name = $request->get('name');
@@ -175,12 +196,14 @@ class MainController extends AbstractController
             return new Response('Invalid Request',400);
         }
 
-        $packages = $entityManager->getRepository(Package::class)->findBy(['name' => $name]);
-        if (count($packages) === 0) {
+        /** @var PackageRepository $packageRepo */
+        $packageRepo = $entityManager->getRepository(Package::class);
+
+        $package = $packageRepo->findOneBy(['name' => $name]);
+        if (!$package) {
             return new Response('Not Found',404);
         }
 
-        $package = $packages[0];
         $safeName = $package->getName();
 
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
@@ -195,9 +218,22 @@ class MainController extends AbstractController
             return new Response('Too many requests. Try again in an hour.', 403);
         }
 
-        $updateService->update($logger, $safeName);
+        $package = $updateService->updateOne($logger, $safeName);
+        if ($package && !empty($package->getVersions()) && $package->isActive()) {
+            // update just the package
+            $builder->updatePackage($package);
+            $storage->persist();
 
-        $storage->finalise();
+            // then update the corresponding group and the root provider, using all packages in the same group
+            $group = $package->getProviderGroup();
+            $groupPackageNames = $packageRepo->findActivePackageNamesByGroup($group);
+            $builder->updateProviderGroup($group, $groupPackageNames);
+            $storage->persist();
+            $builder->updateRoot();
+        }
+
+        // updates are complete, so persist everything
+        $storage->persist(true);
 
         return new RedirectResponse('/search?q=' . $safeName);
     }

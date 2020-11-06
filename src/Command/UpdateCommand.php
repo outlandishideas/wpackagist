@@ -3,7 +3,7 @@
 namespace Outlandish\Wpackagist\Command;
 
 use Doctrine\DBAL\Connection;
-use Outlandish\Wpackagist\Service;
+use Outlandish\Wpackagist\Service\Update;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
@@ -11,10 +11,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UpdateCommand extends DbAwareCommand
 {
-    /** @var Service\Update */
+    /** @var Update */
     protected $updateService;
 
-    public function __construct(Service\Update $updateService, Connection $connection, $name = null)
+    public function __construct(Update $updateService, Connection $connection, $name = null)
     {
         $this->updateService = $updateService;
 
@@ -32,13 +32,13 @@ class UpdateCommand extends DbAwareCommand
                 InputOption::VALUE_OPTIONAL,
                 'Name of package to update',
                 null
-            )
-            ->addOption(
-                'concurrent',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Max concurrent connections',
-                '10'
+//            )
+//            ->addOption(
+//                'concurrent',
+//                null,
+//                InputOption::VALUE_REQUIRED,
+//                'Max concurrent connections',
+//                '10'
             );
     }
 
@@ -60,7 +60,13 @@ class UpdateCommand extends DbAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->updateService->update(new ConsoleLogger($output), $input->getOption('name'));
+        $name = $input->getOption('name');
+        $logger = new ConsoleLogger($output);
+        if ($name) {
+            $this->updateService->updateOne($logger, $name);
+        } else {
+            $this->updateService->updateAll($logger);
+        }
 
         return 0;
     }

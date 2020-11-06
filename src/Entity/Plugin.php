@@ -9,25 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Plugin extends Package
 {
-    public function getVendorName(): string
-    {
-        return 'wpackagist-plugin';
-    }
-
-    public function getComposerType(): string
-    {
-        return 'wordpress-plugin';
-    }
-
-    public static function getSvnBaseUrl(): string
-    {
-        return 'https://plugins.svn.wordpress.org/';
-    }
-
-    public function getHomepageUrl(): string
-    {
-        return "https://wordpress.org/plugins/".$this->getName().'/';
-    }
+    const VENDOR_NAME = 'wpackagist-plugin';
+    const COMPOSER_TYPE = 'wordpress-plugin';
+    const SVN_BASE_URL = 'https://plugins.svn.wordpress.org/';
+    const HOMEPAGE_BASE_URL = 'https://wordpress.org/plugins/';
 
     public function getDownloadUrl($version): string
     {

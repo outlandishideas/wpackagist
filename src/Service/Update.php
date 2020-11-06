@@ -4,49 +4,60 @@ namespace Outlandish\Wpackagist\Service;
 
 use Composer\Package\Version\VersionParser;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Statement;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Command\Exception\CommandClientException;
 use GuzzleHttp\Exception\GuzzleException;
-use Outlandish\Wpackagist\Builder;
 use Outlandish\Wpackagist\Entity\Package;
+use Outlandish\Wpackagist\Entity\PackageRepository;
 use Outlandish\Wpackagist\Entity\Plugin;
 use Outlandish\Wpackagist\Entity\Theme;
-use Psr\Log\AbstractLogger;
+use Psr\Log\LoggerInterface;
 use Rarst\Guzzle\WporgClient;
 
 class Update
 {
-    /** @var Builder */
-    private $builder;
     /** @var Connection */
     private $connection;
     /** @var EntityManagerInterface */
     private $entityManager;
+    /** @var PackageRepository */
+    private $repo;
 
-    public function __construct(Builder $builder, Connection $connection,  EntityManagerInterface $entityManager)
+    public function __construct(Connection $connection,  EntityManagerInterface $entityManager)
     {
-        $this->builder = $builder;
         $this->connection = $connection;
         $this->entityManager = $entityManager;
+        $this->repo = $entityManager->getRepository(Package::class);
     }
 
-    public function update(AbstractLogger $logger, ?string $name = null)
+    public function updateAll(LoggerInterface $logger)
     {
-        $updateStmt = $this->connection->prepare(
-            'UPDATE packages SET
-            last_fetched = NOW(), versions = :json, is_active = true, display_name = :display_name
-            WHERE class_name = :class_name AND name = :name'
-        );
-        $deactivateStmt = $this->connection->prepare('UPDATE packages SET last_fetched = NOW(), is_active = false WHERE class_name = :class_name AND name = :name');
+        $packages = $this->repo->findDueUpdate();
+        $this->update($logger, $packages);
+    }
 
-        $repo = $this->entityManager->getRepository(Package::class);
-        /** @var Package[] $packages */
-        if ($name) {
-            $packages = $repo->findBy(['name' => $name]);
-        } else {
-            $packages = $repo->findDueUpdate();
+    public function updateOne(LoggerInterface $logger, string $name)
+    {
+        /** @var Package $package */
+        $package = $this->repo->findOneBy(['name' => $name]);
+        if ($package) {
+            $this->update($logger, [$package]);
+            return $package;
         }
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     * @param Package[] $packages
+     */
+    protected function update(LoggerInterface $logger, array $packages)
+    {
+//        $updateStmt = $this->connection->prepare(
+//            'UPDATE packages SET
+//            last_fetched = NOW(), versions = :json, is_active = true, display_name = :display_name
+//            WHERE class_name = :class_name AND name = :name'
+//        );
+//        $deactivateStmt = $this->connection->prepare('UPDATE packages SET last_fetched = NOW(), is_active = false WHERE class_name = :class_name AND name = :name');
 
         $count = count($packages);
         $versionParser = new VersionParser();
@@ -58,27 +69,29 @@ class Update
         foreach ($packages as $index => $package) {
             $percent = $index / $count * 100;
 
+            $name = $package->getName();
+
             $info = null;
             $fields = ['versions'];
             try {
-                if ($package->getType() === 'plugin') {
-                    $info = $wporgClient->getPlugin($package->getName(), $fields);
+                if ($package instanceof Plugin) {
+                    $info = $wporgClient->getPlugin($name, $fields);
                 } else {
-                    $info = $wporgClient->getTheme($package->getName(), $fields);
+                    $info = $wporgClient->getTheme($name, $fields);
                 }
 
-                $logger->info(sprintf("<info>%04.1f%%</info> Fetched %s %s", $percent, $package->getType(), $package->getName()));
+                $logger->info(sprintf("<info>%04.1f%%</info> Fetched %s %s", $percent, $package->getType(), $name));
             } catch (CommandClientException $exception) {
                 $res = $exception->getResponse();
-                $this->deactivate($deactivateStmt, $package, $res->getStatusCode() . ': ' . $res->getReasonPhrase(), $logger);
+                $this->deactivate($package, $res->getStatusCode() . ': ' . $res->getReasonPhrase(), $logger);
                 continue;
             } catch (GuzzleException $exception) {
-                $logger->error("Skipped {$package->getType()} '{$package->getName()}' due to error: '{$exception->getMessage()}'");
+                $logger->error("Skipped {$package->getType()} '{$name}' due to error: '{$exception->getMessage()}'");
             }
 
             if (empty($info)) {
                 // Plugin is not active
-                $this->deactivate($deactivateStmt, $package, 'not active', $logger);
+                $this->deactivate($package, 'not active', $logger);
 
                 continue;
             }
@@ -118,33 +131,24 @@ class Update
             }
 
             if ($versions) {
-                $updateStmt->execute([
-                    ':display_name' => $info['name'],
-                    ':class_name' => get_class($package),
-                    ':name' => $package->getName(),
-                    ':json' => json_encode($versions),
-                ]);
+                $package->setLastFetched(new \DateTime());
+                $package->setVersions($versions);
+                $package->setIsActive(true);
+                $package->setDisplayName($info['name']);
+                $this->entityManager->persist($package);
             } else {
                 // Plugin is not active
-                $this->deactivate($deactivateStmt, $package, 'no versions found', $logger);
+                $this->deactivate($package, 'no versions found', $logger);
             }
         }
-
-        // Update just this package synchronously.
-        if (!$package) {
-            return;
-        }
-
-        // Update the package *if* everything we did above left it in an active state with 1+ versions.
-        $package = $this->entityManager->getRepository(Package::class)->find($package->getId());
-        if (!empty($package->getVersions()) && $package->isActive()) {
-            $this->builder->updatePackage($package);
-        }
+        $this->entityManager->flush();
     }
 
-    private function deactivate(Statement $statement, Package $package, string $reason, AbstractLogger $logger)
+    private function deactivate(Package $package, string $reason, LoggerInterface $logger)
     {
-        $statement->execute([':class_name' => get_class($package), ':name' => $package->getName()]);
-        $logger->error(sprintf("<error>Deactivated package %s because %s</error>", $package->getName(), $reason));
+        $package->setLastFetched(new \DateTime());
+        $package->setIsActive(false);
+        $this->entityManager->persist($package);
+        $logger->error(sprintf("<error>Deactivated %s %s because %s</error>", $package->getType(), $package->getName(), $reason));
     }
 }

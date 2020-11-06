@@ -54,7 +54,25 @@ EOT;
         }
 
         $qb = $qb->orderBy('p.name', 'ASC');
-
+//$qb->setMaxResults(100);
         return $qb->getQuery()->getResult();
+    }
+
+    public function findActivePackageNamesByGroup($group)
+    {
+        $entityManager = $this->getEntityManager();
+
+        $qb = new QueryBuilder($entityManager);
+        $qb = $qb->select('partial p.{id, name}')
+            ->from(Package::class, 'p')
+            ->where('p.versions IS NOT NULL')
+            ->andWhere('p.providerGroup = :group')
+            ->andWhere('p.isActive = true');
+        $qb->setParameter('group', $group);
+
+        $packages = $qb->getQuery()->getResult();
+        return array_map(function (Package $package) {
+            return $package->getPackageName();
+        }, $packages);
     }
 }

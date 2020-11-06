@@ -9,25 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Theme extends Package
 {
-    public function getVendorName(): string
-    {
-        return 'wpackagist-theme';
-    }
-
-    public function getComposerType(): string
-    {
-        return 'wordpress-theme';
-    }
-
-    public static function getSvnBaseUrl(): string
-    {
-        return 'https://themes.svn.wordpress.org/';
-    }
-
-    public function getHomepageUrl(): string
-    {
-        return "https://wordpress.org/themes/".$this->getName().'/';
-    }
+    const VENDOR_NAME = 'wpackagist-theme';
+    const COMPOSER_TYPE = 'wordpress-theme';
+    const SVN_BASE_URL = 'https://themes.svn.wordpress.org/';
+    const HOMEPAGE_BASE_URL = 'https://wordpress.org/themes/';
 
     public function getDownloadUrl($version): string
     {
