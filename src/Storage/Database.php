@@ -118,6 +118,7 @@ final class Database extends PackageStore
             $match->setName($name);
             $match->setHash($hash);
             $changed = true;
+            $this->entityManager->persist($match);
         }
         if ($json !== $match->getValue()) {
             $match->setValue($json);
@@ -152,12 +153,19 @@ final class Database extends PackageStore
 
     public function prepare($partial = false): void
     {
-        //todo: delete those with is_latest = false?
     }
 
-    public function persist($partial = false): void
+    public function persist($final = false): void
     {
         $this->entityManager->flush();
+
+        if ($final) {
+            $qb = new QueryBuilder($this->entityManager);
+            $qb->delete(PackageData::class, 'p')
+                ->where('p.isLatest = false')
+                ->getQuery()
+                ->execute();
+        }
     }
 
     protected function getRepository(): ObjectRepository

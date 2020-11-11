@@ -50,10 +50,16 @@ class Builder
     public function updateRoot()
     {
         $providers = $this->storage->loadAllProviders();
+        $includes = [];
+        $providerFormat = 'p/%package%$%hash%.json';
+        foreach ($providers as $name => $value) {
+            $sha256 = hash('sha256', $value);
+            $includes[str_replace('%package%', $name, $providerFormat)] = ['sha256' => $sha256];
+        }
         $content = json_encode([
             'packages' => [],
-            'providers-url' => '/p/%package%$%hash%.json',
-            'provider-includes' => $providers,
+            'providers-url' => '/' . $providerFormat,
+            'provider-includes' => $includes,
         ]);
         $this->storage->saveRoot($content);
     }

@@ -56,7 +56,7 @@ class MainController extends AbstractController
     }
 
     /**
-     * @Route("p/{package}${hash}.json", name="json_provider", requirements={"hash"="[0-9a-f]{64}"})
+     * @Route("p/{provider}${hash}.json", name="json_provider", requirements={"hash"="[0-9a-f]{64}"})
      * @param string $provider
      * @param string $hash
      * @return Response

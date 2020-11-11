@@ -8,6 +8,46 @@ use Doctrine\ORM\QueryBuilder;
 class PackageRepository extends EntityRepository
 {
     /**
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function updateProviderGroups(): void
+    {
+        // default everything to 'old'
+        $em = $this->getEntityManager();
+        $qb = new QueryBuilder($em);
+        $qb->update(Package::class, 'p')
+            ->set('p.providerGroup', ':group')
+            ->where('p.providerGroup <> :group')
+            ->setParameter('group', 'old')
+            ->getQuery()
+            ->execute();
+
+        // build the groups, trying to keep them of roughly equal numbers of packages
+        $year = date('Y');
+        $groups = [
+            'this-week' => new \DateTime('monday last week'),
+            $year . '-12' => new \DateTime($year . '-10-01'),
+            $year . '-09' => new \DateTime($year . '-07-01'),
+            $year . '-06' => new \DateTime($year . '-04-01'),
+            $year . '-03' => new \DateTime($year . '-01-01'),
+        ];
+        for ($y=$year-1; $y>=2011; $y--) {
+            $groups[$y] = new \DateTime($y . '-01-01');
+        }
+
+        $qb = new QueryBuilder($em);
+        $query = $qb->update(Package::class, 'p')
+            ->set('p.providerGroup', ':group')
+            ->where('p.providerGroup = \'old\'')
+            ->andWhere('p.lastCommitted >= :date')
+            ->getQuery();
+        foreach ($groups as $key=>$date) {
+            $query->execute(['group' => $key, 'date' => $date->format('Y-m-d')]);
+        }
+
+    }
+
+    /**
      * Get packages that have never been fetched or have been updated since last
      * being fetched or that are inactive but have been updated in the past 90 days
      * and haven't been fetched in the past 7 days.
@@ -54,7 +94,7 @@ EOT;
         }
 
         $qb = $qb->orderBy('p.name', 'ASC');
-//$qb->setMaxResults(100);
+
         return $qb->getQuery()->getResult();
     }
 

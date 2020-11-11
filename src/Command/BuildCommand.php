@@ -52,6 +52,10 @@ class BuildCommand extends DbAwareCommand
 
         /** @var PackageRepository $packageRepo */
         $packageRepo = $this->entityManager->getRepository(Package::class);
+
+        // ensure all packages have the right provider group assigned
+        $packageRepo->updateProviderGroups();
+
         $packages = $packageRepo->findActive();
         // once we have the packages, we don't need them to be tracked any more
         $this->entityManager->clear();
@@ -77,16 +81,31 @@ class BuildCommand extends DbAwareCommand
         $output->writeln('');
 
         $output->writeln('Finalising package data...');
-
         $this->storage->persist();
+
+        // now all of the packages are up-to-date, rebuild all of the provider groups and the root
         foreach ($providerGroups as $group => $groupPackageNames) {
             $this->builder->updateProviderGroup($group, $groupPackageNames);
         }
         $this->storage->persist();
         $this->builder->updateRoot();
 
+        // final persist, to write everything that needs writing
         $this->storage->persist(true);
 
+        $this->showProviders($output);
+
+        $interval = $start->diff(new \DateTime());
+        $output->writeln("Wrote package data in " . $interval->format('%Hh %Im %Ss'));
+
+        return 0;
+    }
+
+    /**
+     * @param OutputInterface $output
+     */
+    protected function showProviders(OutputInterface $output)
+    {
         $groups = $this->storage->loadAllProviders();
         ksort($groups);
 
@@ -119,10 +138,5 @@ class BuildCommand extends DbAwareCommand
         ]);
 
         $table->render();
-
-        $interval = $start->diff(new \DateTime());
-        $output->writeln("Wrote package data in " . $interval->format('%Hh %Im %Ss'));
-
-        return 0;
     }
 }
