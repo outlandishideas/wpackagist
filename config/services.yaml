@@ -19,7 +19,10 @@ services:
         exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
 
     Outlandish\Wpackagist\Storage\PackageStore:
-        alias: Outlandish\Wpackagist\Storage\Database
+        alias: Outlandish\Wpackagist\Storage\Filesystem
+
+    Outlandish\Wpackagist\Storage\Filesystem:
+        arguments: ['%wpackagist.packages.path%']
 
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class
