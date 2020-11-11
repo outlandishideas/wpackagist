@@ -42,6 +42,7 @@ class Builder
             $sha256 = hash('sha256', $packageJson);
             $providerJson[$packageName] = ['sha256' => $sha256];
         }
+        ksort($providerJson);
         $providerDataJson = json_encode(['providers' => $providerJson]);
         $providersSha256 = hash('sha256', $providerDataJson);
         $this->storage->saveProvider("providers-$providerGroupName", $providersSha256, $providerDataJson);
@@ -56,6 +57,7 @@ class Builder
             $sha256 = hash('sha256', $value);
             $includes[str_replace('%package%', $name, $providerFormat)] = ['sha256' => $sha256];
         }
+        ksort($includes);
         $content = json_encode([
             'packages' => [],
             'providers-url' => '/' . $providerFormat,
