@@ -32,13 +32,6 @@ class UpdateCommand extends DbAwareCommand
                 InputOption::VALUE_OPTIONAL,
                 'Name of package to update',
                 null
-//            )
-//            ->addOption(
-//                'concurrent',
-//                null,
-//                InputOption::VALUE_REQUIRED,
-//                'Max concurrent connections',
-//                '10'
             );
     }
 

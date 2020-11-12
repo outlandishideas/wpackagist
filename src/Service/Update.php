@@ -52,13 +52,6 @@ class Update
      */
     protected function update(LoggerInterface $logger, array $packages)
     {
-//        $updateStmt = $this->connection->prepare(
-//            'UPDATE packages SET
-//            last_fetched = NOW(), versions = :json, is_active = true, display_name = :display_name
-//            WHERE class_name = :class_name AND name = :name'
-//        );
-//        $deactivateStmt = $this->connection->prepare('UPDATE packages SET last_fetched = NOW(), is_active = false WHERE class_name = :class_name AND name = :name');
-
         $count = count($packages);
         $versionParser = new VersionParser();
 
