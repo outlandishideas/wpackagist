@@ -3,12 +3,18 @@
 namespace Outlandish\Wpackagist\Controller;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Outlandish\Wpackagist\Entity\Package;
+use Outlandish\Wpackagist\Entity\PackageRepository;
+use Outlandish\Wpackagist\Entity\Plugin;
+use Outlandish\Wpackagist\Entity\Theme;
 use Outlandish\Wpackagist\Service;
-use Pagerfanta\Adapter\DoctrineDbalSingleTableAdapter;
+use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
 use PDO;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\SearchType;
@@ -21,17 +27,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Outlandish\Wpackagist\Storage;
 
 class MainController extends AbstractController
 {
     /** @var FormFactoryInterface */
     private $formFactory;
-    /** @var FormInterface */
+    /** @var FormInterface|null */
     private $form;
+    /** @var Storage\PackageStore */
+    private $storage;
 
-    public function __construct(FormFactoryInterface $formFactory)
+    public function __construct(FormFactoryInterface $formFactory, Storage\PackageStore $storage)
     {
         $this->formFactory = $formFactory;
+        $this->storage = $storage;
     }
 
     /**
@@ -39,38 +49,54 @@ class MainController extends AbstractController
      */
     public function packageIndexJson(): Response
     {
-        $response = new Response(
-            file_get_contents($_SERVER['PACKAGE_PATH'] . '/packages.json')
-        );
+        $response = new Response($this->storage->loadRoot());
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
     }
 
     /**
-     * @Route("p/{file}.json", name="json_provider")
-     * @Route("p/{dir}/{file}.json", name="json_package")
-     * @param ?string $dir   Directory: wpackagist-plugin or wpackagist-theme.
-     * @param string $file  Filename excluding '.json'.
+     * @Route("p/{provider}${hash}.json", name="json_provider", requirements={"hash"="[0-9a-f]{64}"})
+     * @param string $provider
+     * @param string $hash
      * @return Response
      */
-    public function packageJson(string $file, ?string $dir = null): Response
+    public function providerJson(string $provider, string $hash): Response
     {
-        $dir = str_replace('.', '', $dir);
-        $file = str_replace('.', '', $file);
+        $data = $this->storage->loadProvider($provider, $hash);
 
-        if (!empty($dir) && !in_array($dir, ['wpackagist-plugin', 'wpackagist-theme'], true)) {
-            throw new BadRequestException('Unexpected package path');
-        }
-
-        $fullPath = empty($dir)
-            ? "{$_SERVER['PACKAGE_PATH']}/p/{$file}.json"
-            : "{$_SERVER['PACKAGE_PATH']}/p/$dir/{$file}.json";
-        if (!file_exists($fullPath)) {
+        if (empty($data)) {
             throw new NotFoundHttpException();
         }
 
-        $response = new Response(file_get_contents($fullPath));
+        $response = new Response($data);
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+    }
+
+    /**
+     * @Route("p/{dir}/{package}${hash}.json", name="json_package", requirements={"hash"="[0-9a-f]{64}"})
+     * @param string $dir   Directory: wpackagist-plugin or wpackagist-theme.
+     * @param string $package
+     * @param string $hash
+     * @return Response
+     */
+    public function packageJson(string $package, string $hash, string $dir): Response
+    {
+        $dir = str_replace('.', '', $dir);
+
+        if (!in_array($dir, ['wpackagist-plugin', 'wpackagist-theme'], true)) {
+            throw new BadRequestException('Unexpected package path');
+        }
+
+        $data = $this->storage->loadPackage("{$dir}/{$package}", $hash);
+
+        if (empty($data)) {
+            throw new NotFoundHttpException();
+        }
+
+        $response = new Response($data);
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -84,9 +110,9 @@ class MainController extends AbstractController
         ]);
     }
 
-    public function search(Request $request, Connection $connection): Response
+    public function search(Request $request, Connection $connection, EntityManagerInterface $entityManager): Response
     {
-        $queryBuilder = $connection->createQueryBuilder();
+        $queryBuilder = new QueryBuilder($entityManager);
 
         $form = $this->getForm();
         $form->handleRequest($request);
@@ -103,50 +129,45 @@ class MainController extends AbstractController
             'error'              => '',
         ];
 
+        // TODO move search query logic to PackageRepository.
         $queryBuilder
-            ->select('*')
-            ->from('packages', 'p');
+            ->select('p');
 
         switch ($type) {
             case 'theme':
-                $queryBuilder
-                    ->andWhere('class_name = :class')
-                    ->setParameter(':class', 'Outlandish\Wpackagist\Package\Theme');
+                $queryBuilder->from(Theme::class, 'p');
                 break;
             case 'plugin':
-                $queryBuilder
-                    ->andWhere('class_name = :class')
-                    ->setParameter(':class', 'Outlandish\Wpackagist\Package\Plugin');
+                $queryBuilder->from(Plugin::class, 'p');
                 break;
             default:
-                break;
+                $queryBuilder->from(Package::class, 'p');
         }
 
         switch ($active) {
             case 1:
-                $queryBuilder->andWhere('is_active');
+                $queryBuilder->andWhere('p.isActive = true');
                 break;
 
             default:
-                $queryBuilder->orderBy('is_active', 'DESC');
+                $queryBuilder->addOrderBy('p.isActive', 'DESC');
                 break;
         }
 
         if (!empty($query)) {
             $queryBuilder
-                ->andWhere('name LIKE :name')
-                ->orWhere('display_name LIKE :name')
-                ->addOrderBy('name LIKE :order', 'DESC')
-                ->addOrderBy('name', 'ASC')
-                ->setParameter(':name', "%{$query}%")
-                ->setParameter(':order', "{$query}%");
+                ->andWhere($queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->like('p.name', ':name'),
+                    $queryBuilder->expr()->like('p.displayName', ':name')
+                ))
+                ->addOrderBy('p.name', 'ASC')
+                ->setParameter('name', "%{$query}%");
         } else {
             $queryBuilder
-                ->addOrderBy('last_committed', 'DESC');
+                ->addOrderBy('p.lastCommitted', 'DESC');
         }
 
-        $countField = 'p.name';
-        $adapter    = new DoctrineDbalSingleTableAdapter($queryBuilder, $countField);
+        $adapter    = new QueryAdapter($queryBuilder);
         $pagerfanta = new Pagerfanta($adapter);
         $pagerfanta->setMaxPerPage(30);
         $pagerfanta->setCurrentPage($request->query->get('page', 1));
@@ -157,22 +178,33 @@ class MainController extends AbstractController
         return $this->render('search.twig', $data);
     }
 
-    public function update(Request $request, Connection $connection, Service\Update $updateService): Response
+    public function update(
+        Request $request,
+        Connection $connection,
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger,
+        Service\Update $updateService,
+        Storage\PackageStore $storage,
+        Service\Builder $builder
+    ): Response
     {
+        $storage->prepare(true);
+
         // first run the update command
         $name = $request->get('name');
         if (!trim($name)) {
             return new Response('Invalid Request',400);
         }
 
-        $query = $connection->prepare('SELECT * FROM packages WHERE name = :name');
-        $query->execute([ $name ]);
-        $package = $query->fetch(PDO::FETCH_ASSOC);
+        /** @var PackageRepository $packageRepo */
+        $packageRepo = $entityManager->getRepository(Package::class);
 
+        $package = $packageRepo->findOneBy(['name' => $name]);
         if (!$package) {
             return new Response('Not Found',404);
         }
-        $safeName = $package['name'];
+
+        $safeName = $package->getName();
 
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
             $splitIp = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
@@ -182,18 +214,33 @@ class MainController extends AbstractController
         }
 
         $count = $this->getRequestCountByIp($userIp, $connection);
-        if ($count > 10) {
+        if ($count > 5) {
             return new Response('Too many requests. Try again in an hour.', 403);
         }
 
-        $updateService->update(new NullOutput(), $safeName);
+        $package = $updateService->updateOne($logger, $safeName);
+        if ($package && !empty($package->getVersions()) && $package->isActive()) {
+            // update just the package
+            $builder->updatePackage($package);
+            $storage->persist();
+
+            // then update the corresponding group and the root provider, using all packages in the same group
+            $group = $package->getProviderGroup();
+            $groupPackageNames = $packageRepo->findActivePackageNamesByGroup($group);
+            $builder->updateProviderGroup($group, $groupPackageNames);
+            $storage->persist();
+            $builder->updateRoot();
+        }
+
+        // updates are complete, so persist everything
+        $storage->persist(true);
 
         return new RedirectResponse('/search?q=' . $safeName);
     }
 
     private function getForm(): FormInterface
     {
-        if (!$this->form) {
+        if (!isset($this->form)) {
             $this->form = $this->formFactory
                 // A named builder with blank name enables not having a param prefix like `formName[fieldName]`.
                 ->createNamedBuilder('', FormType::class, null, ['csrf_protection' => false])

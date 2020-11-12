@@ -25,20 +25,20 @@
         <tbody>
             {% for package in currentPageResults %}
                 <tr>
-                    <td data-type="{{ package['class_name'] | format_category | lower }}">
-                        {{ package['class_name'] | format_category }}
+                    <td data-type="{{ package.type | format_category | lower }}">
+                        {{ package.type | format_category }}
                     </td>
-                    <td data-name="{{ package['name'] | e }}">
-                        <a href="https://wordpress.org/{{package['class_name'] | format_category | lower}}s/{{ package['name'] | e }}/" target="_blank">{{ package['name'] | e }}</a>
-                    </td>
-                    <td>
-                        {{ package['last_committed'] | default('Not Committed') }}
+                    <td data-name="{{ package.name | e }}">
+                        <a href="https://wordpress.org/{{package.type | format_category | lower}}s/{{ package.name | e }}/" target="_blank">{{ package.name | e }}</a>
                     </td>
                     <td>
-                        {{ package['last_fetched'] | default('Not fetched') }}
+                        {{ package.lastCommitted ? package.lastCommitted | date : 'Not Committed' }}
                     </td>
                     <td>
-                        {% set versions = package['versions'] | format_versions %}
+                        {{ package.lastFetched ? package.lastFetched | date : 'Not fetched' }}
+                    </td>
+                    <td>
+                        {% set versions = package.versions | format_versions %}
                         {% for version in versions %}
                             {# Separator allowing to toggle the show more version #}
                             {% if (loop.index == 2 and loop.length > 4) %}
@@ -55,7 +55,7 @@
                         {% endfor %}
                     </td>
                     <td style="text-align: center">
-                        {% if package['is_active'] %}
+                        {% if package.isActive %}
                             <span style="color: green">✔</span>
                         {% else %}
                             <span style="color: red">✘</span>
@@ -63,7 +63,7 @@
                     </td>
                     <td style="text-align: center">
                         <form class="search-result__refresh-form" action="/update" method="post">
-                            <input type="hidden" name="name" value="{{ package['name'] }}">
+                            <input type="hidden" name="name" value="{{ package.name }}">
                             <button class="search-result__refresh-button">↺</button>
                         </form>
                     </td>
@@ -80,7 +80,9 @@
     {{ pagerfanta(pager, 'default', {
         'container_template': '<ul class="pagination">%pages%</ul>',
         'page_template': '<li><a href="%href%">%text%</a></li>',
-        'span_template':'<li class="%class%"><a href="#">%text%</a></li>'
+        'css_disabled_class': 'unavailable disabled',
+        'css_dots_class': 'unavailable dots',
+        'span_template':'<li class="%class%"><button>%text%</button></li>'
     }) }}
 
     <div class="alert-box info">

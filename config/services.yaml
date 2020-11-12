@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+    wpackagist.packages.path: '%env(resolve:PACKAGE_PATH)%'
 
 services:
     # default configuration for services in *this* file
@@ -16,6 +17,12 @@ services:
     Outlandish\Wpackagist\:
         resource: '../src/*'
         exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+    Outlandish\Wpackagist\Storage\PackageStore:
+        alias: Outlandish\Wpackagist\Storage\Filesystem
+
+    Outlandish\Wpackagist\Storage\Filesystem:
+        arguments: ['%wpackagist.packages.path%']
 
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class

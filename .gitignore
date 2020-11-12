@@ -13,6 +13,10 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
+# Postgres' config is an exception to the above and should be checked
+# in for easy local Docker testing.
+!/.env.postgres.local
+
 # Symfony sidesteps permissions dances with cache:warmup now, but apparently Twig
 # does not. Pre-create these directories to hopefully let web tasks run as an
 # Apache-specific user and not implode at runtime when they want to write cache files.

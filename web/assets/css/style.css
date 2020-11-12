@@ -139,3 +139,11 @@ html[xmlns] .clearfix {
 .pagination a {
     text-decoration: none;
 }
+
+table {
+    border-collapse: collapse;
+}
+
+table abbr {
+    font-size: 100%;
+}

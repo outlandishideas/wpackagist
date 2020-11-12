@@ -21,12 +21,16 @@ class PackageExtension extends AbstractExtension
      */
     public function formatCategory($category): string
     {
-        return str_replace('Outlandish\Wpackagist\Package\\', '', $category);
+        return str_replace('Outlandish\Wpackagist\Entity\\', '', $category);
     }
 
-    public function formatVersions(?string $versionsIn): array
+    public function formatVersions(?array $versionsIn): array
     {
-        $versions = array_keys((array) json_decode($versionsIn, true));
+        if (empty($versionsIn)) {
+            return [];
+        }
+
+        $versions = array_keys($versionsIn);
         usort($versions, 'version_compare');
 
         return $versions;

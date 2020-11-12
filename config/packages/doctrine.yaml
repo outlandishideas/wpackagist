@@ -1,5 +1,6 @@
 doctrine:
     dbal:
+        # Do not let Flex reinstate `resolve:` which can break special chars.
         url: '%env(DATABASE_URL)%'
 
         # IMPORTANT: You MUST configure your server version,

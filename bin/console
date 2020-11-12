@@ -33,7 +33,12 @@ if ($_SERVER['APP_DEBUG']) {
     umask(0000);
 
     if (class_exists(Debug::class)) {
-        Debug::enable();
+        $errorHandler = Debug::enable();
+        // ignore deprecation warnings (due to use of ORM detach method)
+        $errorHandler->setLoggers([
+            E_DEPRECATED => null,
+            E_USER_DEPRECATED => null,
+        ]);
     }
 }
 

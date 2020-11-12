@@ -2,6 +2,9 @@
 
 namespace Outlandish\Wpackagist\Command;
 
+use Outlandish\Wpackagist\Entity\Package;
+use Outlandish\Wpackagist\Entity\Plugin;
+use Outlandish\Wpackagist\Entity\Theme;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -12,7 +15,7 @@ class RefreshCommand extends DbAwareCommand
     {
         $this
             ->setName('refresh')
-            ->setDescription('Refresh list of plugins from WP SVN')
+            ->setDescription('Refresh list of plugins and themes from WP SVN')
             ->addOption(
                 'svn',
                 null,
@@ -27,15 +30,16 @@ class RefreshCommand extends DbAwareCommand
         $svn = $input->getOption('svn');
 
         $types = [
-            'plugin' => 'Outlandish\Wpackagist\Package\Plugin',
-            'theme'  => 'Outlandish\Wpackagist\Package\Theme',
+            'plugin' => Plugin::class,
+            'theme'  => Theme::class,
         ];
 
-        $updateStmt = $this->connection->prepare('UPDATE packages SET last_committed = :date WHERE class_name = :class_name AND name = :name');
-        $insertStmt = $this->connection->prepare('INSERT INTO packages (class_name, name, last_committed, is_active) VALUES (:class_name, :name, :date, true)');
+        $updateStmt = $this->connection->prepare('UPDATE packages SET last_committed = :date, provider_group = :group WHERE class_name = :class_name AND name = :name');
+        $insertStmt = $this->connection->prepare('INSERT INTO packages (class_name, name, last_committed, provider_group, is_active) VALUES (:class_name, :name, :date, :group, true)');
 
         foreach ($types as $type => $class_name) {
-            $url = call_user_func([$class_name, 'getSvnBaseUrl']);
+            /** @var Plugin|Theme $class_name */
+            $url = $class_name::getSvnBaseUrl();
             $output->writeln("Fetching full $type list from $url");
 
             $xmlLines = [];
@@ -53,7 +57,12 @@ class RefreshCommand extends DbAwareCommand
             $newCount = 0;
             foreach ($xml->list->entry as $entry) {
                 $date = date('Y-m-d H:i:s', strtotime((string) $entry->commit->date));
-                $params = [':class_name' => $class_name, ':name' => (string) $entry->name, ':date' => $date];
+                $params = [
+                    ':class_name' => $class_name,
+                    ':name' => (string) $entry->name,
+                    ':date' => $date,
+                    ':group' => Package::makeComposerProviderGroup($date)
+                ];
 
                 $updateStmt->execute($params);
                 if ($updateStmt->rowCount() == 0) {

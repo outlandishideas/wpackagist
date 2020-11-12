@@ -2,155 +2,141 @@
 
 namespace Outlandish\Wpackagist\Command;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Outlandish\Wpackagist\Entity\PackageRepository;
+use Outlandish\Wpackagist\Service\Builder;
+use Outlandish\Wpackagist\Entity\Package;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\Helper;
-use Outlandish\Wpackagist\Package\AbstractPackage;
+use Outlandish\Wpackagist\Storage;
 
 class BuildCommand extends DbAwareCommand
 {
+    /** @var Builder */
+    protected $builder;
+    /** @var EntityManagerInterface */
+    private $entityManager;
+    /** @var Storage\PackageStore */
+    protected $storage;
+
+    public function __construct(
+        Builder $builder,
+        EntityManagerInterface $entityManager,
+        Storage\PackageStore $storage,
+        $name = null
+    )
+    {
+        $this->builder = $builder;
+        $this->entityManager = $entityManager;
+        $this->storage = $storage;
+
+        parent::__construct($entityManager->getConnection(), $name);
+    }
+
     protected function configure()
     {
         $this
             ->setName('build')
-            ->setDescription('Build packages.json from DB')
-            ->addOption('force', null, InputOption::VALUE_NONE);
-    }
-
-    /**
-     * Return a string to split packages in more-or-less even groups
-     * of their last modification. Minimizes groups modifications.
-     *
-     * @return string
-     */
-    protected function getComposerProviderGroup(AbstractPackage $package)
-    {
-        $date = $package->getLastCommited();
-
-        if ($date >= new \DateTime('monday last week')) {
-            return 'this-week';
-        } elseif ($date >= new \DateTime(date('Y') . '-01-01')) {
-            // split current by chunks of 3 months, current month included
-            // past chunks will never be update this year
-            $month = $date->format('n');
-            $month = ceil($month / 3) * 3;
-            $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-
-            return $date->format('Y-') . $month;
-        } elseif ($date >= new \DateTime('2011-01-01')) {
-            // split by years, limit at 2011 so we never update 'old' again
-            return $date->format('Y');
-        } else {
-            // 2010 and older is about 2M, which is manageable
-            // Still some packages ? Probably junk/errors
-            return 'old';
-        }
+            ->setDescription('Build packages.json from DB');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (!$input->getOption('force')) {
-            $state = $this->connection->executeQuery("
-                SELECT value FROM state WHERE key='build_required'
-            ")->fetch();
-
-            if (!$state['value']) {
-                $output->writeln("Not building packages as build_required was falsey");
-                return 1;
-            }
-        }
-
         $output->writeln("Building packages");
 
-        $fs = new Filesystem();
+        $start = new \DateTime();
 
-        $webPath = $_SERVER['PACKAGE_PATH'];
-        $basePath = "$webPath/p.new";
-        $fs->mkdir("$basePath/wpackagist");
-        $fs->mkdir("$basePath/wpackagist-plugin");
-        $fs->mkdir("$basePath/wpackagist-theme");
+        /** @var PackageRepository $packageRepo */
+        $packageRepo = $this->entityManager->getRepository(Package::class);
 
+        // ensure all packages have the right provider group assigned
+        $packageRepo->updateProviderGroups();
 
-        $packages = $this->connection->executeQuery('
-            SELECT class_name, * FROM packages
-            WHERE versions IS NOT NULL AND is_active
-            ORDER BY name
-        ')->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE);
+        $packages = $packageRepo->findActive();
+        // once we have the packages, we don't need them to be tracked any more
+        $this->entityManager->clear();
 
-        $uid = 1; // don't know what this does but composer requires it
+        $this->storage->prepare();
 
-        $providers = [];
+        $providerGroups = [];
+
+        $progressBar = new ProgressBar($output, count($packages));
 
         foreach ($packages as $package) {
-            $packagesData = $package->getPackages($uid);
-
-            foreach ($packagesData as $packageName => $packageData) {
-                $content = json_encode(['packages' => [$packageName => $packageData]]);
-                $sha256 = hash('sha256', $content);
-                file_put_contents("$basePath/$packageName\$$sha256.json", $content);
-                $providers[$this->getComposerProviderGroup($package)][$packageName] = [
-                    'sha256' => $sha256,
-                ];
+            $this->builder->updatePackage($package);
+            $progressBar->advance();
+            $group = $package->getProviderGroup();
+            if (!array_key_exists($group, $providerGroups)) {
+                $providerGroups[$group] = [];
             }
+            $providerGroups[$group][] = $package->getPackageName();
         }
+
+        $progressBar->finish();
+
+        $output->writeln('');
+
+        $output->writeln('Finalising package data...');
+        $this->storage->persist();
+
+        // now all of the packages are up-to-date, rebuild all of the provider groups and the root
+        foreach ($providerGroups as $group => $groupPackageNames) {
+            $this->builder->updateProviderGroup($group, $groupPackageNames);
+        }
+        $this->storage->persist();
+        $this->builder->updateRoot();
+
+        // final persist, to write everything that needs writing
+        $this->storage->persist(true);
+
+        $this->showProviders($output);
+
+        $interval = $start->diff(new \DateTime());
+        $output->writeln("Wrote package data in " . $interval->format('%Hh %Im %Ss'));
+
+        return 0;
+    }
+
+    /**
+     * @param OutputInterface $output
+     */
+    protected function showProviders(OutputInterface $output)
+    {
+        $groups = $this->storage->loadAllProviders();
+        ksort($groups);
 
         $table = new Table($output);
         $table->setHeaders(['provider', 'packages', 'size']);
 
-        $providerIncludes = [];
-        foreach ($providers as $providerGroup => $providers) {
-            $content = json_encode(['providers' => $providers]);
-            $sha256 = hash('sha256', $content);
-            file_put_contents("$basePath/providers-$providerGroup\$$sha256.json", $content);
+        $totalSize = 0;
+        $totalProviders = 0;
+        foreach ($groups as $group => $content) {
+            $json = json_decode($content);
 
-            $providerIncludes["p/providers-$providerGroup\$%hash%.json"] = [
-                'sha256' => $sha256,
-            ];
-
+            // Get size in bytes, without resorting to e.g. filesystem operations.
+            // https://stackoverflow.com/a/9718273/2803757
+            $count = count((array)$json->providers);
+            $filesize = mb_strlen($content, '8bit');
+            $totalSize += $filesize;
+            $totalProviders += $count;
             $table->addRow([
-                $providerGroup,
-                count($providers),
-                Helper::formatMemory(filesize("{$basePath}/providers-$providerGroup\$$sha256.json")),
+                $group,
+                $count,
+                Helper::formatMemory($filesize),
             ]);
         }
 
-        $table->render();
-
-        $content = json_encode([
-            'packages' => [],
-            'providers-url' => '/p/%package%$%hash%.json',
-            'provider-includes' => $providerIncludes,
+        $table->addRow(new TableSeparator());
+        $table->addRow([
+            'Total',
+            $totalProviders,
+            Helper::formatMemory($totalSize),
         ]);
 
-        // switch old and new files
-        $originalPath = "$webPath/p";
-        $oldPath = "$webPath/p.old";
-        if ($fs->exists($originalPath)) {
-            if ($fs->exists($oldPath)) {
-                $fs->remove($oldPath);
-            }
-            $fs->rename($originalPath, $oldPath);
-        }
-        $fs->rename($basePath, "$originalPath/");
-
-        $packagesPath = "$webPath/packages.json";
-        file_put_contents($packagesPath, $content);
-
-        if ($fs->exists($oldPath)) {
-            $fs->remove($oldPath);
-        }
-
-        $stateUpdate = $this->connection->prepare("
-            UPDATE state
-            SET value = '' WHERE key='build_required'
-        ");
-        $stateUpdate->execute();
-
-        $output->writeln("Wrote packages.json file");
-
-        return 0;
+        $table->render();
     }
 }
