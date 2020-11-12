@@ -8,13 +8,13 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Auto-generated Migration: Please modify to your needs!
+ * Add and populate packages.provider_group
  */
 final class Version20201104150851 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return '';
+        return 'Add and populate packages.provider_group';
     }
 
     public function up(Schema $schema) : void
