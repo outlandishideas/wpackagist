@@ -33,12 +33,12 @@ RUN a2enmod rewrite \
  && a2ensite symfony \
  && echo ServerName localhost >> /etc/apache2/apache2.conf
 
-ADD . /var/www/html
+COPY . /var/www/html
 
 # Configure PHP to e.g. not hit 128M memory limit.
 COPY ./config/php/php.ini /usr/local/etc/php/
 
 # Ensure Apache can run as www-data and still write to these when the Docker build creates them as root.
-RUN chmod 777 /var/www/html/var/cache/twig
+RUN chmod -R 777 /var/www/html/var
 
 RUN APP_ENV=${env} composer install --no-interaction --quiet --optimize-autoloader --no-dev
