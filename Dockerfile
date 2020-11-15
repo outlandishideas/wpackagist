@@ -39,6 +39,6 @@ ADD . /var/www/html
 COPY ./config/php/php.ini /usr/local/etc/php/
 
 # Ensure Apache can run as www-data and still write to these when the Docker build creates them as root.
-RUN chmod 777 /var/www/html/var/cache/stg/twig /var/www/html/var/cache/prod/twig
+RUN chmod -R 777 /var/www/html/var/cache
 
 RUN APP_ENV=${env} composer install --no-interaction --quiet --optimize-autoloader --no-dev

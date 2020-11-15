@@ -12,6 +12,8 @@ fi
 # Load the S3 secrets file contents into the environment variables
 export $(aws s3 cp ${SECRETS_URI} - | grep -v '^#' | xargs)
 
+chmod -R 777 /var/www/html/var/cache
+
 echo "Dumping env..."
 composer dump-env "${APP_ENV}"
 
