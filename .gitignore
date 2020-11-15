@@ -21,5 +21,4 @@
 # does not. Pre-create these directories to hopefully let web tasks run as an
 # Apache-specific user and not implode at runtime when they want to write cache files.
 /var/*
-!/var/cache/prod/twig/.gitkeep
-!/var/cache/stg/twig/.gitkeep
+!/var/cache/twig/.gitkeep
