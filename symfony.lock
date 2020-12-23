@@ -85,11 +85,23 @@
     "doctrine/sql-formatter": {
         "version": "1.0.1"
     },
+    "friendsofphp/proxy-manager-lts": {
+        "version": "v1.0.0"
+    },
     "guzzlehttp/promises": {
         "version": "1.4.0"
     },
     "guzzlehttp/psr7": {
         "version": "1.7.0"
+    },
+    "laminas/laminas-code": {
+        "version": "3.5.1"
+    },
+    "laminas/laminas-eventmanager": {
+        "version": "3.3.0"
+    },
+    "laminas/laminas-zendframework-bridge": {
+        "version": "1.1.1"
     },
     "ocramius/package-versions": {
         "version": "1.8.0"
