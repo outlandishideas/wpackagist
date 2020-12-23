@@ -9,7 +9,7 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": "^7.2",
+        "php": "^7.2 | ^8.0",
         "ext-intl": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
@@ -18,7 +18,7 @@
         "ext-pdo_sqlite": "*",
         "ext-simplexml": "*",
         "babdev/pagerfanta-bundle": "^2.2",
-        "composer/composer": "^2.0.3",
+        "composer/composer": "^1.10.19",
         "composer/package-versions-deprecated": "^1.11",
         "doctrine/dbal": "^2.10.2",
         "doctrine/doctrine-bundle": "^2.1",
