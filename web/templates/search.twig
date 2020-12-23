@@ -25,11 +25,11 @@
         <tbody>
             {% for package in currentPageResults %}
                 <tr>
-                    <td data-type="{{ package.type | format_category | lower }}">
-                        {{ package.type | format_category }}
+                    <td data-type="{{ package.type }}">
+                        {{ package.type | capitalize }}
                     </td>
                     <td data-name="{{ package.name | e }}">
-                        <a href="https://wordpress.org/{{package.type | format_category | lower}}s/{{ package.name | e }}/" target="_blank">{{ package.name | e }}</a>
+                        <a href="https://wordpress.org/{{ package.type }}s/{{ package.name | e }}/" target="_blank">{{ package.name | e }}</a>
                     </td>
                     <td>
                         {{ package.lastCommitted ? package.lastCommitted | date : 'Not Committed' }}
