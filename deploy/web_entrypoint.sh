@@ -15,9 +15,6 @@ export $(aws s3 cp ${SECRETS_URI} - | grep -v '^#' | xargs)
 echo "Dumping env..."
 composer dump-env "${APP_ENV}"
 
-mkdir -p /mount/ephemeral/twig
-chmod 777 /mount/ephemeral/twig
-
 echo "Clearing & warming cache..."
 bin/console cache:clear --no-debug --env=$APP_ENV
 
