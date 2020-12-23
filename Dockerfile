@@ -12,20 +12,18 @@ RUN apt-get update -qq && apt-get install -y python unzip && \
     rm awscli-bundle.zip && rm -rf awscli-bundle && \
     rm -rf /var/lib/apt/lists/* /var/cache/apk/*
 
-# Install svn client, a requirement for the current native exec approach, and git to clone
-# the Composer performance-helping plugin below. (unzip is needed but installed above.)
-# And now libpq-dev for Postgres; libicu-dev for intl.
+# Install svn client, a requirement for the current native exec approach; git for
+# Composer pulls; libpq-dev for Postgres; libicu-dev for intl; libonig-dev for mbstring.
 RUN apt-get update -qq && \
-    apt-get install -y git libicu-dev libpq-dev subversion && \
+    apt-get install -y git libicu-dev libonig-dev libpq-dev subversion && \
     rm -rf /var/lib/apt/lists/* /var/cache/apk/*
 
 # intl recommended by something in the Doctrine/Symfony stack for improved performance.
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
- && docker-php-ext-install intl pdo_pgsql
+ && docker-php-ext-install intl mbstring pdo_pgsql
 
-# Get latest Composer & parallel install plugin prestissimo.
+# Get latest Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer global require hirak/prestissimo
 
 # Set up virtual host.
 COPY config/apache/symfony.conf /etc/apache2/sites-available/
@@ -35,12 +33,12 @@ RUN a2enmod rewrite \
  && a2ensite symfony \
  && echo ServerName localhost >> /etc/apache2/apache2.conf
 
-ADD . /var/www/html
+COPY . /var/www/html
 
 # Configure PHP to e.g. not hit 128M memory limit.
 COPY ./config/php/php.ini /usr/local/etc/php/
 
 # Ensure Apache can run as www-data and still write to these when the Docker build creates them as root.
-RUN chmod 777 /var/www/html/var/cache/stg/twig /var/www/html/var/cache/prod/twig
+RUN chmod -R 777 /var/www/html/var
 
 RUN APP_ENV=${env} composer install --no-interaction --quiet --optimize-autoloader --no-dev

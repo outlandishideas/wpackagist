@@ -1,6 +1,6 @@
 twig:
     cache: false
-    #cache: '%kernel.project_dir%/var/cache/twig'
+    #cache: '/mount/ephemeral/twig'
     # TODO get Twig cache working across local Docker + ECS
     # See https://github.com/outlandishideas/wpackagist/issues/368
     default_path: '%kernel.project_dir%/web/templates'

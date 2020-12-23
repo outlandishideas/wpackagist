@@ -10,23 +10,17 @@ class PackageExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
-            new TwigFilter('format_category', [$this, 'formatCategory']),
             new TwigFilter('format_versions', [$this, 'formatVersions']),
         ];
     }
 
-    /**
-     * @param string $category
-     * @return string
-     */
-    public function formatCategory($category): string
+    public function formatVersions(?array $versionsIn): array
     {
-        return str_replace('Outlandish\Wpackagist\Package\\', '', $category);
-    }
+        if (empty($versionsIn)) {
+            return [];
+        }
 
-    public function formatVersions(?string $versionsIn): array
-    {
-        $versions = array_keys((array) json_decode($versionsIn, true));
+        $versions = array_keys($versionsIn);
         usort($versions, 'version_compare');
 
         return $versions;

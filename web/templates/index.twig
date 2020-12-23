@@ -26,9 +26,10 @@
 
                 <li>Run <code>$ composer.phar update</code></li>
 
-                <li>Packages are <a href="https://github.com/composer/installers">
+                <li>Packages are <a href="https://github.com/composer/installers" target="_blank">
                     installed</a> to <code>wp-content/plugins/</code> or
-                    <code>wp-content/themes/</code>
+                    <code>wp-content/themes/</code> (unless otherwise specified by
+                    <code>installer-paths</code>)
                 </li>
             </ol>
 
@@ -40,7 +41,10 @@
         {
             "type":"composer",
             "url":"https://wpackagist.org",
-            "only": ["wpackagist-plugin/*", "wpackagist-theme/*"]
+            "only": [
+                "wpackagist-plugin/*",
+                "wpackagist-theme/*"
+            ]
         }
     ],
 </div>    "require": {
@@ -56,21 +60,26 @@
     },
     "extra": {
         "installer-paths": {
-            "wp-content/plugins/{$name}/": ["type:wordpress-plugin"]
+<div class="highlighter">            "wp-content/mu-plugins/{$name}/": [
+                "wpackagist-plugin/akismet"
+            ],
+</div>            "wp-content/plugins/{$name}/": [
+                "type:wordpress-plugin"
+            ]
         }
     }
 }</pre>
 
             <p>This example <code>composer.json</code> file adds the Wpackagist
-            repository and includes the latest version of Akismet, at least version
-            3.9 of Captcha, and the latest Hueman theme along with the Amazon Web
-            Services SDK from the main <a href=
-            "https://packagist.org/">Packagist</a> repository.</p>
+            repository and includes the latest version of Akismet (installed as
+            a must-use plugin), at least version 3.9 of Captcha, and the latest
+            Hueman theme along with the Amazon Web Services SDK from the main
+            <a href="https://packagist.org/" target="_blank">Packagist</a> repository.</p>
 
             <p>Find out more about <a href=
-            "https://getcomposer.org/doc/01-basic-usage.md">using Composer</a>
+            "https://getcomposer.org/doc/01-basic-usage.md" target="_blank">using Composer</a>
             including <a href=
-            "https://github.com/composer/installers#custom-install-paths">custom
+            "https://github.com/composer/installers#custom-install-paths" target="_blank">custom
             install paths</a>.</p>
 
             <p>The old vendor prefix <code>wpackagist</code> is now
@@ -88,7 +97,7 @@
 
                 <div class="right">
                     &mdash; <a href=
-                    "https://getcomposer.org/doc/00-intro.md">getcomposer.org</a>
+                    "https://getcomposer.org/doc/00-intro.md" target="_blank">getcomposer.org</a>
                 </div>
             </blockquote>
 
@@ -108,8 +117,8 @@
 
             <ul>
                 <li>Scans the WordPress Subversion repository every hour for <a href=
-                "https://plugins.svn.wordpress.org/">plugins</a> and <a href=
-                "https://themes.svn.wordpress.org/">themes</a>.
+                "https://plugins.svn.wordpress.org/" target="_blank">plugins</a> and <a href=
+                "https://themes.svn.wordpress.org/" target="_blank">themes</a>. Search and click <button disabled class="search-result__refresh-button">↺</button> to make any newer versions available.
                 </li>
 
                 <li>Fetches the <code>tags</code> for each updated package and maps
@@ -132,23 +141,23 @@
                 <code>"*"</code> as the required version.</li>
 
                 <li>Even when packages are present on SVN, they won’t be available
-                if they are not published on <a href="https://wordpress.org/plugins/">wordpress.org</a>.
+                if they are not published on <a href="https://wordpress.org/plugins/" target="_blank">wordpress.org</a>.
                 Try <a href="{{ app.request.basepath }}/search">searching</a> for your plugin before reporting a
-                <a href="https://github.com/outlandishideas/wpackagist/issues/new?title=[Bug]%20">bug</a>.</li>
+                <a href="https://github.com/outlandishideas/wpackagist/issues/new?title=[Bug]%20" target="_blank">bug</a>.</li>
 
-                <li>You can also check for <a href="https://github.com/outlandishideas/wpackagist/issues">open issues</a>.</li>
+                <li>You can also check for <a href="https://github.com/outlandishideas/wpackagist/issues" target="_blank">open issues</a>.</li>
             </ul>
 
             <h3>WordPress Core</h3>
 
             <p>See
-                <code><a href="https://github.com/fancyguy/webroot-installer">fancyguy/webroot-installer</a></code> or
-                <code><a href="https://github.com/johnpbloch/wordpress">johnpbloch/wordpress</a></code> for installing
+                <code><a href="https://github.com/fancyguy/webroot-installer" target="_blank">fancyguy/webroot-installer</a></code> or
+                <code><a href="https://github.com/johnpbloch/wordpress" target="_blank">johnpbloch/wordpress</a></code> for installing
                 WordPress itself using Composer.</p>
 
             <h3>Contribute or get support</h3>
 
-            <p>Please visit our <a href="https://github.com/outlandishideas/wpackagist">GitHub page</a>.</p>
+            <p>Please visit our <a href="https://github.com/outlandishideas/wpackagist" target="_blank">GitHub page</a>.</p>
         </div>
     </div>
 {% endblock %}

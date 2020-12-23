@@ -2,6 +2,15 @@
     "babdev/pagerfanta-bundle": {
         "version": "v2.2.1"
     },
+    "composer/composer": {
+        "version": "2.0.3"
+    },
+    "composer/semver": {
+        "version": "3.2.2"
+    },
+    "composer/xdebug-handler": {
+        "version": "1.4.4"
+    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
@@ -19,6 +28,9 @@
     },
     "doctrine/common": {
         "version": "2.13.0"
+    },
+    "doctrine/dbal": {
+        "version": "2.12.0"
     },
     "doctrine/doctrine-bundle": {
         "version": "2.0",
@@ -73,14 +85,11 @@
     "doctrine/sql-formatter": {
         "version": "1.0.1"
     },
-    "laminas/laminas-code": {
-        "version": "3.4.1"
+    "guzzlehttp/promises": {
+        "version": "1.4.0"
     },
-    "laminas/laminas-eventmanager": {
-        "version": "3.2.1"
-    },
-    "laminas/laminas-zendframework-bridge": {
-        "version": "1.0.3"
+    "guzzlehttp/psr7": {
+        "version": "1.7.0"
     },
     "ocramius/package-versions": {
         "version": "1.8.0"
@@ -92,7 +101,7 @@
         "version": "v9.99.99"
     },
     "php": {
-        "version": "7.4"
+        "version": "7.2.24"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -103,11 +112,29 @@
     "psr/event-dispatcher": {
         "version": "1.0.0"
     },
+    "react/promise": {
+        "version": "v2.8.0"
+    },
     "symfony/cache": {
         "version": "v5.0.8"
     },
     "symfony/cache-contracts": {
         "version": "v2.0.1"
+    },
+    "symfony/config": {
+        "version": "v5.1.8"
+    },
+    "symfony/console": {
+        "version": "5.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "5.1",
+            "ref": "c6d02bdfba9da13c22157520e32a602dbee8a75c"
+        },
+        "files": [
+            "bin/console"
+        ]
     },
     "symfony/dependency-injection": {
         "version": "v5.0.8"
@@ -124,8 +151,17 @@
     "symfony/error-handler": {
         "version": "v5.0.8"
     },
+    "symfony/event-dispatcher": {
+        "version": "v5.1.8"
+    },
     "symfony/event-dispatcher-contracts": {
         "version": "v2.0.1"
+    },
+    "symfony/filesystem": {
+        "version": "v5.1.8"
+    },
+    "symfony/finder": {
+        "version": "v5.1.8"
     },
     "symfony/flex": {
         "version": "1.0",
@@ -138,6 +174,9 @@
         "files": [
             ".env"
         ]
+    },
+    "symfony/form": {
+        "version": "v5.1.8"
     },
     "symfony/framework-bundle": {
         "version": "4.4",
@@ -159,29 +198,59 @@
             "src/Kernel.php"
         ]
     },
+    "symfony/http-client-contracts": {
+        "version": "v2.3.1"
+    },
     "symfony/http-foundation": {
         "version": "v5.0.8"
     },
     "symfony/http-kernel": {
         "version": "v5.0.8"
     },
+    "symfony/intl": {
+        "version": "v5.1.8"
+    },
+    "symfony/options-resolver": {
+        "version": "v5.1.8"
+    },
     "symfony/orm-pack": {
         "version": "v1.0.8"
+    },
+    "symfony/polyfill-ctype": {
+        "version": "v1.20.0"
     },
     "symfony/polyfill-intl-grapheme": {
         "version": "v1.18.1"
     },
+    "symfony/polyfill-intl-icu": {
+        "version": "v1.20.0"
+    },
+    "symfony/polyfill-intl-idn": {
+        "version": "v1.20.0"
+    },
     "symfony/polyfill-intl-normalizer": {
         "version": "v1.18.1"
     },
+    "symfony/polyfill-mbstring": {
+        "version": "v1.20.0"
+    },
     "symfony/polyfill-php70": {
         "version": "v1.18.1"
+    },
+    "symfony/polyfill-php72": {
+        "version": "v1.20.0"
     },
     "symfony/polyfill-php73": {
         "version": "v1.17.0"
     },
     "symfony/polyfill-php80": {
         "version": "v1.18.1"
+    },
+    "symfony/process": {
+        "version": "v5.1.8"
+    },
+    "symfony/property-access": {
+        "version": "v5.1.8"
     },
     "symfony/property-info": {
         "version": "v5.1.5"
@@ -199,6 +268,12 @@
             "config/packages/routing.yaml",
             "config/routes.yaml"
         ]
+    },
+    "symfony/security-core": {
+        "version": "v5.1.8"
+    },
+    "symfony/security-csrf": {
+        "version": "v5.1.8"
     },
     "symfony/service-contracts": {
         "version": "v2.0.1"
@@ -241,7 +316,10 @@
     "twig/extra-bundle": {
         "version": "v3.0.3"
     },
-    "webimpress/safe-writer": {
-        "version": "2.1.0"
+    "zendframework/zend-code": {
+        "version": "3.4.1"
+    },
+    "zendframework/zend-eventmanager": {
+        "version": "3.2.1"
     }
 }

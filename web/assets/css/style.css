@@ -52,6 +52,10 @@ blockquote, pre {
     background-color: #f2f2f2;
 }
 
+pre {
+    overflow: auto;
+}
+
 #title, .mission {
     margin: 3rem 0;
 }
@@ -134,4 +138,12 @@ html[xmlns] .clearfix {
 }
 .pagination a {
     text-decoration: none;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table abbr {
+    font-size: 100%;
 }
