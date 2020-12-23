@@ -51,7 +51,14 @@ WPackagist implements the `wordpress-plugin` and `wordpress-theme` Composer Inst
 
 It essentially provides a lookup table from package (theme or plugin) name to WordPress.org
 SVN repository. Versions correspond to different tags in their repository, with the special
-`dev-master` version being mapped to `trunk`.
+`dev-trunk` version being mapped to `trunk`.
+
+Note that to maintain Composer v1 compatibility (as well as v2)
+for `dev-` versions, for now we need to use the `VersionParser` from
+`composer/composer` v1.x and not a newer release branch. Correct resolution
+of these depends on the legacy behaviour where `dev-trunk` et al. correspond to
+
+    "version_normalized":"9999999-dev"
 
 The lookup table is provided as a hierarchy of static JSON files. The entry point to these
 files can be found at https://wpackagist.org/packages.json, which consists of a series of
