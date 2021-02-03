@@ -36,14 +36,15 @@ class Update
         $this->update($logger, $packages);
     }
 
-    public function updateOne(LoggerInterface $logger, string $name)
+    public function updateOne(LoggerInterface $logger, string $name): ?Package
     {
-        /** @var Package $package */
         $package = $this->repo->findOneBy(['name' => $name]);
+
         if ($package) {
             $this->update($logger, [$package]);
-            return $package;
         }
+
+        return $package;
     }
 
     /**
