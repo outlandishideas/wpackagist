@@ -54,15 +54,40 @@ class Builder
         $includes = [];
         $providerFormat = 'p/%package%$%hash%.json';
         foreach ($providers as $name => $value) {
+            // Skip/delete 3-monthly providers for any year that's not the current one,
+            // allowing grouping to smoothly switch over at the start of a new year.
+            // Packages themselves automatically update provider group e.g. from '2020-12'
+            // to '2020' when the next year starts.
+            if ($this->providerIsOutdated($name)) {
+                continue;
+            }
+
             $sha256 = hash('sha256', $value);
             $includes[str_replace('%package%', $name, $providerFormat)] = ['sha256' => $sha256];
         }
+
         ksort($includes);
+
         $content = json_encode([
             'packages' => [],
             'providers-url' => '/' . $providerFormat,
             'provider-includes' => $includes,
         ]);
         $this->storage->saveRoot($content);
+    }
+
+    /**
+     * @param string $name  Provider group name, e.g. 'providers-2021-03', 'providers-this-week'.
+     * @return bool Whether group name should now be retired.
+     */
+    private function providerIsOutdated(string $name): bool
+    {
+        $matchCount = preg_match('/^providers-(\\d{4})-\\d{2}$/', $name, $matches);
+        if ($matchCount !== 1) {
+            // Provider group formats other than YYYY-MM don't become outdated in this sense.
+            return false;
+        }
+
+        return $matches[1] < date('Y');
     }
 }
