@@ -27,12 +27,12 @@ abstract class PackageStore
      * @param string[] $packageNames
      * @return string[]
      */
-    abstract public function loadAllPackages(array $packageNames);
+    abstract public function loadAllPackages(array $packageNames): array;
 
     /**
      * @return string[]
      */
-    abstract public function loadAllProviders();
+    abstract public function loadAllProviders(): array;
 
     /**
      * @param string $packageName
@@ -49,6 +49,14 @@ abstract class PackageStore
      * @return bool Success or failure.
      */
     abstract public function saveProvider(string $name, string $hash, string $json): bool;
+
+    /**
+     * Mark a provider group as non-latest or delete it.
+     *
+     * @param string $name  Provider group name
+     * @param string $hash  SHA-256 content hash
+     */
+    abstract public function deactivateProvider(string $name, string $hash): void;
 
     /**
      * @param string $json

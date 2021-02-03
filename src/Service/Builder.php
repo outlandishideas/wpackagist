@@ -48,21 +48,25 @@ class Builder
         $this->storage->saveProvider("providers-$providerGroupName", $providersSha256, $providerDataJson);
     }
 
-    public function updateRoot()
+    public function updateRoot(): void
     {
         $providers = $this->storage->loadAllProviders();
         $includes = [];
         $providerFormat = 'p/%package%$%hash%.json';
         foreach ($providers as $name => $value) {
+            $sha256 = hash('sha256', $value);
+
             // Skip/delete 3-monthly providers for any year that's not the current one,
             // allowing grouping to smoothly switch over at the start of a new year.
             // Packages themselves automatically update provider group e.g. from '2020-12'
-            // to '2020' when the next year starts.
+            // to '2020' when the next year starts. `continue`ing here implicitly removes
+            // items from `root` while `deactivateProvider()` deletes or deactivates the
+            // individual provider.
             if ($this->providerIsOutdated($name)) {
+                $this->storage->deactivateProvider($name, $sha256);
                 continue;
             }
 
-            $sha256 = hash('sha256', $value);
             $includes[str_replace('%package%', $name, $providerFormat)] = ['sha256' => $sha256];
         }
 
