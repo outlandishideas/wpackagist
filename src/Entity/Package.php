@@ -286,12 +286,6 @@ abstract class Package
         return $this->providerGroup;
     }
 
-    public function generateProviderGroup()
-    {
-        $this->providerGroup = self::makeComposerProviderGroup($this->lastCommitted);
-        return $this->providerGroup;
-    }
-
     /**
      * Return a string to split packages in more-or-less even groups
      * of their last modification. Minimizes groups modifications.
