@@ -62,7 +62,7 @@ final class Database extends PackageStore
         return $this->loadEntity(self::TYPE_ROOT, '', '');
     }
 
-    public function loadLatestEntities($type, $names = null)
+    public function loadLatestEntities($type, $names = null): array
     {
         // we're not interested in the models, only the keyed values, so don't use the repository
         $qb = new QueryBuilder($this->entityManager);
@@ -83,12 +83,12 @@ final class Database extends PackageStore
         return $values;
     }
 
-    public function loadAllPackages($packageNames)
+    public function loadAllPackages($packageNames): array
     {
         return $this->loadLatestEntities(self::TYPE_PACKAGE, $packageNames);
     }
 
-    public function loadAllProviders()
+    public function loadAllProviders(): array
     {
         return $this->loadLatestEntities(self::TYPE_PROVIDER);
     }
@@ -140,10 +140,33 @@ final class Database extends PackageStore
         return $this->saveEntity(self::TYPE_PACKAGE, $packageName, $hash, $json);
     }
 
-
     public function saveProvider(string $name, string $hash, string $json): bool
     {
         return $this->saveEntity(self::TYPE_PROVIDER, $name, $hash, $json);
+    }
+
+    /**
+     * Just sets `isLatest` false on the provider for now. Note that a 'final' `persist()` will
+     * later hard delete these providers in a full update.
+     *
+     * @inheritDoc
+     *
+     * @see Database::persist()
+     */
+    public function deactivateProvider(string $name, string $hash): void
+    {
+        $qb = new QueryBuilder($this->entityManager);
+        $qb->update(PackageData::class, 'p')
+            ->set('p.isLatest', ':newIsLatest')
+            ->where('p.isLatest = true')
+            ->andWhere('p.type = :type')
+            ->andWhere('p.name = :name')
+            ->getQuery()
+            ->execute([
+                'newIsLatest' => false,
+                'type' => 'provider',
+                'name' => $name,
+            ]);
     }
 
     public function saveRoot(string $json): bool

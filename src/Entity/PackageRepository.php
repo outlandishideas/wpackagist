@@ -41,10 +41,9 @@ class PackageRepository extends EntityRepository
             ->where('p.providerGroup = \'old\'')
             ->andWhere('p.lastCommitted >= :date')
             ->getQuery();
-        foreach ($groups as $key=>$date) {
+        foreach ($groups as $key => $date) {
             $query->execute(['group' => $key, 'date' => $date->format('Y-m-d')]);
         }
-
     }
 
     /**

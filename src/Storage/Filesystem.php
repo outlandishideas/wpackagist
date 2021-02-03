@@ -64,7 +64,7 @@ final class Filesystem extends PackageStore
         return $this->writeFile($this->getResourcePath($packageName, $hash), $json);
     }
 
-    public function loadAllPackages($packageNames)
+    public function loadAllPackages($packageNames): array
     {
         $json = [];
         $toFind = [];
@@ -91,7 +91,7 @@ final class Filesystem extends PackageStore
         return $json;
     }
 
-    public function loadAllProviders()
+    public function loadAllProviders(): array
     {
         $finder = new Finder();
         $finder->files()->in("{$this->basePath}/{$this->packageDir}")->depth(0);
@@ -115,6 +115,14 @@ final class Filesystem extends PackageStore
         return $this->writeFile($this->getResourcePath($name, $hash), $json);
     }
 
+    public function deactivateProvider(string $name, string $hash): void
+    {
+        $path = $this->getResourcePath($name, $hash);
+        if (file_exists($path)) {
+            unlink($path);
+        }
+    }
+
     public function loadRoot(): ?string
     {
         return $this->readFile("{$this->basePath}/packages.json");
@@ -135,6 +143,4 @@ final class Filesystem extends PackageStore
             $this->packageDir = 'p';
         }
     }
-
-
 }
