@@ -2,15 +2,31 @@
 
 namespace Outlandish\Wpackagist\Command;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use Outlandish\Wpackagist\Entity\Package;
 use Outlandish\Wpackagist\Entity\Plugin;
 use Outlandish\Wpackagist\Entity\Theme;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RefreshCommand extends DbAwareCommand
+class RefreshCommand extends Command
 {
+    /** @var Connection */
+    private $connection;
+    /** @var EntityManagerInterface */
+    private $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager, $name = null)
+    {
+        $this->connection = $entityManager->getConnection();
+        $this->entityManager = $entityManager;
+
+        parent::__construct($name);
+    }
+
     protected function configure()
     {
         $this
@@ -72,7 +88,8 @@ class RefreshCommand extends DbAwareCommand
             }
             $this->connection->commit();
 
-            $updateCount = $this->connection->query($s = 'SELECT COUNT(*) FROM packages WHERE last_fetched < last_committed AND class_name = '.$this->connection->quote($class_name))->fetchColumn();
+            $updateCount = $this->entityManager->getRepository(Package::class)
+                ->getNewlyRefreshedCount($class_name);
 
             $output->writeln("Found $newCount new and $updateCount updated {$type}s");
         }

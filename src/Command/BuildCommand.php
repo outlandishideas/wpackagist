@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Outlandish\Wpackagist\Entity\PackageRepository;
 use Outlandish\Wpackagist\Service\Builder;
 use Outlandish\Wpackagist\Entity\Package;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,7 +15,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\Helper;
 use Outlandish\Wpackagist\Storage;
 
-class BuildCommand extends DbAwareCommand
+class BuildCommand extends Command
 {
     /** @var Builder */
     protected $builder;
@@ -34,7 +35,7 @@ class BuildCommand extends DbAwareCommand
         $this->entityManager = $entityManager;
         $this->storage = $storage;
 
-        parent::__construct($entityManager->getConnection(), $name);
+        parent::__construct($name);
     }
 
     protected function configure()
