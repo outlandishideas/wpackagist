@@ -80,7 +80,7 @@ class Update
                 $this->deactivate($package, $res->getStatusCode() . ': ' . $res->getReasonPhrase(), $logger);
                 continue;
             } catch (GuzzleException $exception) {
-                $logger->error("Skipped {$package->getType()} '{$name}' due to error: '{$exception->getMessage()}'");
+                $logger->warning("Skipped {$package->getType()} '{$name}' due to error: '{$exception->getMessage()}'");
             }
 
             if (empty($info)) {
