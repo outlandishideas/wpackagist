@@ -103,6 +103,9 @@
     "laminas/laminas-zendframework-bridge": {
         "version": "1.1.1"
     },
+    "monolog/monolog": {
+        "version": "2.2.0"
+    },
     "ocramius/package-versions": {
         "version": "1.8.0"
     },
@@ -221,6 +224,24 @@
     },
     "symfony/intl": {
         "version": "v5.1.8"
+    },
+    "symfony/monolog-bridge": {
+        "version": "v5.2.3"
+    },
+    "symfony/monolog-bundle": {
+        "version": "3.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.3",
+            "ref": "d7249f7d560f6736115eee1851d02a65826f0a56"
+        },
+        "files": [
+            "config/packages/dev/monolog.yaml",
+            "config/packages/prod/deprecations.yaml",
+            "config/packages/prod/monolog.yaml",
+            "config/packages/test/monolog.yaml"
+        ]
     },
     "symfony/options-resolver": {
         "version": "v5.1.8"

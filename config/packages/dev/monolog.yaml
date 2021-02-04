@@ -1,0 +1,25 @@
+monolog:
+    channels: [deprecation]
+    handlers:
+        main:
+            type: stream
+            path: "php://stdout"
+            level: info
+            channels: ["!deprecation", "!event"]
+        file:
+            type: stream
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: debug
+            channels: ["!event"] # Include deprecations only in local, file-based logs.
+        # uncomment to get logging in your browser
+        # you may have to allow bigger header sizes in your Web server configuration
+        #firephp:
+        #    type: firephp
+        #    level: info
+        #chromephp:
+        #    type: chromephp
+        #    level: info
+        console:
+            type: console
+            process_psr_3_messages: false
+            channels: ["!console", "!deprecation", "!doctrine", "!event"]
