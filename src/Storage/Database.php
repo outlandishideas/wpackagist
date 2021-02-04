@@ -106,27 +106,30 @@ final class Database extends PackageStore
                 $match = $datum;
             } elseif ($datum->getIsLatest()) {
                 $datum->setIsLatest(false);
+            } else {
+                $this->entityManager->detach($datum);
             }
         }
 
-        $newOrChanged = false;
+        $changed = false;
         if (!$match) {
             $match = new PackageData();
             $match->setType($type);
             $match->setName($name);
             $match->setHash($hash);
-            $newOrChanged = true;
+            $changed = true;
+            $this->entityManager->persist($match);
         }
         if ($json !== $match->getValue()) {
             $match->setValue($json);
-            $newOrChanged = true;
+            $changed = true;
         }
         if (!$match->getIsLatest()) {
             $match->setIsLatest(true);
-            $newOrChanged = true;
+            $changed = true;
         }
-        if ($newOrChanged) {
-            $this->entityManager->persist($match);
+        if (!$changed) {
+            $this->entityManager->detach($match);
         }
 
         return true;
