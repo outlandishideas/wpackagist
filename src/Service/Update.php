@@ -143,6 +143,6 @@ class Update
         $package->setLastFetched(new \DateTime());
         $package->setIsActive(false);
         $this->entityManager->persist($package);
-        $logger->error(sprintf("<error>Deactivated %s %s because %s</error>", $package->getType(), $package->getName(), $reason));
+        $logger->info(sprintf("<info>Deactivated %s %s because %s</info>", $package->getType(), $package->getName(), $reason));
     }
 }
