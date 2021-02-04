@@ -97,7 +97,7 @@ EOT;
         return $qb->getQuery()->getResult();
     }
 
-    public function findActivePackageNamesByGroup($group)
+    public function findActivePackageNamesByGroup($group): array
     {
         $entityManager = $this->getEntityManager();
 
@@ -113,5 +113,19 @@ EOT;
         return array_map(function (Package $package) {
             return $package->getPackageName();
         }, $packages);
+    }
+
+    public function getNewlyRefreshedCount(string $className): int
+    {
+        $entityManager = $this->getEntityManager();
+
+        $qb = new QueryBuilder($entityManager);
+        $qb = $qb->select('count(p.id)')
+            ->from(Package::class, 'p')
+            ->where('p INSTANCE OF :className')
+            ->andWhere('p.lastFetched < p.lastCommitted')
+            ->setParameter('className', $className);
+
+        return $qb->getQuery()->getSingleScalarResult();
     }
 }

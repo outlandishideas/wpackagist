@@ -2,23 +2,23 @@
 
 namespace Outlandish\Wpackagist\Command;
 
-use Doctrine\DBAL\Connection;
 use Outlandish\Wpackagist\Service\Update;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class UpdateCommand extends DbAwareCommand
+class UpdateCommand extends Command
 {
     /** @var Update */
     protected $updateService;
 
-    public function __construct(Update $updateService, Connection $connection, $name = null)
+    public function __construct(Update $updateService, $name = null)
     {
         $this->updateService = $updateService;
 
-        parent::__construct($connection, $name);
+        parent::__construct($name);
     }
 
     protected function configure()
