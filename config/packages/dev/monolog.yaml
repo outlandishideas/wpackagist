@@ -2,7 +2,7 @@ monolog:
     handlers:
         main:
             type: stream
-            path: "php://stderr"
+            path: "php://stdout"
             level: info
             channels: ["!event"]
         file:

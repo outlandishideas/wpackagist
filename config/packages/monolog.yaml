@@ -1,12 +1,14 @@
 monolog:
     handlers:
         main:
-            level: info
             type: stream
-            path: "php://stderr"
-            excluded_http_codes: [404, 405]
+            path: "php://stdout"
+            level: info
             buffer_size: 50 # How many messages should be saved? Prevent memory leaks
         console:
             type: console
+            level: info
             process_psr_3_messages: false
             channels: ["!event", "!doctrine"]
+            verbosity_levels:
+                VERBOSITY_NORMAL: INFO
