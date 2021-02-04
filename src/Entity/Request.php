@@ -6,7 +6,7 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass=RequestRepository::class)
  * @ORM\Table(name="requests")
  */
 class Request
@@ -35,5 +35,21 @@ class Request
      * @ORM\Column(type="integer")
      * @var int
      */
-    protected $requestCount;
+    protected $requestCount = 0;
+
+    public function addRequest(): void
+    {
+        $this->requestCount++;
+        $this->lastRequest = new \DateTime();
+    }
+
+    public function getRequestCount(): int
+    {
+        return $this->requestCount;
+    }
+
+    public function setIpAddress(string $ipAddress): void
+    {
+        $this->ipAddress = $ipAddress;
+    }
 }
