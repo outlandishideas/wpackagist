@@ -117,14 +117,27 @@ EOT;
 
     public function getNewlyRefreshedCount(string $className): int
     {
-        $entityManager = $this->getEntityManager();
-
-        $qb = new QueryBuilder($entityManager);
+        $qb = new QueryBuilder($this->getEntityManager());
         $qb = $qb->select('count(p.id)')
             ->from(Package::class, 'p')
             ->where('p INSTANCE OF :className')
             ->andWhere('p.lastFetched < p.lastCommitted')
             ->setParameter('className', $className);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param string $providerGroupMain Provider group without prefix, e.g. '2020', '2021-03', 'this-week'.
+     * @return int
+     */
+    public function getCountByGroup(string $providerGroupMain): int
+    {
+        $qb = new QueryBuilder($this->getEntityManager());
+        $qb = $qb->select('count(p.id)')
+            ->from(Package::class, 'p')
+            ->where('p.providerGroup = :providerGroup')
+            ->setParameter('providerGroup', $providerGroupMain);
 
         return $qb->getQuery()->getSingleScalarResult();
     }

@@ -2,16 +2,21 @@
 
 namespace Outlandish\Wpackagist\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Outlandish\Wpackagist\Entity\Package;
 use Outlandish\Wpackagist\Storage\PackageStore;
 
 class Builder
 {
+    /** @var EntityManagerInterface */
+    private $entityManager;
+
     /** @var PackageStore */
     private $storage;
 
-    public function __construct(PackageStore $storage)
+    public function __construct(EntityManagerInterface $entityManager, PackageStore $storage)
     {
+        $this->entityManager = $entityManager;
         $this->storage = $storage;
     }
 
@@ -56,7 +61,7 @@ class Builder
         foreach ($providers as $name => $value) {
             $sha256 = hash('sha256', $value);
 
-            // Skip/delete 3-monthly providers for any year that's not the current one,
+            // Skip/delete old providers, e.g. 3-monthly groups for past years,
             // allowing grouping to smoothly switch over at the start of a new year.
             // Packages themselves automatically update provider group e.g. from '2020-12'
             // to '2020' when the next year starts. `continue`ing here implicitly removes
@@ -86,12 +91,9 @@ class Builder
      */
     private function providerIsOutdated(string $name): bool
     {
-        $matchCount = preg_match('/^providers-(\\d{4})-\\d{2}$/', $name, $matches);
-        if ($matchCount !== 1) {
-            // Provider group formats other than YYYY-MM don't become outdated in this sense.
-            return false;
-        }
+        $packageCount = $this->entityManager->getRepository(Package::class)
+            ->getCountByGroup(str_replace('providers-', '', $name));
 
-        return $matches[1] < date('Y');
+        return $packageCount === 0;
     }
 }
