@@ -30,12 +30,14 @@ class RequestRepository extends EntityRepository
         $requestHistory = $qb->getQuery()->getResult();
 
         if (empty($requestHistory)) {
-            $this->resetRequestCount($ip, $oneHourAgo);
-            return 1;
+            $this->deleteOldRequestCounts($ip, $oneHourAgo);
+
+            $requestItem = new Request();
+            $requestItem->setIpAddress($ip);
+        } else {
+            $requestItem = $requestHistory[0];
         }
 
-        /** @var Request $requestItem */
-        $requestItem = $requestHistory[0];
         $requestItem->addRequest();
         $em->persist($requestItem);
 
@@ -43,15 +45,13 @@ class RequestRepository extends EntityRepository
     }
 
     /**
-     * Add an entry to the requests table for the provided IP address.
-     * Has the side effect of removing all expired entries.
+     * Remove expired entries for the provided IP address.
      *
      * @param string $ip
      * @param \DateTime $cutoff
      */
-    private function resetRequestCount(string $ip, \DateTime $cutoff)
+    private function deleteOldRequestCounts(string $ip, \DateTime $cutoff): void
     {
-        // Prune any old records.
         $em = $this->getEntityManager();
         $qb = new QueryBuilder($em);
         $qb->delete(Request::class, 'r')
@@ -65,11 +65,5 @@ class RequestRepository extends EntityRepository
         // Ensure the old record is deleted at DB level before the insert coming up, so we don't
         // fall foul of the IP uniqueness constraint.
         $em->flush();
-
-        // Add a new Request record and set it up with `requestCount` 1 and `lastRequest` now.
-        $requestItem = new Request();
-        $requestItem->setIpAddress($ip);
-        $requestItem->addRequest();
-        $em->persist($requestItem);
     }
 }
