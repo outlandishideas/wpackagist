@@ -80,7 +80,7 @@ class Update
                 $this->deactivate($package, $res->getStatusCode() . ': ' . $res->getReasonPhrase(), $logger);
                 continue;
             } catch (GuzzleException $exception) {
-                $logger->error("Skipped {$package->getType()} '{$name}' due to error: '{$exception->getMessage()}'");
+                $logger->warning("Skipped {$package->getType()} '{$name}' due to error: '{$exception->getMessage()}'");
             }
 
             if (empty($info)) {
@@ -143,6 +143,6 @@ class Update
         $package->setLastFetched(new \DateTime());
         $package->setIsActive(false);
         $this->entityManager->persist($package);
-        $logger->error(sprintf("<error>Deactivated %s %s because %s</error>", $package->getType(), $package->getName(), $reason));
+        $logger->info(sprintf("<info>Deactivated %s %s because %s</info>", $package->getType(), $package->getName(), $reason));
     }
 }
