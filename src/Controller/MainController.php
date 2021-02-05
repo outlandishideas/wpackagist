@@ -12,7 +12,6 @@ use Outlandish\Wpackagist\Entity\Theme;
 use Outlandish\Wpackagist\Service;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
-use PDO;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -27,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Outlandish\Wpackagist\Entity\Request as RequestLog;
 use Outlandish\Wpackagist\Storage;
 
 class MainController extends AbstractController
@@ -204,20 +204,13 @@ class MainController extends AbstractController
             return new Response('Not Found',404);
         }
 
-        $safeName = $package->getName();
-
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
-            $splitIp = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            $userIp  = trim($splitIp[0]);
-        } else {
-            $userIp = $_SERVER['REMOTE_ADDR'];
-        }
-
-        $count = $this->getRequestCountByIp($userIp, $connection);
-        if ($count > 5) {
+        $requestCount = $entityManager->getRepository(RequestLog::class)
+            ->getRequestCountByIp($request->getClientIp());
+        if ($requestCount > 5) {
             return new Response('Too many requests. Try again in an hour.', 403);
         }
 
+        $safeName = $package->getName();
         $package = $updateService->updateOne($logger, $safeName);
         if ($package && !empty($package->getVersions()) && $package->isActive()) {
             // update just the package
@@ -259,56 +252,5 @@ class MainController extends AbstractController
         }
 
         return $this->form;
-    }
-
-    /**
-     * @param string $ip
-     * @param Connection $db
-     * @return int The number of requests within the past 24 hours
-     * @throws \Doctrine\DBAL\DBALException
-     * @todo move to a Repository helper?
-     */
-    private function getRequestCountByIp(string $ip, Connection $db): int
-    {
-        $query = $db->prepare(
-            "SELECT * FROM requests WHERE ip_address = :ip AND last_request > :cutoff"
-        );
-        $query->execute([
-            'cutoff' => (new \DateTime())->sub(new \DateInterval('PT1H'))->format($db->getDatabasePlatform()->getDateTimeFormatString()),
-            'ip' => $ip,
-        ]);
-
-        $requestHistory = $query->fetch(PDO::FETCH_ASSOC);
-        if (!$requestHistory) {
-            $this->resetRequestCount($ip, $db);
-            return 1;
-        }
-
-        $update = $db->prepare(
-            'UPDATE requests SET request_count = request_count + 1, last_request = CURRENT_TIMESTAMP WHERE ip_address = :ip'
-        );
-
-        $update->execute([ $ip ]);
-        return $requestHistory['request_count'] + 1;
-    }
-
-    /**
-     * Add an entry to the requests table for the provided IP address.
-     * Has the side effect of removing all expired entries.
-     *
-     * @param string $ip
-     * @param Connection $db
-     * @throws \Doctrine\DBAL\DBALException
-     * @todo move to a Repository helper?
-     */
-    private function resetRequestCount(string $ip, Connection $db)
-    {
-        $prune = $db->prepare('DELETE FROM requests WHERE last_request < :cutoff');
-        $prune->bindValue('cutoff', (new \DateTime())->sub(new \DateInterval('PT1H'))->format($db->getDatabasePlatform()->getDateTimeFormatString()));
-        $prune->execute();
-        $insert = $db->prepare(
-            'INSERT INTO requests (ip_address, last_request, request_count) VALUES (:ip_address, CURRENT_TIMESTAMP, 1)'
-        );
-        $insert->execute([ $ip ]);
     }
 }

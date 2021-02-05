@@ -14,6 +14,15 @@ if ($_SERVER['APP_DEBUG']) {
 
 if ($trustedProxies = $_SERVER['TRUSTED_PROXIES'] ?? false) {
     Request::setTrustedProxies(explode(',', $trustedProxies), Request::HEADER_X_FORWARDED_ALL ^ Request::HEADER_X_FORWARDED_HOST);
+} else {
+    /**
+     * If no env override, get the correct request context behind an AWS load balancer.
+     * @link https://symfony.com/doc/5.2/deployment/proxies.html
+     */
+    Request::setTrustedProxies(
+        ['127.0.0.1', 'REMOTE_ADDR'], // REMOTE_ADDR string replaced at runtime.
+        Request::HEADER_X_FORWARDED_AWS_ELB
+    );
 }
 
 if ($trustedHosts = $_SERVER['TRUSTED_HOSTS'] ?? false) {
