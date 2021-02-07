@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -37,9 +38,12 @@ class ExceptionListener
             $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
+        // Reduce log severity for scan junk & actual not found requests, inc. unexpected methods like
+        // `POST /` and made up HTTP methods, e.g. `Invalid method override "__CONSTRUCT"`.
         $notFound = (
-            $exception instanceof NotFoundHttpException ||
-            $exception instanceof MethodNotAllowedHttpException
+            $exception instanceof BadRequestHttpException ||
+            $exception instanceof MethodNotAllowedHttpException ||
+            $exception instanceof NotFoundHttpException
         );
 
         $this->logger->log(
