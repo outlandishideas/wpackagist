@@ -106,6 +106,7 @@ final class Database extends PackageStore
                 $match = $datum;
             } elseif ($datum->getIsLatest()) {
                 $datum->setIsLatest(false);
+                $this->entityManager->persist($datum);
             } else {
                 $this->entityManager->detach($datum);
             }
@@ -118,7 +119,6 @@ final class Database extends PackageStore
             $match->setName($name);
             $match->setHash($hash);
             $changed = true;
-            $this->entityManager->persist($match);
         }
         if ($json !== $match->getValue()) {
             $match->setValue($json);
@@ -128,7 +128,10 @@ final class Database extends PackageStore
             $match->setIsLatest(true);
             $changed = true;
         }
-        if (!$changed) {
+
+        if ($changed) {
+            $this->entityManager->persist($match);
+        } else {
             $this->entityManager->detach($match);
         }
 
