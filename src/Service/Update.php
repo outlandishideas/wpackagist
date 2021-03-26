@@ -119,7 +119,13 @@ class Update
                         $versions[$version] = 'tags/' . $version;
                     } // else do nothing, for 'trunk'.
                 } catch (\UnexpectedValueException $e) {
-                    //version is invalid
+                    // Version is invalid – we've seen this e.g. with 5 numeric parts.
+                    $logger->info(sprintf(
+                        'Skipping invalid version %s for %s %s',
+                        $version,
+                        $package->getType(),
+                        $name
+                    ));
                     unset($versions[$version]);
                 }
             }
@@ -131,7 +137,7 @@ class Update
                 $package->setDisplayName($info['name']);
                 $this->entityManager->persist($package);
             } else {
-                // Plugin is not active
+                // Package is not active
                 $this->deactivate($package, 'no versions found', $logger);
             }
         }
