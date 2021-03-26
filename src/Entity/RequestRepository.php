@@ -39,6 +39,9 @@ class RequestRepository extends EntityRepository
         }
 
         $requestItem->addRequest();
+        // TODO (low priority) this can – very rarely – crash if another request persisted a record
+        // with the same IP since the lookup to check for existing ones. Ideally the select and
+        // insert would be atomic in a txn?
         $em->persist($requestItem);
 
         return $requestItem->getRequestCount();
