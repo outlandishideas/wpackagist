@@ -27,22 +27,27 @@ class RequestRepository extends EntityRepository
             ->andWhere('r.lastRequest >= :cutoff')
             ->setParameter('ip', $ip)
             ->setParameter('cutoff', $oneHourAgo);
-        $requestHistory = $qb->getQuery()->getResult();
 
-        if (empty($requestHistory)) {
-            $this->deleteOldRequestCounts($ip, $oneHourAgo);
+        // `transactional()` auto-flushes on commit / return, so this should prevent race
+        // conditions where two threads are both trying to make a new record.
+        // See https://doctrine2.readthedocs.io/en/latest/reference/transactions-and-concurrency.html#approach-2-explicitly
+        $requestItem = $em->transactional(function () use ($em, $qb, $ip, $oneHourAgo) {
+            $requestHistory = $qb->getQuery()->getResult();
 
-            $requestItem = new Request();
-            $requestItem->setIpAddress($ip);
-        } else {
-            $requestItem = $requestHistory[0];
-        }
+            if (empty($requestHistory)) {
+                $this->deleteOldRequestCounts($ip, $oneHourAgo);
 
-        $requestItem->addRequest();
-        // TODO (low priority) this can – very rarely – crash if another request persisted a record
-        // with the same IP since the lookup to check for existing ones. Ideally the select and
-        // insert would be atomic in a txn?
-        $em->persist($requestItem);
+                $requestItem = new Request();
+                $requestItem->setIpAddress($ip);
+            } else {
+                $requestItem = $requestHistory[0];
+            }
+
+            $requestItem->addRequest();
+            $em->persist($requestItem);
+
+            return $requestItem;
+        });
 
         return $requestItem->getRequestCount();
     }
