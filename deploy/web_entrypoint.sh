@@ -18,8 +18,15 @@ composer dump-env "${APP_ENV}"
 echo "Clearing & warming cache..."
 bin/console cache:clear --no-debug --env=$APP_ENV
 
+echo "Generating Doctrine proxies..."
+bin/console doctrine orm:generate-proxies --env=$APP_ENV
+
 echo "Running DB migrations..."
 bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=$APP_ENV
+
+# This might be needed for Doctrine's query parser cache to save things – we had runtime warnings before
+# adding both this and the early proxy generation.
+chmod -R 777 /var/www/html/var/cache
 
 echo "Starting Apache..."
 # Call the normal web server entry-point script
