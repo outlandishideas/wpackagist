@@ -15,17 +15,15 @@ export $(aws s3 cp ${SECRETS_URI} - | grep -v '^#' | xargs)
 echo "Dumping env..."
 composer dump-env "${APP_ENV}"
 
+# Includes Doctrine proxies – https://stackoverflow.com/a/36685804/2803757
 echo "Clearing & warming cache..."
 bin/console cache:clear --no-debug --env=$APP_ENV
-
-echo "Generating Doctrine proxies..."
-bin/console doctrine orm:generate-proxies --env=$APP_ENV
 
 echo "Running DB migrations..."
 bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=$APP_ENV
 
 # This might be needed for Doctrine's query parser cache to save things – we had runtime warnings before
-# adding both this and the early proxy generation.
+# adding this.
 chmod -R 777 /var/www/html/var/cache
 
 echo "Starting Apache..."
