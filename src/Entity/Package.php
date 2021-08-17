@@ -226,7 +226,7 @@ abstract class Package
         }
 
         if ($type = $this->getComposerType()) {
-            $package['require']['composer/installers'] = '~1.0';
+            $package['require']['composer/installers'] = '~1.0 || ~2.0';
             $package['type'] = $type;
         }
 
