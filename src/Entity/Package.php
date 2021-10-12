@@ -255,6 +255,9 @@ abstract class Package
 
     public function setDisplayName(string $displayName)
     {
+        if ($displayName && strlen($displayName) > 255) {
+            $displayName = substr($displayName, 0, 255);
+        }
         $this->displayName = $displayName;
     }
 
