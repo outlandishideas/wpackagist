@@ -113,3 +113,13 @@ To start a web server on `localhost:30100`:
 * Web: http://localhost:30100/
 * Adminer: http://localhost:30101/ (See credentials in `.env.postgres.local`)
 
+## Live deployments
+
+CircleCI is used to deploy the live app on ECS.
+
+Automatic deploys run:
+
+* from `develop` to [Staging](https://staging-wpackagist.out.re);
+* from `master` to [Production](https://wpackagist.org/)
+
+See [.circleci/config.yml](./.circleci/config.yml) for full configuration.
