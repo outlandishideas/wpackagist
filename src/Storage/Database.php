@@ -2,11 +2,13 @@
 
 namespace Outlandish\Wpackagist\Storage;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ObjectRepository;
 use Outlandish\Wpackagist\Entity\PackageData;
+use Psr\Log\LoggerInterface;
 
 final class Database extends PackageStore
 {
@@ -16,12 +18,15 @@ final class Database extends PackageStore
 
     /** @var EntityManagerInterface */
     private $entityManager;
+    /** @var LoggerInterface */
+    private $logger;
     /** @var ObjectRepository */
     private $repository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
+        $this->logger = $logger;
     }
 
     protected function loadEntity($type, $name, $hash): ?string
@@ -181,9 +186,21 @@ final class Database extends PackageStore
     {
     }
 
+    /**
+     * @throws UniqueConstraintViolationException in possible DB connectivity error edge case.
+     */
     public function persist($final = false): void
     {
-        $this->entityManager->flush();
+        try {
+            $this->entityManager->flush();
+        } catch (UniqueConstraintViolationException $exception) {
+            $this->logger->error(
+                'UniqueConstraintViolationException in Database::persist(): ' .
+                $exception->getTraceAsString()
+            );
+            // Leave the exception unhandled so we don't keep processing with incomplete package data.
+            throw $exception;
+        }
 
         if ($final) {
             $qb = new QueryBuilder($this->entityManager);
