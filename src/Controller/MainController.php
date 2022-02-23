@@ -8,6 +8,7 @@ use Doctrine\ORM\QueryBuilder;
 use Outlandish\Wpackagist\Entity\Package;
 use Outlandish\Wpackagist\Entity\PackageRepository;
 use Outlandish\Wpackagist\Entity\Plugin;
+use Outlandish\Wpackagist\Entity\RequestRepository;
 use Outlandish\Wpackagist\Entity\Theme;
 use Outlandish\Wpackagist\Service;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
@@ -26,7 +27,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Outlandish\Wpackagist\Entity\Request as RequestLog;
 use Outlandish\Wpackagist\Storage;
 
 class MainController extends AbstractController
@@ -35,12 +35,18 @@ class MainController extends AbstractController
     private $formFactory;
     /** @var FormInterface|null */
     private $form;
+    /** @var RequestRepository */
+    private $requestRepository;
     /** @var Storage\PackageStore */
     private $storage;
 
-    public function __construct(FormFactoryInterface $formFactory, Storage\PackageStore $storage)
-    {
+    public function __construct(
+        FormFactoryInterface $formFactory,
+        RequestRepository $requestRepository,
+        Storage\PackageStore $storage
+    ) {
         $this->formFactory = $formFactory;
+        $this->requestRepository = $requestRepository;
         $this->storage = $storage;
     }
 
@@ -204,8 +210,7 @@ class MainController extends AbstractController
             return new Response('Not Found',404);
         }
 
-        $requestCount = $entityManager->getRepository(RequestLog::class)
-            ->getRequestCountByIp($request->getClientIp(), 0);
+        $requestCount = $this->requestRepository->getRequestCountByIp($request->getClientIp(), 0);
         if ($requestCount > 5) {
             return new Response('Too many requests. Try again in an hour.', 403);
         }

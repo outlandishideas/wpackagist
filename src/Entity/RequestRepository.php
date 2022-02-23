@@ -10,6 +10,11 @@ use Doctrine\ORM\QueryBuilder;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
+/**
+ * This repo uses a custom constructor so it can directly log record contention edge cases. For this reason it is
+ * declared as a service in `services.yaml` and you cannot use `EntityManagerInterface::getRepository()` to retrieve
+ * it. You should instead inject it directly with DI instead.
+ */
 class RequestRepository extends EntityRepository
 {
     /** @var LoggerInterface */
