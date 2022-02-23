@@ -2,11 +2,25 @@
 
 namespace Outlandish\Wpackagist\Entity;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping;
 use Doctrine\ORM\QueryBuilder;
+use Psr\Log\LoggerInterface;
 
 class RequestRepository extends EntityRepository
 {
+    /** @var LoggerInterface */
+    protected $logger;
+
+    public function __construct(EntityManagerInterface $em, Mapping\ClassMetadata $class, LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+
+        parent::__construct($em, $class);
+    }
+
     /**
      * Get a count of sensitive requests for an IP, incrementing the counter as a side effect.
      *
@@ -28,10 +42,11 @@ class RequestRepository extends EntityRepository
             ->setParameter('ip', $ip)
             ->setParameter('cutoff', $oneHourAgo);
 
-        // `transactional()` auto-flushes on commit / return, so this should prevent race
-        // conditions where two threads are both trying to make a new record.
+        // `wrapInTransaction()` auto-flushes on commit / return, but we still saw a rare edge case where an insert
+        // led to a unique IP constraint violation. For now we are logging a warning when this happens and trying
+        // a second time.
         // See https://doctrine2.readthedocs.io/en/latest/reference/transactions-and-concurrency.html#approach-2-explicitly
-        $requestItem = $em->transactional(function () use ($em, $qb, $ip, $oneHourAgo) {
+        $requestItem = $em->wrapInTransaction(function () use ($em, $qb, $ip, $oneHourAgo) {
             $requestHistory = $qb->getQuery()->getResult();
 
             if (empty($requestHistory)) {
@@ -45,6 +60,16 @@ class RequestRepository extends EntityRepository
 
             $requestItem->addRequest();
             $em->persist($requestItem);
+
+            try {
+                $em->flush();
+            } catch (UniqueConstraintViolationException $exception) {
+                $this->logger->warning(sprintf(
+                    'UniqueConstraintViolationException led to access insert retry for IP %s',
+                    $ip
+                ));
+                return $this->getRequestCountByIp($ip);
+            }
 
             return $requestItem;
         });
