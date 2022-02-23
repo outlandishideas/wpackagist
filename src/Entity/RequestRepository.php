@@ -77,7 +77,9 @@ class RequestRepository extends EntityRepository
 
                 if ($previousTries > 0) {
                     // "Fail safe" by simulating a very high request count if something is going persistently wrong.
-                    return 100000;
+                    $dummyRequest = new Request();
+                    $dummyRequest->setRequestCount(100000);
+                    return $dummyRequest;
                 }
 
                 // If we hit a locking edge case just once, try a 2nd time.
