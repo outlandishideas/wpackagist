@@ -205,7 +205,7 @@ class MainController extends AbstractController
         }
 
         $requestCount = $entityManager->getRepository(RequestLog::class)
-            ->getRequestCountByIp($request->getClientIp());
+            ->getRequestCountByIp($request->getClientIp(), 0);
         if ($requestCount > 5) {
             return new Response('Too many requests. Try again in an hour.', 403);
         }

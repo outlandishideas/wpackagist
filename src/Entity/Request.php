@@ -52,4 +52,9 @@ class Request
     {
         $this->ipAddress = $ipAddress;
     }
+
+    public function setRequestCount(int $requestCount): void
+    {
+        $this->requestCount = $requestCount;
+    }
 }
