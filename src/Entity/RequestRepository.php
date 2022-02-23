@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping;
 use Doctrine\ORM\QueryBuilder;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 
 class RequestRepository extends EntityRepository
 {
@@ -24,11 +25,12 @@ class RequestRepository extends EntityRepository
     /**
      * Get a count of sensitive requests for an IP, incrementing the counter as a side effect.
      *
-     * @param string $ip
+     * @param string    $ip
+     * @param int       $previousTries  Work around record contention edge case while avoiding risk of an infinite loop.
      * @return int The number of requests within the past 24 hours
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getRequestCountByIp(string $ip): int
+    public function getRequestCountByIp(string $ip, int $previousTries): int
     {
         $em = $this->getEntityManager();
         $qb = new QueryBuilder($em);
@@ -46,7 +48,7 @@ class RequestRepository extends EntityRepository
         // led to a unique IP constraint violation. For now we are logging a warning when this happens and trying
         // a second time.
         // See https://doctrine2.readthedocs.io/en/latest/reference/transactions-and-concurrency.html#approach-2-explicitly
-        $requestItem = $em->wrapInTransaction(function () use ($em, $qb, $ip, $oneHourAgo) {
+        $requestItem = $em->wrapInTransaction(function () use ($em, $qb, $ip, $previousTries, $oneHourAgo) {
             $requestHistory = $qb->getQuery()->getResult();
 
             if (empty($requestHistory)) {
@@ -64,11 +66,22 @@ class RequestRepository extends EntityRepository
             try {
                 $em->flush();
             } catch (UniqueConstraintViolationException $exception) {
-                $this->logger->warning(sprintf(
-                    'UniqueConstraintViolationException led to access insert retry for IP %s',
-                    $ip
-                ));
-                return $this->getRequestCountByIp($ip);
+                $logLevel = $previousTries === 0 ? LogLevel::WARNING : LogLevel::ERROR;
+                $this->logger->log(
+                    $logLevel,
+                    sprintf(
+                        'UniqueConstraintViolationException led to access insert retry for IP %s',
+                        $ip
+                    )
+                );
+
+                if ($previousTries > 0) {
+                    // "Fail safe" by simulating a very high request count if something is going persistently wrong.
+                    return 100000;
+                }
+
+                // If we hit a locking edge case just once, try a 2nd time.
+                return $this->getRequestCountByIp($ip, $previousTries + 1);
             }
 
             return $requestItem;
