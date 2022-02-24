@@ -5,7 +5,10 @@
         "platform": {
             "php": "7.2.24"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/flex": true
+        }
     },
     "minimum-stability": "stable",
     "require": {
@@ -35,8 +38,10 @@
         "symfony/form": "^5.0",
         "symfony/monolog-bundle": "^3.6",
         "symfony/security-csrf": "^5.0",
-        "symfony/twig-pack": "^1.0",
-        "symfony/yaml": "^5.0"
+        "symfony/twig-bundle": "^5.4",
+        "symfony/yaml": "^5.0",
+        "twig/extra-bundle": "^2.12|^3.0",
+        "twig/twig": "^2.12|^3.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master"
