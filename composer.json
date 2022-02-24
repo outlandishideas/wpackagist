@@ -5,7 +5,10 @@
         "platform": {
             "php": "7.2.24"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/flex": true
+        }
     },
     "minimum-stability": "stable",
     "require": {
