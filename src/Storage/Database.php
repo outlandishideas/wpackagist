@@ -194,7 +194,11 @@ final class Database extends PackageStore
         try {
             $this->entityManager->flush();
         } catch (UniqueConstraintViolationException $exception) {
-            $this->logger->error(
+            // This was downgraded to warning level because in cases which *do* represent a high
+            // severity event, the re-thrown exception will still lead to an error that shows up
+            // in alarms etc. In cases where we can recover without issue and the exception is caught,
+            // we're better off not adding noise to our monitoring channels.
+            $this->logger->warning(
                 'UniqueConstraintViolationException in Database::persist(): ' .
                 $exception->getTraceAsString()
             );

@@ -2,7 +2,6 @@
 
 namespace Outlandish\Wpackagist\Controller;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Outlandish\Wpackagist\Entity\Package;
@@ -116,7 +115,7 @@ class MainController extends AbstractController
         ]);
     }
 
-    public function search(Request $request, Connection $connection, EntityManagerInterface $entityManager): Response
+    public function search(Request $request, EntityManagerInterface $entityManager): Response
     {
         $queryBuilder = new QueryBuilder($entityManager);
 
@@ -186,7 +185,6 @@ class MainController extends AbstractController
 
     public function update(
         Request $request,
-        Connection $connection,
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         Service\Update $updateService,
