@@ -3,7 +3,7 @@
 namespace Outlandish\Wpackagist\Service;
 
 use Composer\Package\Version\VersionParser;
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Command\Exception\CommandClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -16,32 +16,51 @@ use Rarst\Guzzle\WporgClient;
 
 class Update
 {
-    /** @var Connection */
-    private $connection;
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var PackageRepository */
     private $repo;
 
-    public function __construct(Connection $connection,  EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->repo = $entityManager->getRepository(Package::class);
     }
 
-    public function updateAll(LoggerInterface $logger)
+    public function updateAll(LoggerInterface $logger): void
     {
         $packages = $this->repo->findDueUpdate();
         $this->update($logger, $packages);
     }
 
-    public function updateOne(LoggerInterface $logger, string $name): ?Package
+    /**
+     * @param LoggerInterface $logger
+     * @param string $name
+     * @param int $allowMoreTries   How many more times we may try to complete the update.
+     *                              Defaults to 1 and is decremented by 1 on a retry, which
+     *                              calls the same method again. The idea is to check the repo
+     *                              for a fresh copy to update if it seems like 2 threads have
+     *                              tried to work on the same data simultaneously and hit a unique
+     *                              lock violation as a result.
+     * @return Package|null
+     * @throws UniqueConstraintViolationException if a unique lock was violated *and* we have no
+     *                                            tries left.
+     */
+    public function updateOne(LoggerInterface $logger, string $name, int $allowMoreTries = 1): ?Package
     {
         $package = $this->repo->findOneBy(['name' => $name]);
 
         if ($package) {
-            $this->update($logger, [$package]);
+            try {
+                $this->update($logger, [$package]);
+            } catch (UniqueConstraintViolationException $exception) {
+                if ($allowMoreTries > 0) {
+                    return $this->updateOne($logger, $name, $allowMoreTries - 1);
+                }
+
+                // Else we are out of tries.
+                throw $exception;
+            }
         }
 
         return $package;
@@ -51,7 +70,7 @@ class Update
      * @param LoggerInterface $logger
      * @param Package[] $packages
      */
-    protected function update(LoggerInterface $logger, array $packages)
+    protected function update(LoggerInterface $logger, array $packages): void
     {
         $count = count($packages);
         $versionParser = new VersionParser();
@@ -144,7 +163,7 @@ class Update
         $this->entityManager->flush();
     }
 
-    private function deactivate(Package $package, string $reason, LoggerInterface $logger)
+    private function deactivate(Package $package, string $reason, LoggerInterface $logger): void
     {
         $package->setLastFetched(new \DateTime());
         $package->setIsActive(false);
