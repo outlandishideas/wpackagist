@@ -37,4 +37,7 @@ COPY . /var/www/html
 # Configure PHP to e.g. not hit 128M memory limit.
 COPY ./config/php/php.ini /usr/local/etc/php/
 
+RUN mkdir /tmp/twig
+RUN chmod 0777 /tmp/twig
+
 RUN APP_ENV=${env} composer install --no-interaction --quiet --optimize-autoloader --no-dev
