@@ -12,7 +12,7 @@ services:
         volumes:
             - ./local_data:/var/lib/postgresql/
         ports:
-            - 5432:5432
+            - "5432:5432"
         env_file:
             - .env.postgres.local
     redis:
@@ -37,7 +37,7 @@ services:
             args:
                 env: dev
         ports:
-            - 30100:80
+            - "30100:80"
         volumes:
             - .:/var/www/html
         env_file:
@@ -48,4 +48,4 @@ services:
     adminer:
         image: adminer
         ports:
-            - 30101:8080
+            - "30101:8080"

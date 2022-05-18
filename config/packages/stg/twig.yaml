@@ -1,3 +1,0 @@
-twig:
-    cache: '/tmp/twig'
-    default_path: '%kernel.project_dir%/web/templates'
