@@ -73,7 +73,7 @@ https://wpackagist.org/p/wpackagist-{theme|plugin}/{package-name-and-hash}.json.
 
 1. Make sure you have Composer dependencies installed, including extensions.
 2. Make `.env.local`, overriding anything you want to from `.env`.
-3. Make sure your `PACKAGE_PATH` directory is writable.
+3. (Only if you're going to skip using a database for `PackageStore`): ensure sure your `PACKAGE_PATH` directory is writable.
 4. Run `composer install` to install dependencies.
 5. Populate the database and package files (see steps below).
 5. Point your Web server to [`web`](web/). A [`.htaccess`](web/.htaccess) is provided for Apache.
@@ -85,7 +85,7 @@ The first database population may easily take hours. Be patient.
 0. `bin/console doctrine:migrations:migrate`: Ensure the database schema is up to date with the code.
 1. `bin/console refresh`: Query the WordPress.org SVN in order to find new and updated packages.
 2. `bin/console update`: Update the version information for packages identified in `2`. Uses the WordPress.org API.
-3. `bin/console build`: Rebuild all `.json` files in `$PACKAGE_PATH`.
+3. `bin/console build`: Rebuild all `PackageStore` data.
 
 ## Running locally with Docker
 
@@ -110,8 +110,8 @@ To start a web server on `localhost:30100`:
 
 #### Services
 
-* Web: http://localhost:30100/
-* Adminer: http://localhost:30101/ (See credentials in `.env.postgres.local`)
+* Web: [localhost:30100](http://localhost:30100)
+* Adminer: [localhost:30101](http://localhost:30101) (See credentials in `.env.postgres.local`)
 
 ## Live deployments
 
