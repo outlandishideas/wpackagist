@@ -22,9 +22,7 @@ bin/console cache:clear --no-debug --env=$APP_ENV
 echo "Running DB migrations..."
 bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=$APP_ENV
 
-# This might be needed for Doctrine's query parser cache to save things – we had runtime warnings before
-# adding this.
-chmod -R 777 /var/www/html/var/cache
+chmod -R 777 /tmp/twig
 
 echo "Starting Apache..."
 # Call the normal web server entry-point script
