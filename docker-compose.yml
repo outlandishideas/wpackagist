@@ -15,6 +15,8 @@ services:
             - 5432:5432
         env_file:
             - .env.postgres.local
+    redis:
+        image: redis:6.2
     cron:
         build:
             context: .
@@ -28,6 +30,7 @@ services:
             - .env.local
         depends_on:
             - db
+            - redis
     web:
         build:
             context: .
@@ -41,6 +44,7 @@ services:
             - .env.local
         depends_on:
             - db
+            - redis
     adminer:
         image: adminer
         ports:

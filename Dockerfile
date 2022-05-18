@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:8.1-apache
 
 ARG env
 RUN test -n "$env"
@@ -17,6 +17,10 @@ RUN apt-get update -qq && \
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
  && docker-php-ext-install intl mbstring pdo_pgsql
 
+RUN docker-php-ext-enable opcache
+
+RUN pecl install redis && rm -rf /tmp/pear && docker-php-ext-enable redis
+
 # Get latest Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -32,8 +36,5 @@ COPY . /var/www/html
 
 # Configure PHP to e.g. not hit 128M memory limit.
 COPY ./config/php/php.ini /usr/local/etc/php/
-
-# Ensure Apache can run as www-data and still write to these when the Docker build creates them as root.
-RUN chmod -R 777 /var/www/html/var
 
 RUN APP_ENV=${env} composer install --no-interaction --quiet --optimize-autoloader --no-dev
