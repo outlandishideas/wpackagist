@@ -17,6 +17,10 @@ RUN apt-get update -qq && \
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
  && docker-php-ext-install intl mbstring pdo_pgsql
 
+RUN docker-php-ext-enable opcache
+
+RUN pecl install redis && rm -rf /tmp/pear && docker-php-ext-enable redis
+
 # Get latest Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
