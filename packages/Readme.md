@@ -1,1 +1,1 @@
-Local only – ECS will use an EFS mount.
+Local reconfigured in non-Database PackageStore mode only. ECS will use the DB.
