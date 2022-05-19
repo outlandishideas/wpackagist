@@ -120,6 +120,6 @@ CircleCI is used to deploy the live app on ECS.
 Automatic deploys run:
 
 * from `develop` to [Staging](https://staging-wpackagist.out.re);
-* from `master` to [Production](https://wpackagist.org/)
+* from `main` to [Production](https://wpackagist.org/)
 
 See [.circleci/config.yml](./.circleci/config.yml) for full configuration.
