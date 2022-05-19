@@ -30,7 +30,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
           repo: 'production-wpackagist'
           region: AWS_REGION
           tag: 'production,production-${CIRCLE_SHA1}'
