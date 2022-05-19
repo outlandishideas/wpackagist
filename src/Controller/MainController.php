@@ -124,7 +124,6 @@ class MainController extends AbstractController
 
         $data = $form->getData();
         $type = $data['type'] ?? null;
-        $active = $data['active_only'] ?? false;
         $query = empty($data['q']) ? null : trim($data['q']);
 
         $data = [
@@ -149,24 +148,16 @@ class MainController extends AbstractController
                 $queryBuilder->from(Package::class, 'p');
         }
 
-        switch ($active) {
-            case 1:
-                $queryBuilder->andWhere('p.isActive = true');
-                break;
-
-            default:
-                $queryBuilder->addOrderBy('p.isActive', 'DESC');
-                break;
-        }
-
         if (!empty($query)) {
             $queryBuilder
                 ->andWhere($queryBuilder->expr()->orX(
                     $queryBuilder->expr()->like('p.name', ':name'),
                     $queryBuilder->expr()->like('p.displayName', ':name')
                 ))
-                ->addOrderBy('p.name', 'ASC')
-                ->setParameter('name', "%{$query}%");
+                ->addSelect('CASE WHEN p.name = :nameWithoutWildcards THEN 0 ELSE 1 END AS HIDDEN sortCondition')
+                ->addOrderBy('sortCondition, p.name', 'ASC')
+                ->setParameter('name', "%{$query}%")
+                ->setParameter('nameWithoutWildcards', $query);
         } else {
             $queryBuilder
                 ->addOrderBy('p.lastCommitted', 'DESC');
