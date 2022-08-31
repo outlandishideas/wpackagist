@@ -7,8 +7,7 @@ volumes:
 
 services:
     db:
-        # Stick with 9.6 for now to ensure compatibility with shared infrastructure's instance.
-        image: postgres:9.6-alpine
+        image: postgres:12.8-alpine
         volumes:
             - ./local_data:/var/lib/postgresql/
         ports:
