@@ -2,6 +2,7 @@
 
 namespace Outlandish\Wpackagist\Controller;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Outlandish\Wpackagist\Entity\Package;
@@ -205,22 +206,13 @@ class MainController extends AbstractController
         }
 
         $safeName = $package->getName();
-        $package = $updateService->updateOne($logger, $safeName);
-        if ($package && !empty($package->getVersions()) && $package->isActive()) {
-            // update just the package
-            $builder->updatePackage($package);
-            $storage->persist();
 
-            // then update the corresponding group and the root provider, using all packages in the same group
-            $group = $package->getProviderGroup();
-            $groupPackageNames = $packageRepo->findActivePackageNamesByGroup($group);
-            $builder->updateProviderGroup($group, $groupPackageNames);
-            $storage->persist();
-            $builder->updateRoot();
+        try {
+            $this->doSingleUpdate($logger, $builder, $updateService, $storage, $packageRepo, $safeName);
+        } catch (UniqueConstraintViolationException $exception) {
+            // Permit exactly 1 retry for now.
+            $this->doSingleUpdate($logger, $builder, $updateService, $storage, $packageRepo, $safeName);
         }
-
-        // updates are complete, so persist everything
-        $storage->persist(true);
 
         return new RedirectResponse('/search?q=' . $safeName);
     }
@@ -246,5 +238,32 @@ class MainController extends AbstractController
         }
 
         return $this->form;
+    }
+
+    private function doSingleUpdate(
+        LoggerInterface $logger,
+        Service\Builder $builder,
+        Service\Update $updateService,
+        Storage\PackageStore $storage,
+        PackageRepository $packageRepo,
+        string $safeName
+    ): void
+    {
+        $package = $updateService->updateOne($logger, $safeName);
+        if ($package && !empty($package->getVersions()) && $package->isActive()) {
+            // update just the package
+            $builder->updatePackage($package);
+            $storage->persist();
+
+            // then update the corresponding group and the root provider, using all packages in the same group
+            $group = $package->getProviderGroup();
+            $groupPackageNames = $packageRepo->findActivePackageNamesByGroup($group);
+            $builder->updateProviderGroup($group, $groupPackageNames);
+            $storage->persist();
+            $builder->updateRoot();
+        }
+
+        // updates are complete, so persist everything
+        $storage->persist(true);
     }
 }
