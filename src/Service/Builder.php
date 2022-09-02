@@ -81,6 +81,7 @@ class Builder
             'packages' => [],
             'providers-url' => '/' . $providerFormat,
             'provider-includes' => $includes,
+            'available-package-patterns' => ['wpackagist-plugin/*', 'wpackagist-theme/*'],
         ]);
         $this->storage->saveRoot($content);
     }
