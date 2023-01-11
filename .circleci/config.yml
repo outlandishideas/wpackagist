@@ -8,6 +8,8 @@ workflows:
   deploy-staging:
     jobs:
       - aws-ecr/build-and-push-image:
+          context:
+            - ecs-deploys
           filters:
             branches:
               only:
@@ -17,6 +19,8 @@ workflows:
           tag: 'staging,staging-${CIRCLE_SHA1}'
           extra-build-args: '--build-arg env=stg'
       - aws-ecs/deploy-service-update:
+          context:
+            - ecs-deploys
           requires:
             - aws-ecr/build-and-push-image
           aws-region: AWS_REGION
@@ -27,6 +31,8 @@ workflows:
   deploy-production:
     jobs:
       - aws-ecr/build-and-push-image:
+          context:
+            - ecs-deploys
           filters:
             branches:
               only:
@@ -36,6 +42,8 @@ workflows:
           tag: 'production,production-${CIRCLE_SHA1}'
           extra-build-args: '--build-arg env=prod'
       - aws-ecs/deploy-service-update:
+          context:
+            - ecs-deploys
           requires:
             - aws-ecr/build-and-push-image
           aws-region: AWS_REGION
