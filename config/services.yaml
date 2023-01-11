@@ -20,6 +20,12 @@ services:
         arguments:
             $entityName: Outlandish\Wpackagist\Entity\Request
 
+    Doctrine\ORM\Configuration:
+        alias: 'doctrine.orm.default_configuration'
+
+    Doctrine\ORM\EntityManagerInterface:
+        alias: Outlandish\Wpackagist\Persistence\RetrySafeEntityManager
+
     Outlandish\Wpackagist\Entity\RequestRepository:
         arguments:
             $class: '@request_metadata'
