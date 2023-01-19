@@ -114,6 +114,8 @@ class Update
 
             //current version of plugin not present in tags so add it
             if (empty($versions[$info['version']])) {
+                $logger->info('Adding trunk psuedo-version for ' . $name);
+
                 //add to front of array
                 $versions = array_reverse($versions, true);
                 $versions[$info['version']] = 'trunk';
