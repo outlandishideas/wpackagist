@@ -67,6 +67,11 @@ date (trying to keep them roughly the same size), and contain references to indi
 Each package has its own JSON file detailing its versions; these can be found in
 https://wpackagist.org/p/wpackagist-{theme|plugin}/{package-name-and-hash}.json.
 
+### Version format limitations
+
+Currently, Wpackagist can only process packages with up to 4 parts in their version numbers, in line with
+the internal handling of Composer v1.x.
+
 ## Running Wpackagist
 
 ### Installing
