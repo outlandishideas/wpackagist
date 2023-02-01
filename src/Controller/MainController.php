@@ -210,7 +210,9 @@ class MainController extends AbstractController
         try {
             $this->doSingleUpdate($logger, $builder, $updateService, $storage, $packageRepo, $safeName);
         } catch (UniqueConstraintViolationException $exception) {
-            // Permit exactly 1 retry for now.
+            // Permit exactly 1 retry for now, after a random 0.5 – 3 second wait.
+            usleep(random_int(500000, 3000000));
+            $entityManager->refresh($package);
             $this->doSingleUpdate($logger, $builder, $updateService, $storage, $packageRepo, $safeName);
         }
 
