@@ -84,6 +84,17 @@ button:hover, button:focus, .button:hover, .button:focus {
     text-decoration: none;
 }
 
+button[disabled],
+.button[disabled],
+button[disabled]:focus,
+.button[disabled]:focus,
+button[disabled]:hover,
+.button[disabled]:hover {
+    background-color: #bbb;
+    border-color: #000;
+    color: #fff;
+}
+
 .search-result__refresh-form {
     margin: 0;
 }
