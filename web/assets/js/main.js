@@ -1,4 +1,9 @@
 $(document).ready(function () {
+    $('.search-result__refresh-form').on('submit', function (event) {
+        // Disable refresh buttons while refreshing to prevent double submit crashes.
+        $('.search-result__refresh-button').prop('disabled', true);
+    });
+
     //click on a version sug to display an info box row
     $('.js-version').on('click', function (event) {
         event.preventDefault();
