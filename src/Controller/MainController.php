@@ -188,6 +188,11 @@ class MainController extends AbstractController
 
         // first run the update command
         $name = $request->get('name');
+
+        if (is_array($name)) {
+            $name = reset($name);
+        }
+
         if (!trim($name)) {
             return new Response('Invalid Request',400);
         }
