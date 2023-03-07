@@ -26,6 +26,14 @@ services:
     Doctrine\ORM\EntityManagerInterface:
         alias: Outlandish\Wpackagist\Persistence\RetrySafeEntityManager
 
+    doctrine.orm.default_entity_manager:
+        alias: Outlandish\Wpackagist\Persistence\RetrySafeEntityManager
+        public: true
+
+    doctrine.orm.default_entity_manager.abstract:
+        alias: Outlandish\Wpackagist\Persistence\RetrySafeEntityManager
+        public: true
+
     Outlandish\Wpackagist\Entity\RequestRepository:
         arguments:
             $class: '@request_metadata'
