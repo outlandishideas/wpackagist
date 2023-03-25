@@ -126,6 +126,8 @@ class MainController extends AbstractController
         $data = $form->getData();
         $type = $data['type'] ?? null;
         $query = empty($data['q']) ? null : trim($data['q']);
+        // Existing encoding is mb-guessed since PHP 8.
+        $query = mb_convert_encoding($query, 'UTF-8');
 
         $data = [
             'title'              => "WordPress Packagist: Search packages",
@@ -188,6 +190,11 @@ class MainController extends AbstractController
 
         // first run the update command
         $name = $request->get('name');
+
+        if (is_array($name)) {
+            $name = reset($name);
+        }
+
         if (!trim($name)) {
             return new Response('Invalid Request',400);
         }
