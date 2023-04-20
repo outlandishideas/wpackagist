@@ -2,6 +2,7 @@
 
 namespace Outlandish\Wpackagist\Command;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Outlandish\Wpackagist\Entity\PackageRepository;
 use Outlandish\Wpackagist\Service\Builder;
@@ -51,6 +52,23 @@ class BuildCommand extends Command
 
         $start = new \DateTime();
 
+        $this->doBuild(
+            allowMoreTries: 1,
+            output: $output,
+        );
+
+        $this->showProviders($output);
+
+        $interval = $start->diff(new \DateTime());
+        $output->writeln("Wrote package data in " . $interval->format('%Hh %Im %Ss'));
+
+        return 0;
+    }
+
+    protected function doBuild(int $allowMoreTries, OutputInterface $output)
+    {
+        $output->writeln('Starting main build...');
+
         /** @var PackageRepository $packageRepo */
         $packageRepo = $this->entityManager->getRepository(Package::class);
 
@@ -82,7 +100,26 @@ class BuildCommand extends Command
         $output->writeln('');
 
         $output->writeln('Finalising package data...');
-        $this->storage->persist();
+
+        /**
+         * In rare edge cases this can hit a `UniqueConstraintViolationException` and would previously crash the
+         * process. We now allow retries of the whole command if this happens. {@see Database} still logs a
+         * warning so we can easily evaluate frequency of these events, without adding log noise if it's
+         * recoverable. For now we allow only 1 retry per build command run.
+         */
+        try {
+            $this->storage->persist();
+        } catch (UniqueConstraintViolationException $exception) {
+            if ($allowMoreTries > 0) {
+                $output->writeln('Caught a `UniqueConstraintViolationException` while finalising package data. Retrying...');
+                $this->doBuild(
+                    allowMoreTries: $allowMoreTries - 1,
+                    output: $output,
+                );
+            } else {
+                throw $exception;
+            }
+        }
 
         // now all of the packages are up-to-date, rebuild all of the provider groups and the root
         foreach ($providerGroups as $group => $groupPackageNames) {
@@ -93,13 +130,6 @@ class BuildCommand extends Command
 
         // final persist, to write everything that needs writing
         $this->storage->persist(true);
-
-        $this->showProviders($output);
-
-        $interval = $start->diff(new \DateTime());
-        $output->writeln("Wrote package data in " . $interval->format('%Hh %Im %Ss'));
-
-        return 0;
     }
 
     /**
