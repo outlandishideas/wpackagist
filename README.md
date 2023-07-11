@@ -42,7 +42,7 @@ Example composer.json:
 
 This does not provide WordPress itself.
 
-See https://github.com/fancyguy/webroot-installer or https://github.com/johnpbloch/wordpress.
+See https://github.com/fancyguy/webroot-installer or https://github.com/roots/wordpress.
 
 ## How it works
 
