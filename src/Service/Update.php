@@ -5,12 +5,14 @@ namespace Outlandish\Wpackagist\Service;
 use Composer\Package\Version\VersionParser;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\EntityManagerClosed;
 use GuzzleHttp\Command\Exception\CommandClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Outlandish\Wpackagist\Entity\Package;
 use Outlandish\Wpackagist\Entity\PackageRepository;
 use Outlandish\Wpackagist\Entity\Plugin;
 use Outlandish\Wpackagist\Entity\Theme;
+use Outlandish\Wpackagist\Persistence\RetrySafeEntityManager;
 use Psr\Log\LoggerInterface;
 use Rarst\Guzzle\WporgClient;
 
@@ -48,7 +50,15 @@ class Update
      */
     public function updateOne(LoggerInterface $logger, string $name, int $allowMoreTries = 1): ?Package
     {
-        $package = $this->repo->findOneBy(['name' => $name]);
+        try {
+            $package = $this->repo->findOneBy(['name' => $name]);
+        } catch (EntityManagerClosed $exception) {
+            $logger->warning('EntityManagerClosed on repo find, resetting...');
+            if ($this->entityManager instanceof RetrySafeEntityManager) {
+                $this->entityManager->resetManager();
+                $package = $this->repo->findOneBy(['name' => $name]);
+            }
+        }
 
         if ($package) {
             try {
