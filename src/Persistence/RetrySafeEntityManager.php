@@ -52,14 +52,14 @@ class RetrySafeEntityManager extends EntityManagerDecorator
         parent::__construct($this->entityManager);
     }
 
-    public function transactional($callback)
+    public function transactional($func): mixed
     {
         $retries = 0;
         do {
             $this->beginTransaction();
 
             try {
-                $ret = $callback();
+                $ret = $func();
 
                 $this->flush();
                 $this->commit();
