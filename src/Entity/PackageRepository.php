@@ -17,7 +17,6 @@ class PackageRepository extends EntityRepository
         $qb = new QueryBuilder($em);
         $qb->update(Package::class, 'p')
             ->set('p.providerGroup', ':group')
-            ->where('p.providerGroup <> :group')
             ->setParameter('group', 'old')
             ->getQuery()
             ->execute();
