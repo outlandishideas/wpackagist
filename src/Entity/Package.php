@@ -320,8 +320,8 @@ abstract class Package
             return $date->format('Y-') . $month;
         }
 
-        if ($date >= new DateTime('2011-01-01')) {
-            // split by years, limit at 2011 so we never update 'old' again
+        if ($date >= new DateTime('2020-01-01')) {
+            // split by years, limit at 2020 so we never update 'old' again
             return $date->format('Y');
         }
 

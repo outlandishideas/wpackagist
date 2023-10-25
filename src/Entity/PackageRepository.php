@@ -31,7 +31,7 @@ class PackageRepository extends EntityRepository
             $year . '-06' => new \DateTime($year . '-04-01'),
             $year . '-03' => new \DateTime($year . '-01-01'),
         ];
-        for ($y=$year-1; $y>=2011; $y--) {
+        for ($y=$year-1; $y>=2020; $y--) {
             $groups[$y] = new \DateTime($y . '-01-01');
         }
 
