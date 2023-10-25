@@ -12,37 +12,44 @@ class PackageRepository extends EntityRepository
      */
     public function updateProviderGroups(): void
     {
-        // default everything to 'old'
+        $treatAsOldBeforeDate = new \DateTimeImmutable('2020-01-01');
+
         $em = $this->getEntityManager();
         $qb = new QueryBuilder($em);
-        $qb->update(Package::class, 'p')
-            ->set('p.providerGroup', ':group')
-            ->setParameter('group', 'old')
-            ->getQuery()
-            ->execute();
 
         // build the groups, trying to keep them of roughly equal numbers of packages
         $year = date('Y');
         $groups = [
-            'this-week' => new \DateTime('monday last week'),
-            $year . '-12' => new \DateTime($year . '-10-01'),
-            $year . '-09' => new \DateTime($year . '-07-01'),
-            $year . '-06' => new \DateTime($year . '-04-01'),
-            $year . '-03' => new \DateTime($year . '-01-01'),
+            'this-week' => new \DateTimeImmutable('monday last week'),
+            $year . '-12' => new \DateTimeImmutable($year . '-10-01'),
+            $year . '-09' => new \DateTimeImmutable($year . '-07-01'),
+            $year . '-06' => new \DateTimeImmutable($year . '-04-01'),
+            $year . '-03' => new \DateTimeImmutable($year . '-01-01'),
         ];
-        for ($y=$year-1; $y>=2020; $y--) {
-            $groups[$y] = new \DateTime($y . '-01-01');
+        for ($y=$year-1; $y>=$treatAsOldBeforeDate->format('Y'); $y--) {
+            $groups[$y] = new \DateTimeImmutable($y . '-01-01');
         }
 
-        $qb = new QueryBuilder($em);
         $query = $qb->update(Package::class, 'p')
             ->set('p.providerGroup', ':group')
-            ->where('p.providerGroup = \'old\'')
-            ->andWhere('p.lastCommitted >= :date')
+            ->where('p.lastCommitted >= :date')
             ->getQuery();
         foreach ($groups as $key => $date) {
-            $query->execute(['group' => $key, 'date' => $date->format('Y-m-d')]);
+            $query->execute([
+                'group' => $key,
+                'date' => $date->format('Y-m-d'),
+            ]);
         }
+
+
+        $oldPackagesQuery = $qb->update(Package::class, 'p')
+            ->set('p.providerGroup', ':group')
+            ->where('p.lastCommitted < :cutoffDate')
+            ->getQuery();
+        $oldPackagesQuery->execute([
+            'group' => 'old',
+            'cutoffDate' => $treatAsOldBeforeDate->format('Y-m-d'),
+        ]);
     }
 
     /**

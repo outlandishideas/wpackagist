@@ -14,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
  *      @ORM\UniqueConstraint(name="type_and_name_unique", columns={"class_name", "name"}),
  *     },
  *     indexes={
+ *      @ORM\Index(name="class_and_last_committed_idx", columns={"class_name", "last_committed"}),
  *      @ORM\Index(name="last_committed_idx", columns={"last_committed"}),
  *      @ORM\Index(name="last_fetched_idx", columns={"last_fetched"}),
  *      @ORM\Index(name="provider_group_idx", columns={"provider_group"}),
