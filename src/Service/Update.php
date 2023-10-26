@@ -32,7 +32,7 @@ class Update
     public function updateAll(LoggerInterface $logger): void
     {
         $packages = $this->repo->findDueUpdate();
-        $this->update($logger, $packages);
+        $this->update($logger, $packages[1], $packages[0]);
     }
 
     /**
@@ -62,7 +62,7 @@ class Update
 
         if ($package) {
             try {
-                $this->update($logger, [$package]);
+                $this->update($logger, [$package], 1);
             } catch (UniqueConstraintViolationException $exception) {
                 if ($allowMoreTries > 0) {
                     return $this->updateOne($logger, $name, $allowMoreTries - 1);
@@ -78,24 +78,28 @@ class Update
 
     /**
      * @param LoggerInterface $logger
-     * @param Package[] $packages
+     * @param iterable|Package[] $packages
+     * @param int $count
      */
-    protected function update(LoggerInterface $logger, array $packages): void
+    protected function update(LoggerInterface $logger, mixed $packages, int $count): void
     {
-        $count = count($packages);
         $versionParser = new VersionParser();
 
         $wporgClient = WporgClient::getClient();
 
         $logger->info("Updating {$count} packages");
 
-        foreach ($packages as $index => $package) {
-            $percent = $index / $count * 100;
+        $batchSize = 100;
+
+        $i = 0;
+        foreach ($packages as $package) {
+            $percent = ++$i / $count * 100;
 
             $name = $package->getName();
 
             $info = null;
             $fields = ['versions'];
+            $deactivateReason = null;
             try {
                 if ($package instanceof Plugin) {
                     $info = $wporgClient->getPlugin($name, $fields);
@@ -104,82 +108,99 @@ class Update
                 }
 
                 $logger->info(sprintf("<info>%04.1f%%</info> Fetched %s %s", $percent, $package->getType(), $name));
+                if (empty($info)) {
+                    $deactivateReason = 'not active';
+                }
             } catch (CommandClientException $exception) {
                 $res = $exception->getResponse();
-                $this->deactivate($package, $res->getStatusCode() . ': ' . $res->getReasonPhrase(), $logger);
-                continue;
+                $deactivateReason = $res->getStatusCode() . ': ' . $res->getReasonPhrase();
             } catch (GuzzleException $exception) {
                 $logger->warning("Skipped {$package->getType()} '{$name}' due to error: '{$exception->getMessage()}'");
             }
 
-            if (empty($info)) {
-                // Plugin is not active
-                $this->deactivate($package, 'not active', $logger);
+            if ($info && !$deactivateReason) {
+                $versions = $this->extractVersions($package, $info, $versionParser, $logger);
 
-                continue;
-            }
-
-            //get versions as [version => url]
-            $versions = $info['versions'] ?: [];
-
-            //current version of plugin not present in tags so add it
-            if (empty($versions[$info['version']])) {
-                $logger->info('Adding trunk psuedo-version for ' . $name);
-
-                //add to front of array
-                $versions = array_reverse($versions, true);
-                $versions[$info['version']] = 'trunk';
-                $versions = array_reverse($versions, true);
-            }
-
-            //all plugins have a dev-trunk version
-            if ($package instanceof Plugin) {
-                unset($versions['trunk']);
-                $versions['dev-trunk'] = 'trunk';
-            }
-
-            foreach ($versions as $version => $url) {
-                try {
-                    //make sure versions are parseable by Composer
-                    $versionParser->normalize($version);
-                    if ($package instanceof Theme) {
-                        //themes have different SVN folder structure
-                        $versions[$version] = $version;
-                    } elseif ($url !== 'trunk') {
-                        //add ref to SVN tag
-                        $versions[$version] = 'tags/' . $version;
-                    } // else do nothing, for 'trunk'.
-                } catch (\UnexpectedValueException $e) {
-                    // Version is invalid – we've seen this e.g. with 5 numeric parts.
-                    $logger->info(sprintf(
-                        'Skipping invalid version %s for %s %s',
-                        $version,
-                        $package->getType(),
-                        $name
-                    ));
-                    unset($versions[$version]);
+                if ($versions) {
+                    $package->setLastFetched(new \DateTime());
+                    $package->setVersions($versions);
+                    $package->setIsActive(true);
+                    $package->setDisplayName($info['name']);
+                    $this->entityManager->persist($package);
+                } else {
+                    $deactivateReason = 'no versions found';
                 }
             }
 
-            if ($versions) {
+            if ($deactivateReason) {
                 $package->setLastFetched(new \DateTime());
-                $package->setVersions($versions);
-                $package->setIsActive(true);
-                $package->setDisplayName($info['name']);
+                $package->setIsActive(false);
                 $this->entityManager->persist($package);
-            } else {
-                // Package is not active
-                $this->deactivate($package, 'no versions found', $logger);
+                $logger->info(sprintf("<info>Deactivated %s %s because %s</info>", $package->getType(), $package->getName(), $deactivateReason));
+            }
+
+            if (($i % $batchSize) === 0) {
+                $logger->info('---Persisting updated packages---');
+                $this->entityManager->flush();
+                $this->entityManager->clear();
             }
         }
         $this->entityManager->flush();
     }
 
-    private function deactivate(Package $package, string $reason, LoggerInterface $logger): void
+    /**
+     * @param Package $package
+     * @param array $info
+     * @param VersionParser $versionParser
+     * @param LoggerInterface $logger
+     * @return array|mixed
+     */
+    protected function extractVersions($package, $info, $versionParser, $logger)
     {
-        $package->setLastFetched(new \DateTime());
-        $package->setIsActive(false);
-        $this->entityManager->persist($package);
-        $logger->info(sprintf("<info>Deactivated %s %s because %s</info>", $package->getType(), $package->getName(), $reason));
+        $name = $package->getName();
+
+        //get versions as [version => url]
+        $versions = $info['versions'] ?: [];
+
+        //current version of plugin not present in tags so add it
+        if (empty($versions[$info['version']])) {
+            $logger->info('Adding trunk pseudo-version for ' . $name);
+
+            //add to front of array
+            $versions = array_reverse($versions, true);
+            $versions[$info['version']] = 'trunk';
+            $versions = array_reverse($versions, true);
+        }
+
+        //all plugins have a dev-trunk version
+        if ($package instanceof Plugin) {
+            unset($versions['trunk']);
+            $versions['dev-trunk'] = 'trunk';
+        }
+
+        foreach ($versions as $version => $url) {
+            try {
+                //make sure versions are parseable by Composer
+                $versionParser->normalize($version);
+                if ($package instanceof Theme) {
+                    //themes have different SVN folder structure
+                    $versions[$version] = $version;
+                } elseif ($url !== 'trunk') {
+                    //add ref to SVN tag
+                    $versions[$version] = 'tags/' . $version;
+                } // else do nothing, for 'trunk'.
+            } catch (\UnexpectedValueException $e) {
+                // Version is invalid – we've seen this e.g. with 5 numeric parts.
+                $logger->info(sprintf(
+                    'Skipping invalid version %s for %s %s',
+                    $version,
+                    $package->getType(),
+                    $name
+                ));
+                unset($versions[$version]);
+            }
+        }
+
+        return $versions;
     }
 }

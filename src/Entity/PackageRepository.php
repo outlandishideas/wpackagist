@@ -51,7 +51,7 @@ class PackageRepository extends EntityRepository
      * being fetched or that are inactive but have been updated in the past 90 days
      * and haven't been fetched in the past 7 days.
      *
-     * @return Package[]
+     * @return array consisting of count and iterable
      */
     public function findDueUpdate(): array
     {
@@ -63,14 +63,18 @@ class PackageRepository extends EntityRepository
                 OR (p.lastCommitted - p.lastFetched) > :twoHours
                 OR (p.isActive = false AND p.lastCommitted > :threeMonthsAgo AND p.lastFetched < :oneWeekAgo)
 EOT;
+        $countDql = str_replace('SELECT p', 'SELECT COUNT(1)', $dql);
         $dateFormat = $this->getEntityManager()->getConnection()->getDatabasePlatform()->getDateTimeFormatString();
-        $query = $entityManager->createQuery($dql)
-            // This seems to be how Doctrine wants its 'interval' type bound – not a DateInterval
-            ->setParameter('twoHours', '2 hour')
-            ->setParameter('threeMonthsAgo', (new \DateTime())->sub(new \DateInterval('P3M'))->format($dateFormat))
-            ->setParameter('oneWeekAgo', (new \DateTime())->sub(new \DateInterval('P1W'))->format($dateFormat));
+        // This seems to be how Doctrine wants its 'interval' type bound – not a DateInterval
+        $parameters = [
+            'twoHours' => '2 hour',
+            'threeMonthsAgo' => (new \DateTime())->sub(new \DateInterval('P3M'))->format($dateFormat),
+            'oneWeekAgo' => (new \DateTime())->sub(new \DateInterval('P1W'))->format($dateFormat)
+        ];
+        $query = $entityManager->createQuery($dql)->setParameters($parameters);
+        $countQuery = $entityManager->createQuery($countDql)->setParameters($parameters);
 
-        return $query->getResult();
+        return [$countQuery->getSingleScalarResult(), $query->toIterable()];
     }
 
     /**
