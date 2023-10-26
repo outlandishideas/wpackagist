@@ -324,7 +324,7 @@ abstract class Package
         }
 
         if ($date >= new DateTime(self::PROVIDER_GROUP_OLD_CUTOFF)) {
-            // split by years, limit at 2020 so we never update 'old' again
+            // split by years, limit at 2011 so we never update 'old' again
             return $date->format('Y');
         }
 
