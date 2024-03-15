@@ -7,7 +7,8 @@
         },
         "sort-packages": true,
         "allow-plugins": {
-            "symfony/flex": true
+            "symfony/flex": true,
+            "symfony/runtime": true
         }
     },
     "minimum-stability": "stable",
@@ -39,6 +40,7 @@
         "symfony/flex": "^v2.4.5",
         "symfony/form": "^6.0",
         "symfony/monolog-bundle": "^3.6",
+        "symfony/runtime": "^6.4",
         "symfony/security-csrf": "^6.0",
         "symfony/twig-bundle": "^6.4",
         "symfony/yaml": "^6.0",

@@ -4,7 +4,7 @@ use Outlandish\Wpackagist\Kernel;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpFoundation\Request;
 
-require_once dirname(__DIR__).'/vendor/autoload.php';
+require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
 if ($_SERVER['APP_DEBUG']) {
     umask(0000);
