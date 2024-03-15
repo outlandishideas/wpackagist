@@ -1796,51 +1796,50 @@ button::-moz-focus-inner {
   .panel.radius {
     border-radius: 3px; }
 
-ul.pagination {
+.pagination {
   display: block;
   min-height: 1.5rem;
   margin-left: -0.3125rem; }
-  ul.pagination li {
-    height: 1.5rem;
-    color: #222222;
-    font-size: 0.875rem;
-    margin-left: 0.3125rem; }
-    ul.pagination li a, ul.pagination li button {
-      display: block;
-      padding: 0.0625rem 0.625rem 0.0625rem;
-      color: #999999;
-      background: none;
-      border-radius: 3px;
-      font-weight: normal;
-      font-size: 1em;
-      line-height: inherit;
-      transition: background-color 300ms ease-out; }
-    ul.pagination li:hover a,
-    ul.pagination li a:focus, ul.pagination li:hover button,
-    ul.pagination li button:focus {
-      background: #e6e6e6; }
-    ul.pagination li.unavailable a, ul.pagination li.unavailable button {
-      cursor: default;
-      color: #999999; }
-    ul.pagination li.unavailable:hover a, ul.pagination li.unavailable a:focus, ul.pagination li.unavailable:hover button, ul.pagination li.unavailable button:focus {
-      background: transparent; }
-    ul.pagination li.current a, ul.pagination li.current button {
-      background: #2ba6cb;
-      color: #FFFFFF;
-      font-weight: bold;
-      cursor: default; }
-      ul.pagination li.current a:hover, ul.pagination li.current a:focus, ul.pagination li.current button:hover, ul.pagination li.current button:focus {
-        background: #2ba6cb; }
-  ul.pagination li {
+
+.pagination__item {
+  font-size: 0.875rem;
+  font-weight: normal;
+  margin-left: 0.3125rem;
+  display: block;
+  padding: 0.0625rem 0.625rem 0.0625rem;
+  color: #999999;
+  background: none;
+  border-radius: 3px;
+  line-height: inherit;
+  transition: background-color 300ms ease-out;
+}
+
+.pagination__item--disabled {
+  border-radius: 3px;
+  background: none;
+  cursor: default;
+}
+
+.pagination__item:hover,
+.pagination__item:focus {
+  background: #e6e6e6; }
+.pagination__item--disabled:hover,
+.pagination__item--disabled:focus,
+.pagination__item--separator:hover,
+.pagination__item--separator:focus {
+  background: transparent;
+}
+.pagination__item--current-page {
+  background: #2ba6cb;
+  color: #FFFFFF;
+  font-weight: bold;
+  cursor: default; }
+.pagination__item--current-page:hover, .pagination__item--current-page:focus {
+  background: #2ba6cb;
+}
+  .pagination__item {
     float: left;
     display: block; }
-
-/* Pagination centred wrapper */
-.pagination-centered {
-  text-align: center; }
-  .pagination-centered ul.pagination li {
-    float: none;
-    display: inline-block; }
 
 .text-left {
   text-align: left !important; }
@@ -2095,7 +2094,8 @@ code {
   border-color: #e0e0e0;
   padding: 0.125rem 0.3125rem 0.0625rem; }
 
-/* Lists */
+/* Lists, page number nav */
+nav,
 ul,
 ol,
 dl {
