@@ -6,8 +6,7 @@ when@dev:
     monolog:
         handlers:
             main:
-                type: fingers_crossed
-                handler: stream
+                type: stream
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: info
                 channels: ["!deprecation", "!event"]
