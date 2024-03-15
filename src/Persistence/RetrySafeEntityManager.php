@@ -14,6 +14,9 @@ use Doctrine\ORM\Exception\EntityManagerClosed;
 use Psr\Log\LoggerInterface;
 
 /**
+ * An Entity Manager intended to recover gracefully from closed connection type errors, by swapping in a
+ * fresh underlying EM if necessary to complete an operation.
+ *
  * Adapted from @link https://medium.com/lebouchondigital/thread-safe-business-logic-with-doctrine-f09c633f6554
  * and Mike Litoris's comment on the same.
  *
@@ -49,14 +52,14 @@ class RetrySafeEntityManager extends EntityManagerDecorator
         parent::__construct($this->entityManager);
     }
 
-    public function transactional($callback)
+    public function transactional($func): mixed
     {
         $retries = 0;
         do {
             $this->beginTransaction();
 
             try {
-                $ret = $callback();
+                $ret = $func();
 
                 $this->flush();
                 $this->commit();

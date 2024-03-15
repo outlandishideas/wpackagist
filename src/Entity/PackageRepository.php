@@ -12,38 +12,49 @@ class PackageRepository extends EntityRepository
      */
     public function updateProviderGroups(): void
     {
-        // default everything to 'old'
+        $treatAsOldBeforeDate = new \DateTimeImmutable(Package::PROVIDER_GROUP_OLD_CUTOFF);
+
         $em = $this->getEntityManager();
-        $qb = new QueryBuilder($em);
-        $qb->update(Package::class, 'p')
-            ->set('p.providerGroup', ':group')
-            ->where('p.providerGroup <> :group')
-            ->setParameter('group', 'old')
-            ->getQuery()
-            ->execute();
 
         // build the groups, trying to keep them of roughly equal numbers of packages
         $year = date('Y');
         $groups = [
-            'this-week' => new \DateTime('monday last week'),
-            $year . '-12' => new \DateTime($year . '-10-01'),
-            $year . '-09' => new \DateTime($year . '-07-01'),
-            $year . '-06' => new \DateTime($year . '-04-01'),
-            $year . '-03' => new \DateTime($year . '-01-01'),
+            ['group' => 'this-week', 'start' => new \DateTimeImmutable('monday last week')],
+            ['group' => $year . '-12', 'start' => new \DateTimeImmutable($year . '-10-01')],
+            ['group' => $year . '-09', 'start' => new \DateTimeImmutable($year . '-07-01')],
+            ['group' => $year . '-06', 'start' => new \DateTimeImmutable($year . '-04-01')],
+            ['group' => $year . '-03', 'start' => new \DateTimeImmutable($year . '-01-01')],
         ];
-        for ($y=$year-1; $y>=2011; $y--) {
-            $groups[$y] = new \DateTime($y . '-01-01');
+        for ($y=$year-1; $y>=$treatAsOldBeforeDate->format('Y'); $y--) {
+            $groups[] = ['group' => $y, 'start' => new \DateTimeImmutable($y . '-01-01')];
         }
 
-        $qb = new QueryBuilder($em);
-        $query = $qb->update(Package::class, 'p')
-            ->set('p.providerGroup', ':group')
-            ->where('p.providerGroup = \'old\'')
-            ->andWhere('p.lastCommitted >= :date')
-            ->getQuery();
-        foreach ($groups as $key => $date) {
-            $query->execute(['group' => $key, 'date' => $date->format('Y-m-d')]);
+        foreach ($groups as $i => $group) {
+            $groups[$i]['start'] = $group['start']->format('Y-m-d 00:00:00');
+            if ($i === 0) {
+                $groups[$i]['end'] = (new \DateTimeImmutable())->format('Y-m-d 23:59:59');
+            } else {
+                $groups[$i]['end'] = $groups[$i-1]['start'];
+            }
         }
+
+        $query = (new QueryBuilder($em))->update(Package::class, 'p')
+            ->set('p.providerGroup', ':group')
+            ->where('p.lastCommitted BETWEEN :start AND :end')
+            ->getQuery();
+        foreach ($groups as $group) {
+            $query->execute($group);
+        }
+
+
+        $oldPackagesQuery = (new QueryBuilder($em))->update(Package::class, 'p')
+            ->set('p.providerGroup', ':group')
+            ->where('p.lastCommitted < :cutoffDate')
+            ->getQuery();
+        $oldPackagesQuery->execute([
+            'group' => 'old',
+            'cutoffDate' => $treatAsOldBeforeDate->format('Y-m-d'),
+        ]);
     }
 
     /**

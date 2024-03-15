@@ -11,12 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(
  *     name="packages",
  *     uniqueConstraints={
- *      @ORM\UniqueConstraint(name="type_and_name_unique", columns={"class_name", "name"}),
+ *      @ORM\UniqueConstraint(name="package_type_and_name_unique", columns={"class_name", "name"}),
  *     },
  *     indexes={
- *      @ORM\Index(name="last_committed_idx", columns={"last_committed"}),
- *      @ORM\Index(name="last_fetched_idx", columns={"last_fetched"}),
- *      @ORM\Index(name="provider_group_idx", columns={"provider_group"}),
+ *      @ORM\Index(name="package_class_and_last_committed_idx", columns={"class_name", "last_committed"}),
+ *      @ORM\Index(name="package_last_committed_idx", columns={"last_committed"}),
+ *      @ORM\Index(name="package_last_fetched_idx", columns={"last_fetched"}),
+ *      @ORM\Index(name="package_provider_group_idx", columns={"provider_group"}),
  *      @ORM\Index(name="package_is_active_idx", columns={"is_active"}),
  *     }
  * )
@@ -33,6 +34,8 @@ abstract class Package
     const COMPOSER_TYPE = '';
     const SVN_BASE_URL = '';
     const HOMEPAGE_BASE_URL = '';
+
+    const PROVIDER_GROUP_OLD_CUTOFF = '2011-01-01';
 
     /**
      * @ORM\Id
@@ -320,7 +323,7 @@ abstract class Package
             return $date->format('Y-') . $month;
         }
 
-        if ($date >= new DateTime('2011-01-01')) {
+        if ($date >= new DateTime(self::PROVIDER_GROUP_OLD_CUTOFF)) {
             // split by years, limit at 2011 so we never update 'old' again
             return $date->format('Y');
         }

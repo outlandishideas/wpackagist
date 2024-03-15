@@ -10,12 +10,12 @@ RUN apt-get update -qq && apt-get install -y awscli && \
 # Install svn client, a requirement for the current native exec approach; git for
 # Composer pulls; libpq-dev for Postgres; libicu-dev for intl; libonig-dev for mbstring.
 RUN apt-get update -qq && \
-    apt-get install -y git libicu-dev libonig-dev libpq-dev subversion && \
+    apt-get install -y git libicu-dev libonig-dev libpq-dev libzip-dev subversion zip && \
     rm -rf /var/lib/apt/lists/* /var/cache/apk/*
 
 # intl recommended by something in the Doctrine/Symfony stack for improved performance.
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
- && docker-php-ext-install intl mbstring pdo_pgsql
+ && docker-php-ext-install intl mbstring pdo_pgsql zip
 
 RUN docker-php-ext-enable opcache
 
