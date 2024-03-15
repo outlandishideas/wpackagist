@@ -77,13 +77,7 @@
         </tbody>
     </table>
 
-    {{ pagerfanta(pager, 'default', {
-        'container_template': '<ul class="pagination">%pages%</ul>',
-        'page_template': '<li><a href="%href%">%text%</a></li>',
-        'css_disabled_class': 'unavailable disabled',
-        'css_dots_class': 'unavailable dots',
-        'span_template':'<li class="%class%"><button>%text%</button></li>'
-    }) }}
+    {{ pagerfanta(pager, 'default') }}
 
     <div class="alert-box info">
         If a package has no version and/or is not active, please check it is visible on

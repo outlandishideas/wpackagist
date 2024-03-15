@@ -127,9 +127,6 @@
     "monolog/monolog": {
         "version": "2.2.0"
     },
-    "pagerfanta/pagerfanta": {
-        "version": "v2.7.2"
-    },
     "psr/cache": {
         "version": "1.0.1"
     },
