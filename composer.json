@@ -36,7 +36,7 @@
         "symfony/console": "^6.0",
         "symfony/dotenv": "^6.0",
         "symfony/filesystem": "^6.0",
-        "symfony/flex": "^1.6",
+        "symfony/flex": "^v2.4.5",
         "symfony/form": "^6.0",
         "symfony/monolog-bundle": "^3.6",
         "symfony/security-csrf": "^6.0",
