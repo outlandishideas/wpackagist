@@ -158,3 +158,10 @@ table {
 table abbr {
     font-size: 100%;
 }
+
+.fork {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 0;
+}
