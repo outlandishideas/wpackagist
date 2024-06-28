@@ -169,7 +169,11 @@ class MainController extends AbstractController
         $adapter    = new QueryAdapter($queryBuilder);
         $pagerfanta = new Pagerfanta($adapter);
         $pagerfanta->setMaxPerPage(30);
-        $pagerfanta->setCurrentPage($request->query->get('page', 1));
+        $page = $request->query->get('page');
+        if (!is_numeric($page)) {
+            $page = 1;
+        }
+        $pagerfanta->setCurrentPage(intval($page));
 
         $data['pager']              = $pagerfanta;
         $data['currentPageResults'] = $pagerfanta->getCurrentPageResults();
