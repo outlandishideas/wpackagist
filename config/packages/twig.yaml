@@ -1,3 +1,8 @@
 twig:
     cache: '/tmp/twig'
     default_path: '%kernel.project_dir%/web/templates'
+    file_name_pattern: '*.twig'
+
+when@test:
+    twig:
+        strict_variables: true
