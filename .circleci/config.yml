@@ -9,7 +9,7 @@ orbs:
 workflows:
   deploy-staging:
     jobs:
-      - aws-ecr/build-and-push-image:
+      - aws-ecr/build_and_push_image:
           context:
             - ecs-deploys
           filters:
@@ -23,14 +23,14 @@ workflows:
           context:
             - ecs-deploys
           requires:
-            - aws-ecr/build-and-push-image
+            - aws-ecr/build_and_push_image
           family: 'ol-ecs-staging-wpackagist'
           cluster: 'ol-ecs-staging-shared'
           service-name: 'staging-wpackagist'
 
   deploy-production:
     jobs:
-      - aws-ecr/build-and-push-image:
+      - aws-ecr/build_and_push_image:
           context:
             - ecs-deploys
           filters:
@@ -44,7 +44,7 @@ workflows:
           context:
             - ecs-deploys
           requires:
-            - aws-ecr/build-and-push-image
+            - aws-ecr/build_and_push_image
           family: 'ol-ecs-production-wpackagist'
           cluster: 'ol-ecs-production-shared'
           service-name: 'production-wpackagist'
