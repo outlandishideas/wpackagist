@@ -10,8 +10,9 @@ workflows:
   deploy-staging:
     jobs:
       - aws-ecr/build-and-push-image:
-          machine:
-            image: ubuntu-2004:edge
+          executor:
+            machine:
+              image: ubuntu-2004:edge
           context:
             - ecs-deploys
           filters:
@@ -33,8 +34,9 @@ workflows:
   deploy-production:
     jobs:
       - aws-ecr/build-and-push-image:
-          machine:
-            image: ubuntu-2004:edge
+          executor:
+            machine:
+              image: ubuntu-2004:edge
           context:
             - ecs-deploys
           filters:
