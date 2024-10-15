@@ -12,7 +12,7 @@ workflows:
       - aws-ecr/build-and-push-image:
           executor:
             machine:
-              image: ubuntu-2004:edge
+              image: 'ubuntu-2004:edge'
           context:
             - ecs-deploys
           filters:
@@ -36,7 +36,7 @@ workflows:
       - aws-ecr/build-and-push-image:
           executor:
             machine:
-              image: ubuntu-2004:edge
+              image: 'ubuntu-2004:edge'
           context:
             - ecs-deploys
           filters:
