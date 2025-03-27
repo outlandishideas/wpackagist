@@ -111,7 +111,7 @@ class MainController extends AbstractController
     public function home(Request $request): Response
     {
         return $this->render('index.twig', [
-            'title'      => 'WordPress Packagist: Manage your plugins and themes with Composer',
+            'title'      => 'WPackagist: Manage your WordPress&reg; plugins and themes with Composer',
             'searchForm' => $this->getForm()->handleRequest($request)->createView(),
         ]);
     }
@@ -130,7 +130,7 @@ class MainController extends AbstractController
         $query = mb_convert_encoding($query, 'UTF-8');
 
         $data = [
-            'title'              => "WordPress Packagist: Search packages",
+            'title'              => "WPackagist: Search packages",
             'searchForm'         => $form->createView(),
             'currentPageResults' => '',
             'error'              => '',

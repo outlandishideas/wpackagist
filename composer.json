@@ -43,7 +43,7 @@
         "symfony/twig-bundle": "^5.4",
         "symfony/yaml": "^5.0",
         "twig/extra-bundle": "^3.4",
-        "twig/twig": "^3.4"
+        "twig/twig": "^3.14"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
