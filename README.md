@@ -87,10 +87,12 @@ the internal handling of Composer v1.x.
 
 The first database population may easily take hours. Be patient.
 
-0. `bin/console doctrine:migrations:migrate`: Ensure the database schema is up to date with the code.
-1. `bin/console refresh`: Query the WordPress.org SVN in order to find new and updated packages.
-2. `bin/console update`: Update the version information for packages identified in `2`. Uses the WordPress.org API.
-3. `bin/console build`: Rebuild all `PackageStore` data.
+1. `bin/console doctrine:migrations:migrate`: Ensure the database schema is up to date with the code.
+2. `bin/console refresh`: Query the WordPress.org SVN in order to find new and updated packages.
+3. `bin/console update`: Update the version information for packages identified in `(2)`. Uses the WordPress.org API.
+4. `bin/console build`: Rebuild all `PackageStore` data.
+
+Each of these can be run with the `-vvv` verbosity flag, to give useful progress updates
 
 ## Running locally with Docker
 
