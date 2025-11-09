@@ -19,6 +19,7 @@ Example composer.json:
     "description": "My brilliant WordPress site",
     "repositories":[
         {
+            "name":"wpackagist",
             "type":"composer",
             "url":"https://wpackagist.org",
             "only": ["wpackagist-plugin/*", "wpackagist-theme/*"]
