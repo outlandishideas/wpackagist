@@ -90,7 +90,7 @@ class Update
         $logger->info("Updating {$count} packages");
 
         foreach ($packages as $index => $package) {
-            $percent = $index / $count * 100;
+            $percent = ($index+1) / $count * 100;
 
             $name = $package->getName();
 

@@ -1,7 +1,7 @@
-WordPress Packagist
+WPackagist
 ===
 
-This is the repository for [wpackagist.org](https://wpackagist.org) which allows WordPress plugins and themes to be
+This is the repository for [wpackagist.org](https://wpackagist.org) which allows WordPress® plugins and themes to be
 managed along with other dependencies using [Composer](https://getcomposer.org).
 
 More info and usage instructions at [wpackagist.org](https://wpackagist.org) or follow us on
@@ -38,9 +38,9 @@ Example composer.json:
 }
 ```
 
-## WordPress core
+## WordPress® core
 
-This does not provide WordPress itself.
+This does not provide WordPress® itself.
 
 See https://github.com/fancyguy/webroot-installer or https://github.com/roots/wordpress.
 
@@ -49,7 +49,7 @@ See https://github.com/fancyguy/webroot-installer or https://github.com/roots/wo
 WPackagist implements the `wordpress-plugin` and `wordpress-theme` Composer Installers
 (https://github.com/composer/installers).
 
-It essentially provides a lookup table from package (theme or plugin) name to WordPress.org
+It essentially provides a lookup table from package (theme or plugin) name to wordpress.org
 SVN repository. Versions correspond to different tags in their repository, with the special
 `dev-trunk` version being mapped to `trunk`.
 
@@ -88,8 +88,8 @@ the internal handling of Composer v1.x.
 The first database population may easily take hours. Be patient.
 
 0. `bin/console doctrine:migrations:migrate`: Ensure the database schema is up to date with the code.
-1. `bin/console refresh`: Query the WordPress.org SVN in order to find new and updated packages.
-2. `bin/console update`: Update the version information for packages identified in `2`. Uses the WordPress.org API.
+1. `bin/console refresh`: Query the wordpress.org SVN in order to find new and updated packages.
+2. `bin/console update`: Update the version information for packages identified in `2`. Uses the wordpress.org API.
 3. `bin/console build`: Rebuild all `PackageStore` data.
 
 ## Running locally with Docker
